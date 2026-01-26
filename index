@@ -1,0 +1,870 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>MORSE-LINK LIVE | Database Connected</title>
+    <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-database-compat.js"></script>
+    
+    <style>
+        :root { 
+            --amber: #ffb000; 
+            --bg-black: #0a0a0a; 
+            --panel: #1e1e1e; 
+            --green: #0f0;
+        }
+        
+        * {
+            box-sizing: border-box;
+        }
+        
+        body { 
+            background: var(--bg-black); 
+            color: var(--amber); 
+            font-family: 'Courier New', monospace; 
+            margin: 0; 
+            display: flex; 
+            flex-direction: column; 
+            height: 100vh;
+            overflow: hidden;
+            background-repeat: no-repeat;
+            background-size: cover;
+            background-position: center;
+            background-attachment: fixed;
+        }
+        
+        #login-overlay { 
+            position: fixed; 
+            inset: 0; 
+            background: var(--bg-black); 
+            z-index: 1000; 
+            display: flex; 
+            flex-direction: column; 
+            justify-content: center; 
+            align-items: center;
+            gap: 15px;
+        }
+        
+        #login-overlay h2 {
+            color: var(--amber);
+            text-shadow: 0 0 10px var(--amber);
+            margin: 0;
+        }
+        
+        .online-badge {
+            background: #0a3d0a;
+            color: var(--green);
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            border: 1px solid var(--green);
+        }
+        
+        header { 
+            background: var(--panel); 
+            padding: 10px; 
+            border-bottom: 2px solid var(--amber); 
+            display: flex; 
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 10px;
+            position: relative;
+            z-index: 10;
+        }
+        
+        body.has-background header {
+            background: rgba(30, 30, 30, 0.95);
+            backdrop-filter: blur(10px);
+        }
+        
+        .admin-btn {
+            background: #222;
+            color: #888;
+            border: 1px solid #444;
+            padding: 5px 10px;
+            font-size: 0.8rem;
+            cursor: pointer;
+        }
+        
+        .admin-btn:hover {
+            background: #333;
+            color: var(--amber);
+            border-color: var(--amber);
+        }
+        
+        #main { 
+            display: grid; 
+            grid-template-columns: 200px 1fr; 
+            flex: 1; 
+            overflow: hidden;
+            position: relative;
+        }
+        
+        #main::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: rgba(10, 10, 10, 0.85);
+            z-index: 0;
+            pointer-events: none;
+            display: none;
+        }
+        
+        body.has-background #main::before {
+            display: block;
+        }
+        
+        #sidebar, #chat {
+            position: relative;
+            z-index: 1;
+        }
+        
+        #sidebar { 
+            border-right: 1px solid #333; 
+            padding: 10px; 
+            overflow-y: auto;
+            background: var(--panel);
+        }
+        
+        #chat { 
+            display: flex; 
+            flex-direction: column; 
+            padding: 10px; 
+            flex: 1;
+            overflow: hidden;
+        }
+        
+        #messages { 
+            flex: 1; 
+            background: #000; 
+            border: 1px solid #333; 
+            padding: 10px; 
+            overflow-y: auto; 
+            overflow-x: hidden;
+            margin-bottom: 10px; 
+            font-size: 1.2rem;
+            line-height: 1.5;
+            -webkit-overflow-scrolling: touch;
+        }
+        
+        #decoder-preview { 
+            height: 30px; 
+            font-size: 1.5rem; 
+            text-align: center;
+            color: var(--green);
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+        
+        #morse-pad { 
+            height: 150px; 
+            background: var(--panel); 
+            display: flex; 
+            justify-content: center; 
+            align-items: center; 
+            border-radius: 10px; 
+            position: relative;
+            border: 1px solid #333;
+        }
+        
+        #key { 
+            width: 100px; 
+            height: 100px; 
+            border: 4px solid var(--amber); 
+            border-radius: 50%; 
+            cursor: pointer; 
+            touch-action: none;
+            transition: background 0.05s;
+            user-select: none;
+        }
+        
+        #key:active { 
+            background: var(--amber); 
+            box-shadow: 0 0 20px var(--amber);
+        }
+        
+        .user-tag { 
+            display: block; 
+            padding: 5px; 
+            color: var(--green); 
+            border-bottom: 1px solid #222;
+            font-size: 0.9rem;
+        }
+        
+        .msg { 
+            margin-bottom: 10px; 
+            border-left: 2px solid var(--amber); 
+            padding-left: 8px;
+            word-wrap: break-word;
+        }
+        
+        .input-box { 
+            background: #000; 
+            border: 1px solid var(--amber); 
+            color: var(--amber); 
+            padding: 10px; 
+            margin: 5px;
+            font-family: 'Courier New', monospace;
+            font-size: 1rem;
+        }
+        
+        button {
+            background: var(--panel);
+            color: var(--amber);
+            border: 2px solid var(--amber);
+            padding: 10px 20px;
+            cursor: pointer;
+            font-family: 'Courier New', monospace;
+            font-size: 1rem;
+            transition: all 0.2s;
+        }
+        
+        button:hover {
+            background: var(--amber);
+            color: #000;
+        }
+        
+        button:active {
+            transform: scale(0.95);
+        }
+        
+        .clear-btn {
+            border-color: #f00;
+            color: #f00;
+            font-size: 0.85rem;
+            padding: 5px 10px;
+        }
+        
+        .clear-btn:hover {
+            background: #f00;
+            color: #000;
+        }
+        
+        #admin-modal, #admin-panel {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.95);
+            z-index: 2000;
+            display: none;
+            overflow-y: auto;
+        }
+        
+        #admin-modal.show, #admin-panel.show {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .modal-content {
+            background: var(--panel);
+            border: 2px solid var(--amber);
+            padding: 30px;
+            border-radius: 10px;
+            max-width: 400px;
+            width: 90%;
+        }
+        
+        .panel-content {
+            background: var(--panel);
+            border: 2px solid var(--amber);
+            padding: 20px;
+            border-radius: 10px;
+            max-width: 800px;
+            width: 95%;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+        
+        .stat-box {
+            background: #000;
+            border: 1px solid #333;
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 5px;
+        }
+        
+        .stat-label {
+            color: #888;
+            font-size: 0.9rem;
+        }
+        
+        .stat-value {
+            color: var(--amber);
+            font-size: 1.8rem;
+            font-weight: bold;
+        }
+        
+        .upload-zone {
+            border: 2px dashed #666;
+            padding: 20px;
+            text-align: center;
+            margin: 10px 0;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .upload-zone:hover {
+            border-color: var(--amber);
+            background: rgba(255, 176, 0, 0.1);
+        }
+        
+        .bg-preview {
+            width: 100%;
+            max-height: 200px;
+            object-fit: cover;
+            border: 2px solid var(--amber);
+            border-radius: 5px;
+            margin: 10px 0;
+        }
+        
+        .close-btn {
+            float: right;
+            background: #f00;
+            border-color: #f00;
+            color: #fff;
+            padding: 5px 15px;
+        }
+        
+        .close-btn:hover {
+            background: #c00;
+        }
+        
+        @keyframes flash {
+            0% { border-color: #333; }
+            50% { border-color: var(--green); }
+            100% { border-color: #333; }
+        }
+        
+        #messages.new-message {
+            animation: flash 0.5s ease;
+        }
+        
+        @media (max-width: 768px) {
+            #main { 
+                grid-template-columns: 1fr; 
+                grid-template-rows: auto 1fr;
+            }
+            
+            #sidebar { 
+                border-right: none;
+                border-bottom: 1px solid #333;
+                max-height: 100px;
+            }
+            
+            #messages {
+                font-size: 1rem;
+            }
+            
+            #key {
+                width: 80px;
+                height: 80px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<div id="login-overlay">
+    <h2>📡 MORSE-LINK LIVE</h2>
+    <div class="online-badge">🌍 MODALITÀ ONLINE</div>
+    <p style="color: #888; margin: 0; font-size: 0.9rem;">Real-time Global CW Chat by IU2RPQ</p>
+    <input type="text" id="callsign" class="input-box" placeholder="TUO NOMINATIVO (es. IU2RPQ)" maxlength="10">
+    <button onclick="startApp()">▶ CONNETTI</button>
+</div>
+
+<header>
+    <div><strong>STAZIONE:</strong> <span id="my-id">---</span></div>
+    <div id="status-indicator" style="color: var(--green);">● ONLINE</div>
+    <div style="display: flex; gap: 10px;">
+        <button onclick="mapExternalKey()" id="map-btn">MAPPA TASTO</button>
+        <button class="admin-btn" onclick="showAdminLogin()">🔐 ADMIN</button>
+    </div>
+</header>
+
+<div id="main">
+    <div id="sidebar">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+            <strong>🌍 ONLINE</strong>
+            <button class="clear-btn" onclick="clearChat()" title="Pulisci chat">🗑️</button>
+        </div>
+        <div id="user-list"></div>
+    </div>
+    <div id="chat">
+        <div id="messages"></div>
+        <div id="decoder-preview"></div>
+        <div id="morse-pad">
+            <div id="key"></div>
+        </div>
+    </div>
+</div>
+
+<div id="admin-modal">
+    <div class="modal-content">
+        <h2 style="color: var(--amber); margin-top: 0;">🔐 ACCESSO ADMIN</h2>
+        <input type="password" id="admin-pwd" class="input-box" placeholder="Password" style="margin: 20px 0;">
+        <div style="display: flex; gap: 10px;">
+            <button onclick="checkAdminPassword()" style="flex: 1;">ACCEDI</button>
+            <button onclick="closeAdminModal()" style="flex: 1; background: #333;">ANNULLA</button>
+        </div>
+        <p id="admin-error" style="color: #f00; margin-top: 10px; display: none;">Password errata!</p>
+    </div>
+</div>
+
+<div id="admin-panel">
+    <div class="panel-content">
+        <button class="close-btn" onclick="closeAdminPanel()">✕ CHIUDI</button>
+        <h2 style="color: var(--amber);">⚙️ PANNELLO AMMINISTRAZIONE</h2>
+        
+        <h3 style="color: var(--green); margin-top: 30px;">🖼️ SFONDO PERSONALIZZATO</h3>
+        <div class="upload-zone" onclick="document.getElementById('bg-upload').click()">
+            <p>📁 Clicca per caricare immagine di sfondo</p>
+            <p style="color: #666; font-size: 0.8rem;">JPG, PNG (max 5MB) - Ottimizzazione automatica</p>
+        </div>
+        <input type="file" id="bg-upload" accept="image/*" style="display: none;" onchange="handleBackgroundUpload(event)">
+        
+        <div id="bg-preview-container" style="display: none;">
+            <img id="bg-preview" class="bg-preview">
+            <button onclick="removeBackground()" style="background: #f00; border-color: #f00;">🗑️ RIMUOVI SFONDO</button>
+        </div>
+        
+        <h3 style="color: var(--green); margin-top: 30px;">📊 STATISTICHE TRAFFICO</h3>
+        
+        <div class="stat-box">
+            <div class="stat-label">Messaggi Totali</div>
+            <div class="stat-value" id="stat-messages">0</div>
+        </div>
+        
+        <div class="stat-box">
+            <div class="stat-label">Caratteri Trasmessi</div>
+            <div class="stat-value" id="stat-chars">0</div>
+        </div>
+        
+        <div class="stat-box">
+            <div class="stat-label">Utenti Unici (Globali)</div>
+            <div class="stat-value" id="stat-users">0</div>
+        </div>
+        
+        <div class="stat-box">
+            <div class="stat-label">Utenti Online Ora</div>
+            <div class="stat-value" id="stat-online">0</div>
+        </div>
+        
+        <div class="stat-box">
+            <div class="stat-label">Sessioni Totali</div>
+            <div class="stat-value" id="stat-sessions">0</div>
+        </div>
+        
+        <div class="stat-box">
+            <div class="stat-label">Ultimo Messaggio</div>
+            <div class="stat-value" id="stat-last" style="font-size: 1.2rem;">---</div>
+        </div>
+        
+        <button onclick="resetStats()" style="background: #f00; border-color: #f00; margin-top: 20px; width: 100%;">
+            🗑️ RESET STATISTICHE
+        </button>
+    </div>
+</div>
+
+<script>
+    const firebaseConfig = {
+        apiKey: "AIzaSyA7XqQnQRc0NbxgewBADmpdieylU7eTNHE",
+        authDomain: "morse-link-live.firebaseapp.com",
+        databaseURL: "https://morse-link-live-default-rtdb.europe-west1.firebasedatabase.app",
+        projectId: "morse-link-live",
+        storageBucket: "morse-link-live.firebasestorage.app",
+        messagingSenderId: "170315866392",
+        appId: "1:170315866392:web:91918cc223656b2d40be6d"
+    };
+
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
+    
+    let callsign = "";
+    let audioCtx, oscillator, gainNode;
+    let startTime = 0, isDown = false, morseBuffer = "";
+    let mappedKey = null, isMapping = false;
+    let lastUp = Date.now();
+    let sessionStartTime = null;
+    
+    const ADMIN_PASSWORD = "radio1010";
+    const lastMsgUser = {};
+
+    const MORSE = { 
+        ".-": "A", "-...": "B", "-.-.": "C", "-..": "D", ".": "E", 
+        "..-.": "F", "--.": "G", "....": "H", "..": "I", ".---": "J", 
+        "-.-": "K", ".-..": "L", "--": "M", "-.": "N", "---": "O", 
+        ".--.": "P", "--.-": "Q", ".-.": "R", "...": "S", "-": "T", 
+        "..-": "U", "...-": "V", ".--": "W", "-..-": "X", "-.--": "Y", 
+        "--..": "Z", "-----": "0", ".----": "1", "..---": "2", "...--": "3", 
+        "....-": "4", ".....": "5", "-....": "6", "--...": "7", "---..": "8", 
+        "----.": "9", "..--..": "?", "-..-.": "/", ".-.-.-": "."
+    };
+
+    function scrollToBottom() {
+        const box = document.getElementById('messages');
+        requestAnimationFrame(() => {
+            box.scrollTop = box.scrollHeight;
+        });
+    }
+
+    function sendMessage(char) {
+        db.ref('chat').push({
+            user: callsign,
+            text: char,
+            time: Date.now()
+        });
+        
+        db.ref('admin/stats/totalChars').transaction((current) => (current || 0) + char.length);
+    }
+
+    function addMsgToUI(user, text) {
+        const box = document.getElementById('messages');
+        const last = box.lastElementChild;
+        
+        if(last && last.dataset.user === user) {
+            const strong = last.querySelector('strong');
+            const currentContent = last.textContent || last.innerText;
+            const contentAfterName = currentContent.substring(currentContent.indexOf(':') + 1).trim();
+            
+            last.innerHTML = '';
+            last.appendChild(strong);
+            last.appendChild(document.createTextNode(' ' + contentAfterName + text));
+        } else {
+            const div = document.createElement('div');
+            div.className = 'msg';
+            div.dataset.user = user;
+            const userColor = user === callsign ? 'var(--amber)' : '#0af';
+            
+            const strong = document.createElement('strong');
+            strong.style.color = userColor;
+            strong.textContent = user + ':';
+            
+            div.appendChild(strong);
+            div.appendChild(document.createTextNode(' ' + text));
+            box.appendChild(div);
+        }
+        
+        scrollToBottom();
+    }
+
+    function clearChat() {
+        if(confirm('Pulire SOLO la tua visualizzazione della chat?\n(I messaggi restano nel database)')) {
+            document.getElementById('messages').innerHTML = '';
+        }
+    }
+
+    function startApp() {
+        callsign = document.getElementById('callsign').value.trim().toUpperCase();
+        
+        if(!callsign) {
+            alert('Inserisci il tuo nominativo!');
+            return;
+        }
+        
+        if(callsign.length < 3) {
+            alert('Nominativo troppo corto (min 3 caratteri)!');
+            return;
+        }
+        
+        document.getElementById('my-id').innerText = callsign;
+        document.getElementById('login-overlay').style.display = 'none';
+        
+        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+
+        const userRef = db.ref('users/' + callsign);
+        userRef.set({ 
+            status: "online", 
+            lastSeen: Date.now() 
+        });
+        userRef.onDisconnect().remove();
+
+        db.ref('users').on('value', snap => {
+            const list = document.getElementById('user-list');
+            list.innerHTML = "";
+            let count = 0;
+            snap.forEach(child => {
+                const isSelf = child.key === callsign;
+                const color = isSelf ? 'var(--amber)' : 'var(--green)';
+                const suffix = isSelf ? ' (TU)' : '';
+                list.innerHTML += `<span class="user-tag" style="color: ${color};">• ${child.key}${suffix}</span>`;
+                count++;
+            });
+            if(count === 0) {
+                list.innerHTML = '<span style="color: #666;">Nessuno online</span>';
+            }
+        });
+
+        db.ref('chat').limitToLast(50).on('child_added', snap => {
+            const data = snap.val();
+            if(data && data.user && data.text) {
+                if(!lastMsgUser[data.user] || lastMsgUser[data.user] !== snap.key) {
+                    addMsgToUI(data.user, data.text);
+                    lastMsgUser[data.user] = snap.key;
+                }
+            }
+        });
+
+        db.ref('admin/background').once('value').then(snap => {
+            const bgData = snap.val();
+            if(bgData) {
+                applyBackground(bgData);
+            }
+        });
+
+        trackSession();
+        
+        console.log('✅ Connesso come:', callsign);
+    }
+
+    function play() {
+        if(!audioCtx) return;
+        
+        oscillator = audioCtx.createOscillator();
+        gainNode = audioCtx.createGain();
+        oscillator.type = 'sine';
+        oscillator.frequency.value = 700;
+        gainNode.gain.value = 0.1;
+        oscillator.connect(gainNode);
+        gainNode.connect(audioCtx.destination);
+        oscillator.start();
+    }
+
+    function stop() { 
+        if(oscillator) {
+            oscillator.stop(); 
+            oscillator = null;
+        }
+    }
+
+    function down(e) {
+        if(isMapping) {
+            mappedKey = (e.type === 'keydown') ? e.code : 'MOUSE';
+            isMapping = false;
+            document.getElementById('map-btn').innerText = "TASTO: " + mappedKey;
+            return;
+        }
+        
+        if(mappedKey && e.type === 'keydown' && e.code !== mappedKey) return;
+        
+        if(isDown) return;
+        
+        isDown = true;
+        startTime = Date.now();
+        play();
+    }
+
+    function up() {
+        if(!isDown) return;
+        
+        isDown = false;
+        stop();
+        
+        const dur = Date.now() - startTime;
+        morseBuffer += (dur < 200) ? "." : "-";
+        document.getElementById('decoder-preview').innerText = morseBuffer;
+        lastUp = Date.now();
+    }
+
+    function mapExternalKey() {
+        isMapping = true;
+        document.getElementById('map-btn').innerText = "PREMI TASTO...";
+    }
+
+    setInterval(() => {
+        if(morseBuffer !== "" && (Date.now() - lastUp > 600)) {
+            const char = MORSE[morseBuffer] || "?";
+            sendMessage(char);
+            morseBuffer = "";
+            document.getElementById('decoder-preview').innerText = "";
+        }
+    }, 100);
+
+    function showAdminLogin() {
+        document.getElementById('admin-modal').classList.add('show');
+        document.getElementById('admin-pwd').value = '';
+        document.getElementById('admin-error').style.display = 'none';
+        setTimeout(() => document.getElementById('admin-pwd').focus(), 100);
+    }
+    
+    function closeAdminModal() {
+        document.getElementById('admin-modal').classList.remove('show');
+    }
+    
+    function checkAdminPassword() {
+        const pwd = document.getElementById('admin-pwd').value;
+        if(pwd === ADMIN_PASSWORD) {
+            closeAdminModal();
+            openAdminPanel();
+        } else {
+            document.getElementById('admin-error').style.display = 'block';
+            document.getElementById('admin-pwd').value = '';
+        }
+    }
+    
+    function openAdminPanel() {
+        document.getElementById('admin-panel').classList.add('show');
+        loadAdminData();
+    }
+    
+    function closeAdminPanel() {
+        document.getElementById('admin-panel').classList.remove('show');
+    }
+    
+    function loadAdminData() {
+        db.ref('admin/background').once('value').then(snap => {
+            const bgData = snap.val();
+            if(bgData) {
+                document.getElementById('bg-preview').src = bgData;
+                document.getElementById('bg-preview-container').style.display = 'block';
+            }
+        });
+        
+        updateStatistics();
+    }
+    
+    function handleBackgroundUpload(event) {
+        const file = event.target.files[0];
+        if(!file) return;
+        
+        if(file.size > 5 * 1024 * 1024) {
+            alert('File troppo grande! Max 5MB');
+            return;
+        }
+        
+        if(!file.type.startsWith('image/')) {
+            alert('Seleziona un\'immagine valida!');
+            return;
+        }
+        
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            const img = new Image();
+            img.onload = function() {
+                const canvas = document.createElement('canvas');
+                const ctx = canvas.getContext('2d');
+                
+                let width = img.width;
+                let height = img.height;
+                const maxWidth = 1920;
+                const maxHeight = 1080;
+                
+                if(width > maxWidth || height > maxHeight) {
+                    const ratio = Math.min(maxWidth / width, maxHeight / height);
+                    width = width * ratio;
+                    height = height * ratio;
+                }
+                
+                canvas.width = width;
+                canvas.height = height;
+                ctx.drawImage(img, 0, 0, width, height);
+                
+                const optimizedData = canvas.toDataURL('image/jpeg', 0.7);
+                
+                db.ref('admin/background').set(optimizedData);
+                
+                document.getElementById('bg-preview').src = optimizedData;
+                document.getElementById('bg-preview-container').style.display = 'block';
+                
+                applyBackground(optimizedData);
+                
+                console.log('✅ Sfondo caricato');
+            };
+            img.src = e.target.result;
+        };
+        reader.readAsDataURL(file);
+    }
+    
+    function applyBackground(dataUrl) {
+        document.body.style.backgroundImage = `url(${dataUrl})`;
+        document.body.classList.add('has-background');
+    }
+    
+    function removeBackground() {
+        if(confirm('Rimuovere lo sfondo?')) {
+            db.ref('admin/background').remove();
+            document.body.style.backgroundImage = 'none';
+            document.body.classList.remove('has-background');
+            document.getElementById('bg-preview-container').style.display = 'none';
+        }
+    }
+    
+    function updateStatistics() {
+        db.ref('chat').once('value').then(snap => {
+            const messages = [];
+            snap.forEach(child => messages.push(child.val()));
+            
+            document.getElementById('stat-messages').innerText = messages.length;
+            
+            const uniqueUsers = [...new Set(messages.map(m => m.user))];
+            document.getElementById('stat-users').innerText = uniqueUsers.length;
+            
+            if(messages.length > 0) {
+                const lastMsg = messages[messages.length - 1];
+                const date = new Date(lastMsg.time);
+                document.getElementById('stat-last').innerText = date.toLocaleString('it-IT');
+            }
+        });
+        
+        db.ref('users').once('value').then(snap => {
+            document.getElementById('stat-online').innerText = snap.numChildren();
+        });
+        
+        db.ref('admin/stats').once('value').then(snap => {
+            const stats = snap.val() || {};
+            document.getElementById('stat-sessions').innerText = stats.totalSessions || 0;
+            document.getElementById('stat-chars').innerText = stats.totalChars || 0;
+        });
+    }
+    
+    function resetStats() {
+        if(confirm('RESET PERMANENTE delle statistiche?')) {
+            db.ref('admin/stats').set({
+                totalSessions: 0,
+                totalChars: 0
+            });
+            updateStatistics();
+        }
+    }
+    
+    function trackSession() {
+        sessionStartTime = Date.now();
+        db.ref('admin/stats/totalSessions').transaction((current) => (current || 0) + 1);
+    }
+
+    const keyEl = document.getElementById('key');
+    
+    keyEl.addEventListener('mousedown', down);
+    window.addEventListener('mouseup', up);
+    
+    keyEl.addEventListener('touchstart', (e) => { 
+        e.preventDefault(); 
+        down(e); 
+    });
+    window.addEventListener('touchend', up);
+    
+    window.addEventListener('keydown', (e) => { 
+        if(!e.repeat) down(e); 
+    });
+    window.addEventListener('keyup', up);
+
+    document.body.addEventListener('touchmove', (e) => {
+        e.preventDefault();
+    }, { passive: false });
+
+    document.addEventListener('DOMContentLoaded', () => {
+        const adminPwd = document.getElementById('admin-pwd');
+        if(adminPwd) {
+            adminPwd.addEventListener('keypress', (e) => {
+                if(e.key === 'Enter') checkAdminPassword();
+            });
+        }
+    });
+
+    console.log('🔧 MORSE-LINK LIVE - FIREBASE MODE');
+    console.log('📡 Pronto per la connessione globale...');
+
+</script>
+</body>
+</html>
