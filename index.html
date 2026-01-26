@@ -287,6 +287,36 @@
             color: #000;
         }
         
+        #audio-activate-btn {
+            width: 100%;
+            margin-top: 10px;
+            background: #0f0 !important;
+            border: 2px solid #0f0 !important;
+            color: #000 !important;
+            font-weight: bold;
+            padding: 12px;
+            font-size: 0.95rem;
+            animation: pulse 2s infinite;
+        }
+        
+        #audio-activate-btn:hover {
+            background: #0c0 !important;
+            transform: scale(1.05);
+        }
+        
+        #audio-activate-btn.activated {
+            background: #666 !important;
+            border-color: #666 !important;
+            color: #aaa !important;
+            animation: none;
+            cursor: not-allowed;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.7; }
+        }
+        
         #admin-modal, #admin-panel {
             position: fixed;
             inset: 0;
@@ -438,7 +468,7 @@
             #sidebar { 
                 border-right: none;
                 border-bottom: 1px solid #333;
-                max-height: 80px;
+                max-height: 150px;
                 overflow-y: auto;
             }
             
@@ -518,7 +548,7 @@
             </div>
         </div>
         <div id="user-list"></div>
-        <button id="audio-activate-btn" onclick="activateAudioManually()" style="width: 100%; margin-top: 10px; display: none; background: var(--green); border-color: var(--green); color: #000; font-size: 0.85rem; padding: 8px;">
+        <button id="audio-activate-btn" onclick="activateAudioManually()">
             🔊 ATTIVA AUDIO
         </button>
     </div>
@@ -681,84 +711,68 @@
         });
     }
 
-    function initAudioContext() {
+    function initAudio() {
         if(!audioCtx) {
             audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-            console.log('🎵 Audio context creato:', audioCtx.state);
         }
         if(audioCtx.state === 'suspended') {
-            audioCtx.resume().then(() => {
-                console.log('🎵 Audio context attivo:', audioCtx.state);
-            });
+            audioCtx.resume();
         }
-        return audioCtx;
+        audioEnabled = true;
+        console.log('🎵 Audio inizializzato:', audioCtx.state);
     }
     
-    function ensureAudioReady() {
-        if(!audioCtx) {
-            initAudioContext();
-        }
-        if(audioCtx && audioCtx.state === 'suspended') {
-            return audioCtx.resume();
-        }
-        return Promise.resolve();
+    function playBeep(duration) {
+        return new Promise((resolve) => {
+            if(!audioCtx || !audioEnabled) {
+                console.warn('⚠️ Audio non disponibile');
+                resolve();
+                return;
+            }
+            
+            try {
+                const osc = audioCtx.createOscillator();
+                const gainNode = audioCtx.createGain();
+                
+                osc.frequency.value = 700;
+                osc.type = 'sine';
+                
+                gainNode.gain.value = 0;
+                gainNode.gain.linearRampToValueAtTime(0.2, audioCtx.currentTime + 0.01);
+                gainNode.gain.linearRampToValueAtTime(0, audioCtx.currentTime + (duration / 1000));
+                
+                osc.connect(gainNode);
+                gainNode.connect(audioCtx.destination);
+                
+                osc.start(audioCtx.currentTime);
+                osc.stop(audioCtx.currentTime + (duration / 1000));
+                
+                setTimeout(() => resolve(), duration);
+            } catch(err) {
+                console.error('❌ Errore beep:', err);
+                resolve();
+            }
+        });
     }
-
-    function playMorseChar(char) {
-        if(!audioCtx) {
-            console.warn('⚠️ Audio context non inizializzato');
+    
+    async function playMorseChar(char) {
+        if(!audioCtx || !audioEnabled) {
+            console.warn('⚠️ Audio non attivo');
             return;
-        }
-        
-        if(audioCtx.state === 'suspended') {
-            console.log('⏸️ Audio context sospeso, riattivo...');
-            audioCtx.resume();
         }
         
         const morse = CHAR_TO_MORSE[char.toUpperCase()];
         if(!morse) {
-            console.log('⚠️ Carattere non mappato:', char);
+            console.warn('⚠️ Carattere non valido:', char);
             return;
         }
         
-        console.log('🔊 Riproduco Morse:', char, '→', morse);
+        console.log('🔊 Riproduzione:', char, '→', morse);
         
-        const symbols = morse.split('');
-        let currentTime = 0;
-        
-        symbols.forEach((symbol, index) => {
-            setTimeout(() => {
-                playMorseSymbol(symbol);
-            }, currentTime);
-            
-            const duration = (symbol === '.') ? DOT_DURATION : DASH_DURATION;
-            currentTime += duration + SYMBOL_GAP;
-        });
-    }
-    
-    function playMorseSymbol(symbol) {
-        if(!audioCtx) return;
-        
-        try {
-            const osc = audioCtx.createOscillator();
-            const gain = audioCtx.createGain();
-            
-            osc.type = 'sine';
-            osc.frequency.value = 700;
-            gain.gain.value = 0.2;
-            
-            osc.connect(gain);
-            gain.connect(audioCtx.destination);
-            
-            const duration = (symbol === '.') ? DOT_DURATION : DASH_DURATION;
-            const now = audioCtx.currentTime;
-            
-            osc.start(now);
-            osc.stop(now + (duration / 1000));
-            
-            console.log('🎵', symbol === '.' ? 'BIP' : 'BIIIIP');
-        } catch(err) {
-            console.error('❌ Errore riproduzione:', err);
+        for(let symbol of morse) {
+            const duration = symbol === '.' ? DOT_DURATION : DASH_DURATION;
+            await playBeep(duration);
+            await new Promise(resolve => setTimeout(resolve, SYMBOL_GAP));
         }
     }
 
@@ -848,11 +862,6 @@
         document.getElementById('login-overlay').style.display = 'none';
         
         initAudio();
-        
-        const activateBtn = document.getElementById('audio-activate-btn');
-        if(activateBtn) {
-            activateBtn.style.display = 'block';
-        }
 
         const userRef = db.ref('users/' + callsign);
         userRef.set({ 
@@ -919,48 +928,6 @@
         
         console.log('✅ Connesso come:', callsign);
         console.log('🎵 Audio stato:', audioCtx ? audioCtx.state : 'non inizializzato');
-    }
-    
-    function playTestBeep() {
-        if(!audioCtx) return;
-        
-        try {
-            const osc = audioCtx.createOscillator();
-            const gain = audioCtx.createGain();
-            
-            osc.frequency.value = 700;
-            gain.gain.value = 0.1;
-            
-            osc.connect(gain);
-            gain.connect(audioCtx.destination);
-            
-            osc.start();
-            osc.stop(audioCtx.currentTime + 0.1);
-            
-            console.log('🔔 Beep test - Audio attivo!');
-            
-            const btn = document.getElementById('audio-activate-btn');
-            if(btn) {
-                btn.style.display = 'none';
-            }
-        } catch(e) {
-            console.error('❌ Test beep fallito:', e);
-        }
-    }
-    
-    function activateAudioManually() {
-        if(audioCtx) {
-            if(audioCtx.state === 'suspended') {
-                audioCtx.resume().then(() => {
-                    console.log('✅ Audio attivato manualmente!');
-                    playTestBeep();
-                    alert('✅ Audio attivato! Ora puoi sentire i messaggi in arrivo.');
-                });
-            } else {
-                playTestBeep();
-                alert('✅ Audio già attivo!');
-            }
-        }
     }
 
     function play() {
@@ -1031,6 +998,31 @@
             document.getElementById('decoder-preview').innerText = "";
         }
     }, 100);
+
+    async function activateAudioManually() {
+        try {
+            initAudio();
+            
+            if(audioCtx.state === 'suspended') {
+                await audioCtx.resume();
+            }
+            
+            console.log('🔊 Test attivazione audio...');
+            await playBeep(100);
+            
+            const btn = document.getElementById('audio-activate-btn');
+            if(btn) {
+                btn.classList.add('activated');
+                btn.innerHTML = '✅ AUDIO ATTIVO';
+            }
+            
+            alert('✅ Audio attivato! Ora puoi sentire i messaggi in arrivo.');
+            console.log('✅ Audio completamente attivo');
+        } catch(err) {
+            console.error('❌ Errore attivazione:', err);
+            alert('❌ Errore attivazione audio: ' + err.message);
+        }
+    }
 
     function showAdminLogin() {
         document.getElementById('admin-modal').classList.add('show');
@@ -1173,56 +1165,35 @@
         document.getElementById('opacity-slider').value = 70;
     }
     
-    function testAudioReception() {
+    async function testAudioReception() {
         const resultEl = document.getElementById('audio-test-result');
         
-        if(!audioCtx) {
-            resultEl.innerText = '❌ Audio context non inizializzato!';
-            resultEl.style.color = '#f00';
-            return;
-        }
-        
-        resultEl.innerText = '🔊 Attivazione audio...';
-        resultEl.style.color = 'var(--amber)';
-        
-        if(audioCtx.state === 'suspended') {
-            audioCtx.resume().then(() => {
-                runAudioTest(resultEl);
-            }).catch(err => {
-                resultEl.innerText = '❌ Errore attivazione: ' + err.message;
-                resultEl.style.color = '#f00';
-            });
-        } else {
-            runAudioTest(resultEl);
-        }
-    }
-    
-    function runAudioTest(resultEl) {
-        resultEl.innerText = '🎵 Riproduzione SOS (... --- ...)';
-        resultEl.style.color = 'var(--amber)';
-        
-        const sos = ['S', 'O', 'S'];
-        let totalDelay = 0;
-        
-        sos.forEach((char, i) => {
-            setTimeout(() => {
-                console.log('🧪 Test audio:', char);
-                playMorseChar(char);
-            }, totalDelay);
+        try {
+            initAudio();
             
-            const morse = CHAR_TO_MORSE[char];
-            if(morse) {
-                const duration = morse.split('').reduce((sum, s) => {
-                    return sum + (s === '.' ? DOT_DURATION : DASH_DURATION) + SYMBOL_GAP;
-                }, 0);
-                totalDelay += duration + LETTER_GAP;
+            if(audioCtx.state === 'suspended') {
+                await audioCtx.resume();
             }
-        });
-        
-        setTimeout(() => {
+            
+            resultEl.innerText = '🎵 Riproduzione SOS (... --- ...)';
+            resultEl.style.color = 'var(--amber)';
+            
+            console.log('🧪 Inizio test SOS');
+            
+            await playMorseChar('S');
+            await new Promise(r => setTimeout(r, LETTER_GAP));
+            await playMorseChar('O');
+            await new Promise(r => setTimeout(r, LETTER_GAP));
+            await playMorseChar('S');
+            
             resultEl.innerText = '✅ Test completato! Se hai sentito 3 segnali (... --- ...), l\'audio funziona!';
             resultEl.style.color = 'var(--green)';
-        }, totalDelay + 500);
+            console.log('✅ Test SOS completato');
+        } catch(err) {
+            console.error('❌ Errore test:', err);
+            resultEl.innerText = '❌ Errore: ' + err.message;
+            resultEl.style.color = '#f00';
+        }
     }
     
     function updateStatistics() {
