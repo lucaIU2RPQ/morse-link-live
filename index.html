@@ -294,12 +294,14 @@
             z-index: 2000;
             display: none;
             overflow-y: auto;
+            -webkit-overflow-scrolling: touch;
         }
         
         #admin-modal.show, #admin-panel.show {
             display: flex;
             justify-content: center;
-            align-items: center;
+            align-items: flex-start;
+            padding: 20px 0;
         }
         
         .modal-content {
@@ -320,6 +322,7 @@
             width: 95%;
             max-height: 90vh;
             overflow-y: auto;
+            -webkit-overflow-scrolling: touch;
         }
         
         .stat-box {
@@ -509,12 +512,15 @@
     <div id="sidebar">
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; flex-wrap: wrap; gap: 5px;">
             <strong style="font-size: 0.9rem;">🌍 ONLINE</strong>
-            <div style="display: flex; gap: 5px;">
+            <div style="display: flex; gap: 5px; flex-wrap: wrap;">
                 <button class="toggle-text-btn" onclick="toggleTextDisplay()" id="toggle-text-btn" title="Mostra/Nascondi testo">👁️</button>
                 <button class="clear-btn" onclick="clearChat()" title="Pulisci chat">🗑️</button>
             </div>
         </div>
         <div id="user-list"></div>
+        <button id="audio-activate-btn" onclick="activateAudioManually()" style="width: 100%; margin-top: 10px; display: none; background: var(--green); border-color: var(--green); color: #000; font-size: 0.85rem; padding: 8px;">
+            🔊 ATTIVA AUDIO
+        </button>
     </div>
     <div id="chat">
         <div id="messages"></div>
@@ -705,9 +711,8 @@
         }
         
         if(audioCtx.state === 'suspended') {
-            audioCtx.resume().then(() => {
-                console.log('🎵 Audio context resumed');
-            });
+            console.log('⏸️ Audio context sospeso, riattivo...');
+            audioCtx.resume();
         }
         
         const morse = CHAR_TO_MORSE[char.toUpperCase()];
@@ -718,31 +723,42 @@
         
         console.log('🔊 Riproduco Morse:', char, '→', morse);
         
-        let time = audioCtx.currentTime + 0.05;
+        const symbols = morse.split('');
+        let currentTime = 0;
         
-        for(let i = 0; i < morse.length; i++) {
-            const symbol = morse[i];
+        symbols.forEach((symbol, index) => {
+            setTimeout(() => {
+                playMorseSymbol(symbol);
+            }, currentTime);
+            
+            const duration = (symbol === '.') ? DOT_DURATION : DASH_DURATION;
+            currentTime += duration + SYMBOL_GAP;
+        });
+    }
+    
+    function playMorseSymbol(symbol) {
+        if(!audioCtx) return;
+        
+        try {
             const osc = audioCtx.createOscillator();
             const gain = audioCtx.createGain();
             
             osc.type = 'sine';
             osc.frequency.value = 700;
-            
-            gain.gain.setValueAtTime(0, time);
-            gain.gain.linearRampToValueAtTime(0.15, time + 0.005);
-            
-            const duration = (symbol === '.') ? DOT_DURATION : DASH_DURATION;
-            
-            gain.gain.setValueAtTime(0.15, time + (duration / 1000) - 0.005);
-            gain.gain.linearRampToValueAtTime(0, time + (duration / 1000));
+            gain.gain.value = 0.2;
             
             osc.connect(gain);
             gain.connect(audioCtx.destination);
             
-            osc.start(time);
-            osc.stop(time + (duration / 1000));
+            const duration = (symbol === '.') ? DOT_DURATION : DASH_DURATION;
+            const now = audioCtx.currentTime;
             
-            time += (duration + SYMBOL_GAP) / 1000;
+            osc.start(now);
+            osc.stop(now + (duration / 1000));
+            
+            console.log('🎵', symbol === '.' ? 'BIP' : 'BIIIIP');
+        } catch(err) {
+            console.error('❌ Errore riproduzione:', err);
         }
     }
 
@@ -840,15 +856,22 @@
         
         initAudioContext();
         
-        const activateAudio = () => {
-            ensureAudioReady().then(() => {
-                console.log('✅ Audio pronto per la ricezione');
-            });
+        const testAudio = () => {
+            if(audioCtx) {
+                if(audioCtx.state === 'suspended') {
+                    audioCtx.resume().then(() => {
+                        console.log('✅ Audio attivato!');
+                        playTestBeep();
+                    });
+                } else {
+                    console.log('✅ Audio già attivo!');
+                    playTestBeep();
+                }
+            }
         };
         
-        document.body.addEventListener('touchstart', activateAudio, { once: true });
-        document.body.addEventListener('click', activateAudio, { once: true });
-        document.addEventListener('keydown', activateAudio, { once: true });
+        document.body.addEventListener('touchstart', testAudio, { once: true });
+        document.body.addEventListener('click', testAudio, { once: true });
 
         const userRef = db.ref('users/' + callsign);
         userRef.set({ 
@@ -912,8 +935,65 @@
 
         trackSession();
         
+        const isIOS = /iPhone|iPad|iPod/.test(navigator.userAgent);
+        if(isIOS) {
+            setTimeout(() => {
+                const btn = document.getElementById('audio-activate-btn');
+                if(btn && audioCtx && audioCtx.state === 'suspended') {
+                    btn.style.display = 'block';
+                }
+            }, 1000);
+        } else {
+            setTimeout(() => {
+                if(audioCtx && audioCtx.state === 'suspended') {
+                    alert('👆 IMPORTANTE: Tocca lo schermo per attivare l\'audio in ricezione!');
+                }
+            }, 500);
+        }
+        
         console.log('✅ Connesso come:', callsign);
-        console.log('🎵 Audio context:', audioCtx.state);
+    }
+    
+    function playTestBeep() {
+        if(!audioCtx) return;
+        
+        try {
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            
+            osc.frequency.value = 700;
+            gain.gain.value = 0.1;
+            
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+            
+            osc.start();
+            osc.stop(audioCtx.currentTime + 0.1);
+            
+            console.log('🔔 Beep test - Audio attivo!');
+            
+            const btn = document.getElementById('audio-activate-btn');
+            if(btn) {
+                btn.style.display = 'none';
+            }
+        } catch(e) {
+            console.error('❌ Test beep fallito:', e);
+        }
+    }
+    
+    function activateAudioManually() {
+        if(audioCtx) {
+            if(audioCtx.state === 'suspended') {
+                audioCtx.resume().then(() => {
+                    console.log('✅ Audio attivato manualmente!');
+                    playTestBeep();
+                    alert('✅ Audio attivato! Ora puoi sentire i messaggi in arrivo.');
+                });
+            } else {
+                playTestBeep();
+                alert('✅ Audio già attivo!');
+            }
+        }
     }
 
     function play() {
@@ -1128,37 +1208,54 @@
     
     function testAudioReception() {
         const resultEl = document.getElementById('audio-test-result');
-        resultEl.innerText = '🔊 Riproduzione test SOS...';
+        
+        if(!audioCtx) {
+            resultEl.innerText = '❌ Audio context non inizializzato!';
+            resultEl.style.color = '#f00';
+            return;
+        }
+        
+        resultEl.innerText = '🔊 Attivazione audio...';
         resultEl.style.color = 'var(--amber)';
         
-        ensureAudioReady().then(() => {
-            const sos = ['S', 'O', 'S'];
-            let delay = 0;
-            
-            sos.forEach((char, i) => {
-                setTimeout(() => {
-                    console.log('🧪 Test audio:', char);
-                    playMorseChar(char);
-                    
-                    if(i === sos.length - 1) {
-                        setTimeout(() => {
-                            resultEl.innerText = '✅ Test completato! Se hai sentito 3 lettere (... --- ...), l\'audio funziona!';
-                            resultEl.style.color = 'var(--green)';
-                        }, 2000);
-                    }
-                }, delay);
-                
-                const morse = CHAR_TO_MORSE[char];
-                if(morse) {
-                    delay += (morse.split('').reduce((sum, s) => {
-                        return sum + (s === '.' ? DOT_DURATION : DASH_DURATION) + SYMBOL_GAP;
-                    }, 0) + LETTER_GAP);
-                }
+        if(audioCtx.state === 'suspended') {
+            audioCtx.resume().then(() => {
+                runAudioTest(resultEl);
+            }).catch(err => {
+                resultEl.innerText = '❌ Errore attivazione: ' + err.message;
+                resultEl.style.color = '#f00';
             });
-        }).catch(err => {
-            resultEl.innerText = '❌ Errore audio: ' + err.message;
-            resultEl.style.color = '#f00';
+        } else {
+            runAudioTest(resultEl);
+        }
+    }
+    
+    function runAudioTest(resultEl) {
+        resultEl.innerText = '🎵 Riproduzione SOS (... --- ...)';
+        resultEl.style.color = 'var(--amber)';
+        
+        const sos = ['S', 'O', 'S'];
+        let totalDelay = 0;
+        
+        sos.forEach((char, i) => {
+            setTimeout(() => {
+                console.log('🧪 Test audio:', char);
+                playMorseChar(char);
+            }, totalDelay);
+            
+            const morse = CHAR_TO_MORSE[char];
+            if(morse) {
+                const duration = morse.split('').reduce((sum, s) => {
+                    return sum + (s === '.' ? DOT_DURATION : DASH_DURATION) + SYMBOL_GAP;
+                }, 0);
+                totalDelay += duration + LETTER_GAP;
+            }
         });
+        
+        setTimeout(() => {
+            resultEl.innerText = '✅ Test completato! Se hai sentito 3 segnali (... --- ...), l\'audio funziona!';
+            resultEl.style.color = 'var(--green)';
+        }, totalDelay + 500);
     }
     
     function updateStatistics() {
