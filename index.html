@@ -579,6 +579,14 @@
             🔄 RESET OPACITÀ (70%)
         </button>
         
+        <h3 style="color: var(--green); margin-top: 30px;">🔊 TEST AUDIO</h3>
+        <p style="color: #888; font-size: 0.9rem;">Verifica che l'audio in ricezione funzioni</p>
+        
+        <button onclick="testAudioReception()" style="width: 100%; margin-top: 10px;">
+            🎵 TEST AUDIO RICEZIONE (SOS)
+        </button>
+        <p id="audio-test-result" style="color: #666; font-size: 0.8rem; margin-top: 10px;"></p>
+        
         <h3 style="color: var(--green); margin-top: 30px;">📊 STATISTICHE TRAFFICO</h3>
         
         <div class="stat-box">
@@ -670,35 +678,69 @@
     function initAudioContext() {
         if(!audioCtx) {
             audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-            if(audioCtx.state === 'suspended') {
-                audioCtx.resume();
-            }
+            console.log('🎵 Audio context creato:', audioCtx.state);
         }
+        if(audioCtx.state === 'suspended') {
+            audioCtx.resume().then(() => {
+                console.log('🎵 Audio context attivo:', audioCtx.state);
+            });
+        }
+        return audioCtx;
+    }
+    
+    function ensureAudioReady() {
+        if(!audioCtx) {
+            initAudioContext();
+        }
+        if(audioCtx && audioCtx.state === 'suspended') {
+            return audioCtx.resume();
+        }
+        return Promise.resolve();
     }
 
     function playMorseChar(char) {
-        if(!audioCtx) return;
+        if(!audioCtx) {
+            console.warn('⚠️ Audio context non inizializzato');
+            return;
+        }
         
-        const morse = CHAR_TO_MORSE[char];
-        if(!morse) return;
+        if(audioCtx.state === 'suspended') {
+            audioCtx.resume().then(() => {
+                console.log('🎵 Audio context resumed');
+            });
+        }
         
-        let time = audioCtx.currentTime;
+        const morse = CHAR_TO_MORSE[char.toUpperCase()];
+        if(!morse) {
+            console.log('⚠️ Carattere non mappato:', char);
+            return;
+        }
         
-        for(let symbol of morse) {
+        console.log('🔊 Riproduco Morse:', char, '→', morse);
+        
+        let time = audioCtx.currentTime + 0.05;
+        
+        for(let i = 0; i < morse.length; i++) {
+            const symbol = morse[i];
             const osc = audioCtx.createOscillator();
             const gain = audioCtx.createGain();
             
             osc.type = 'sine';
             osc.frequency.value = 700;
-            gain.gain.value = 0.15;
+            
+            gain.gain.setValueAtTime(0, time);
+            gain.gain.linearRampToValueAtTime(0.15, time + 0.005);
+            
+            const duration = (symbol === '.') ? DOT_DURATION : DASH_DURATION;
+            
+            gain.gain.setValueAtTime(0.15, time + (duration / 1000) - 0.005);
+            gain.gain.linearRampToValueAtTime(0, time + (duration / 1000));
             
             osc.connect(gain);
             gain.connect(audioCtx.destination);
             
-            const duration = (symbol === '.') ? DOT_DURATION : DASH_DURATION;
-            
             osc.start(time);
-            osc.stop(time + duration / 1000);
+            osc.stop(time + (duration / 1000));
             
             time += (duration + SYMBOL_GAP) / 1000;
         }
@@ -741,11 +783,19 @@
             box.appendChild(div);
         }
         
-        if(playAudio && user !== callsign) {
-            setTimeout(() => playMorseChar(text), 50);
-        }
-        
         scrollToBottom();
+        
+        if(playAudio) {
+            console.log('🎵 Chiamata audio per:', text);
+            
+            if(audioCtx && audioCtx.state === 'suspended') {
+                audioCtx.resume().then(() => {
+                    playMorseChar(text);
+                });
+            } else {
+                playMorseChar(text);
+            }
+        }
     }
 
     function toggleTextDisplay() {
@@ -790,8 +840,15 @@
         
         initAudioContext();
         
-        document.body.addEventListener('touchstart', initAudioContext, { once: true });
-        document.body.addEventListener('click', initAudioContext, { once: true });
+        const activateAudio = () => {
+            ensureAudioReady().then(() => {
+                console.log('✅ Audio pronto per la ricezione');
+            });
+        };
+        
+        document.body.addEventListener('touchstart', activateAudio, { once: true });
+        document.body.addEventListener('click', activateAudio, { once: true });
+        document.addEventListener('keydown', activateAudio, { once: true });
 
         const userRef = db.ref('users/' + callsign);
         userRef.set({ 
@@ -816,13 +873,25 @@
             }
         });
 
+        let initialLoad = true;
+        db.ref('chat').limitToLast(50).once('value', () => {
+            initialLoad = false;
+        });
+        
         db.ref('chat').limitToLast(50).on('child_added', snap => {
             const data = snap.val();
             if(data && data.user && data.text) {
-                if(!lastMsgUser[data.user] || lastMsgUser[data.user] !== snap.key) {
+                const isNewMessage = !lastMsgUser[data.user] || lastMsgUser[data.user] !== snap.key;
+                if(isNewMessage) {
                     const isRemote = data.user !== callsign;
-                    addMsgToUI(data.user, data.text, isRemote);
+                    const shouldPlayAudio = !initialLoad && isRemote;
+                    
+                    addMsgToUI(data.user, data.text, shouldPlayAudio);
                     lastMsgUser[data.user] = snap.key;
+                    
+                    if(shouldPlayAudio) {
+                        console.log('🔊 Riproduco audio per:', data.text, 'da', data.user);
+                    }
                 }
             }
         });
@@ -862,6 +931,8 @@
         oscillator.connect(gainNode);
         gainNode.connect(audioCtx.destination);
         oscillator.start();
+        
+        console.log('🎵 Trasmissione audio locale');
     }
 
     function stop() { 
@@ -1053,6 +1124,41 @@
     function resetOpacity() {
         updateChatOpacity(70);
         document.getElementById('opacity-slider').value = 70;
+    }
+    
+    function testAudioReception() {
+        const resultEl = document.getElementById('audio-test-result');
+        resultEl.innerText = '🔊 Riproduzione test SOS...';
+        resultEl.style.color = 'var(--amber)';
+        
+        ensureAudioReady().then(() => {
+            const sos = ['S', 'O', 'S'];
+            let delay = 0;
+            
+            sos.forEach((char, i) => {
+                setTimeout(() => {
+                    console.log('🧪 Test audio:', char);
+                    playMorseChar(char);
+                    
+                    if(i === sos.length - 1) {
+                        setTimeout(() => {
+                            resultEl.innerText = '✅ Test completato! Se hai sentito 3 lettere (... --- ...), l\'audio funziona!';
+                            resultEl.style.color = 'var(--green)';
+                        }, 2000);
+                    }
+                }, delay);
+                
+                const morse = CHAR_TO_MORSE[char];
+                if(morse) {
+                    delay += (morse.split('').reduce((sum, s) => {
+                        return sum + (s === '.' ? DOT_DURATION : DASH_DURATION) + SYMBOL_GAP;
+                    }, 0) + LETTER_GAP);
+                }
+            });
+        }).catch(err => {
+            resultEl.innerText = '❌ Errore audio: ' + err.message;
+            resultEl.style.color = '#f00';
+        });
     }
     
     function updateStatistics() {
