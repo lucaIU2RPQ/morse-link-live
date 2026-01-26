@@ -652,14 +652,14 @@
     let lastUp = Date.now();
     let sessionStartTime = null;
     let textDisplayEnabled = true;
-    let receiverOscillator = null;
+    let audioEnabled = false;
     
     const ADMIN_PASSWORD = "radio1010";
     const lastMsgUser = {};
-    const DOT_DURATION = 80;
-    const DASH_DURATION = DOT_DURATION * 3;
-    const SYMBOL_GAP = DOT_DURATION;
-    const LETTER_GAP = DOT_DURATION * 3;
+    const DOT_DURATION = 100;
+    const DASH_DURATION = 300;
+    const SYMBOL_GAP = 100;
+    const LETTER_GAP = 300;
 
     const MORSE = { 
         ".-": "A", "-...": "B", "-.-.": "C", "-..": "D", ".": "E", 
@@ -772,7 +772,7 @@
         db.ref('admin/stats/totalChars').transaction((current) => (current || 0) + char.length);
     }
 
-    function addMsgToUI(user, text, playAudio = false) {
+    async function addMsgToUI(user, text, shouldPlayAudio = false) {
         const box = document.getElementById('messages');
         const last = box.lastElementChild;
         
@@ -801,16 +801,9 @@
         
         scrollToBottom();
         
-        if(playAudio) {
-            console.log('🎵 Chiamata audio per:', text);
-            
-            if(audioCtx && audioCtx.state === 'suspended') {
-                audioCtx.resume().then(() => {
-                    playMorseChar(text);
-                });
-            } else {
-                playMorseChar(text);
-            }
+        if(shouldPlayAudio && audioEnabled) {
+            console.log('🎵 Audio richiesto per:', text, 'da', user);
+            await playMorseChar(text);
         }
     }
 
@@ -854,24 +847,12 @@
         document.getElementById('my-id').innerText = callsign;
         document.getElementById('login-overlay').style.display = 'none';
         
-        initAudioContext();
+        initAudio();
         
-        const testAudio = () => {
-            if(audioCtx) {
-                if(audioCtx.state === 'suspended') {
-                    audioCtx.resume().then(() => {
-                        console.log('✅ Audio attivato!');
-                        playTestBeep();
-                    });
-                } else {
-                    console.log('✅ Audio già attivo!');
-                    playTestBeep();
-                }
-            }
-        };
-        
-        document.body.addEventListener('touchstart', testAudio, { once: true });
-        document.body.addEventListener('click', testAudio, { once: true });
+        const activateBtn = document.getElementById('audio-activate-btn');
+        if(activateBtn) {
+            activateBtn.style.display = 'block';
+        }
 
         const userRef = db.ref('users/' + callsign);
         userRef.set({ 
@@ -899,6 +880,7 @@
         let initialLoad = true;
         db.ref('chat').limitToLast(50).once('value', () => {
             initialLoad = false;
+            console.log('✅ Caricamento iniziale completato');
         });
         
         db.ref('chat').limitToLast(50).on('child_added', snap => {
@@ -913,7 +895,7 @@
                     lastMsgUser[data.user] = snap.key;
                     
                     if(shouldPlayAudio) {
-                        console.log('🔊 Riproduco audio per:', data.text, 'da', data.user);
+                        console.log('🔊 Nuovo messaggio remoto da:', data.user);
                     }
                 }
             }
@@ -935,23 +917,8 @@
 
         trackSession();
         
-        const isIOS = /iPhone|iPad|iPod/.test(navigator.userAgent);
-        if(isIOS) {
-            setTimeout(() => {
-                const btn = document.getElementById('audio-activate-btn');
-                if(btn && audioCtx && audioCtx.state === 'suspended') {
-                    btn.style.display = 'block';
-                }
-            }, 1000);
-        } else {
-            setTimeout(() => {
-                if(audioCtx && audioCtx.state === 'suspended') {
-                    alert('👆 IMPORTANTE: Tocca lo schermo per attivare l\'audio in ricezione!');
-                }
-            }, 500);
-        }
-        
         console.log('✅ Connesso come:', callsign);
+        console.log('🎵 Audio stato:', audioCtx ? audioCtx.state : 'non inizializzato');
     }
     
     function playTestBeep() {
@@ -997,7 +964,9 @@
     }
 
     function play() {
-        if(!audioCtx) return;
+        if(!audioCtx) {
+            initAudio();
+        }
         
         if(audioCtx.state === 'suspended') {
             audioCtx.resume();
@@ -1007,12 +976,10 @@
         gainNode = audioCtx.createGain();
         oscillator.type = 'sine';
         oscillator.frequency.value = 700;
-        gainNode.gain.value = 0.1;
+        gainNode.gain.value = 0.15;
         oscillator.connect(gainNode);
         gainNode.connect(audioCtx.destination);
         oscillator.start();
-        
-        console.log('🎵 Trasmissione audio locale');
     }
 
     function stop() { 
