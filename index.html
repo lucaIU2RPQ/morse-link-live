@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>MORSE-LINK LIVE | Database Connected</title>
+    <title>MORSE-LINK LIVE | Radio in Vetta</title>
     <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-database-compat.js"></script>
     
@@ -63,15 +63,16 @@
         
         header { 
             background: var(--panel); 
-            padding: 10px; 
+            padding: 8px; 
             border-bottom: 2px solid var(--amber); 
             display: flex; 
             justify-content: space-between;
             align-items: center;
             flex-wrap: wrap;
-            gap: 10px;
+            gap: 8px;
             position: relative;
             z-index: 10;
+            flex-shrink: 0;
         }
         
         body.has-background header {
@@ -100,13 +101,14 @@
             flex: 1; 
             overflow: hidden;
             position: relative;
+            min-height: 0;
         }
         
         #main::before {
             content: '';
             position: absolute;
             inset: 0;
-            background: rgba(10, 10, 10, 0.85);
+            background: rgba(10, 10, 10, 0.7);
             z-index: 0;
             pointer-events: none;
             display: none;
@@ -134,11 +136,12 @@
             padding: 10px; 
             flex: 1;
             overflow: hidden;
+            min-height: 0;
         }
         
         #messages { 
             flex: 1; 
-            background: rgba(0, 0, 0, 0.9); 
+            background: rgba(0, 0, 0, 0.7); 
             border: 1px solid #333; 
             padding: 10px; 
             overflow-y: auto; 
@@ -148,24 +151,40 @@
             line-height: 1.5;
             -webkit-overflow-scrolling: touch;
             transition: background-color 0.3s ease;
+            min-height: 0;
+        }
+        
+        #messages.hide-text .msg {
+            display: none;
+        }
+        
+        #messages.hide-text::after {
+            content: '🔇 MODALITÀ SOLO AUDIO';
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100%;
+            color: #666;
+            font-size: 1rem;
         }
         
         body.has-background #messages {
-            backdrop-filter: blur(5px);
-            -webkit-backdrop-filter: blur(5px);
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
         }
         
         #decoder-preview { 
-            height: 30px; 
-            font-size: 1.5rem; 
+            height: 25px; 
+            font-size: 1.3rem; 
             text-align: center;
             color: var(--green);
             font-weight: bold;
-            margin-bottom: 10px;
+            margin-bottom: 8px;
+            flex-shrink: 0;
         }
         
         #morse-pad { 
-            height: 150px; 
+            height: 140px; 
             background: var(--panel); 
             display: flex; 
             justify-content: center; 
@@ -173,6 +192,7 @@
             border-radius: 10px; 
             position: relative;
             border: 1px solid #333;
+            flex-shrink: 0;
         }
         
         #key { 
@@ -182,13 +202,14 @@
             border-radius: 50%; 
             cursor: pointer; 
             touch-action: none;
-            transition: background 0.05s;
+            transition: background 0.05s, transform 0.1s;
             user-select: none;
         }
         
         #key:active { 
             background: var(--amber); 
             box-shadow: 0 0 20px var(--amber);
+            transform: scale(0.95);
         }
         
         .user-tag { 
@@ -245,6 +266,24 @@
         
         .clear-btn:hover {
             background: #f00;
+            color: #000;
+        }
+        
+        .toggle-text-btn {
+            border-color: var(--green);
+            color: var(--green);
+            font-size: 0.85rem;
+            padding: 5px 10px;
+            margin-bottom: 5px;
+        }
+        
+        .toggle-text-btn:hover {
+            background: var(--green);
+            color: #000;
+        }
+        
+        .toggle-text-btn.active {
+            background: var(--green);
             color: #000;
         }
         
@@ -396,16 +435,53 @@
             #sidebar { 
                 border-right: none;
                 border-bottom: 1px solid #333;
-                max-height: 100px;
+                max-height: 80px;
+                overflow-y: auto;
             }
             
             #messages {
                 font-size: 1rem;
+                flex: 1;
+                min-height: 120px;
+            }
+            
+            #decoder-preview {
+                height: 20px;
+                font-size: 1.1rem;
+            }
+            
+            #morse-pad {
+                height: 120px;
             }
             
             #key {
                 width: 80px;
                 height: 80px;
+            }
+            
+            header {
+                padding: 5px;
+                font-size: 0.9rem;
+            }
+            
+            button {
+                padding: 8px 12px;
+                font-size: 0.9rem;
+            }
+        }
+        
+        @media (max-height: 600px) {
+            #morse-pad {
+                height: 100px;
+            }
+            
+            #key {
+                width: 70px;
+                height: 70px;
+            }
+            
+            #messages {
+                min-height: 80px;
             }
         }
     </style>
@@ -414,7 +490,7 @@
 
 <div id="login-overlay">
     <h2>📡 MORSE-LINK LIVE</h2>
-    <div class="online-badge">🌍 MODALITÀ ONLINE</div>
+    <div class="online-badge">🌍 RADIO IN VETTA</div>
     <p style="color: #888; margin: 0; font-size: 0.9rem;">Real-time Global CW Chat by IU2RPQ</p>
     <input type="text" id="callsign" class="input-box" placeholder="TUO NOMINATIVO (es. IU2RPQ)" maxlength="10">
     <button onclick="startApp()">▶ CONNETTI</button>
@@ -423,17 +499,20 @@
 <header>
     <div><strong>STAZIONE:</strong> <span id="my-id">---</span></div>
     <div id="status-indicator" style="color: var(--green);">● ONLINE</div>
-    <div style="display: flex; gap: 10px;">
-        <button onclick="mapExternalKey()" id="map-btn">MAPPA TASTO</button>
+    <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+        <button onclick="mapExternalKey()" id="map-btn" style="padding: 5px 10px; font-size: 0.85rem;">MAPPA TASTO</button>
         <button class="admin-btn" onclick="showAdminLogin()">🔐 ADMIN</button>
     </div>
 </header>
 
 <div id="main">
     <div id="sidebar">
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
-            <strong>🌍 ONLINE</strong>
-            <button class="clear-btn" onclick="clearChat()" title="Pulisci chat">🗑️</button>
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; flex-wrap: wrap; gap: 5px;">
+            <strong style="font-size: 0.9rem;">🌍 ONLINE</strong>
+            <div style="display: flex; gap: 5px;">
+                <button class="toggle-text-btn" onclick="toggleTextDisplay()" id="toggle-text-btn" title="Mostra/Nascondi testo">👁️</button>
+                <button class="clear-btn" onclick="clearChat()" title="Pulisci chat">🗑️</button>
+            </div>
         </div>
         <div id="user-list"></div>
     </div>
@@ -480,14 +559,14 @@
         
         <div style="margin: 20px 0;">
             <label style="display: block; margin-bottom: 10px;">
-                Opacità: <span id="opacity-value">90</span>%
+                Opacità: <span id="opacity-value">70</span>%
             </label>
             <input 
                 type="range" 
                 id="opacity-slider" 
                 min="0" 
                 max="100" 
-                value="90" 
+                value="70" 
                 style="width: 100%; cursor: pointer;"
                 oninput="updateChatOpacity(this.value)">
             <div style="display: flex; justify-content: space-between; color: #666; font-size: 0.8rem; margin-top: 5px;">
@@ -497,7 +576,7 @@
         </div>
         
         <button onclick="resetOpacity()" style="width: 100%; margin-top: 10px;">
-            🔄 RESET OPACITÀ (90%)
+            🔄 RESET OPACITÀ (70%)
         </button>
         
         <h3 style="color: var(--green); margin-top: 30px;">📊 STATISTICHE TRAFFICO</h3>
@@ -558,9 +637,15 @@
     let mappedKey = null, isMapping = false;
     let lastUp = Date.now();
     let sessionStartTime = null;
+    let textDisplayEnabled = true;
+    let receiverOscillator = null;
     
     const ADMIN_PASSWORD = "radio1010";
     const lastMsgUser = {};
+    const DOT_DURATION = 80;
+    const DASH_DURATION = DOT_DURATION * 3;
+    const SYMBOL_GAP = DOT_DURATION;
+    const LETTER_GAP = DOT_DURATION * 3;
 
     const MORSE = { 
         ".-": "A", "-...": "B", "-.-.": "C", "-..": "D", ".": "E", 
@@ -573,11 +658,50 @@
         "----.": "9", "..--..": "?", "-..-.": "/", ".-.-.-": "."
     };
 
+    const CHAR_TO_MORSE = Object.fromEntries(Object.entries(MORSE).map(([k, v]) => [v, k]));
+
     function scrollToBottom() {
         const box = document.getElementById('messages');
         requestAnimationFrame(() => {
             box.scrollTop = box.scrollHeight;
         });
+    }
+
+    function initAudioContext() {
+        if(!audioCtx) {
+            audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            if(audioCtx.state === 'suspended') {
+                audioCtx.resume();
+            }
+        }
+    }
+
+    function playMorseChar(char) {
+        if(!audioCtx) return;
+        
+        const morse = CHAR_TO_MORSE[char];
+        if(!morse) return;
+        
+        let time = audioCtx.currentTime;
+        
+        for(let symbol of morse) {
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            
+            osc.type = 'sine';
+            osc.frequency.value = 700;
+            gain.gain.value = 0.15;
+            
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+            
+            const duration = (symbol === '.') ? DOT_DURATION : DASH_DURATION;
+            
+            osc.start(time);
+            osc.stop(time + duration / 1000);
+            
+            time += (duration + SYMBOL_GAP) / 1000;
+        }
     }
 
     function sendMessage(char) {
@@ -590,7 +714,7 @@
         db.ref('admin/stats/totalChars').transaction((current) => (current || 0) + char.length);
     }
 
-    function addMsgToUI(user, text) {
+    function addMsgToUI(user, text, playAudio = false) {
         const box = document.getElementById('messages');
         const last = box.lastElementChild;
         
@@ -617,11 +741,33 @@
             box.appendChild(div);
         }
         
+        if(playAudio && user !== callsign) {
+            setTimeout(() => playMorseChar(text), 50);
+        }
+        
         scrollToBottom();
     }
 
+    function toggleTextDisplay() {
+        textDisplayEnabled = !textDisplayEnabled;
+        const box = document.getElementById('messages');
+        const btn = document.getElementById('toggle-text-btn');
+        
+        if(textDisplayEnabled) {
+            box.classList.remove('hide-text');
+            btn.classList.remove('active');
+            btn.innerText = '👁️';
+        } else {
+            box.classList.add('hide-text');
+            btn.classList.add('active');
+            btn.innerText = '🔇';
+        }
+        
+        console.log(`📺 Visualizzazione testo: ${textDisplayEnabled ? 'ON' : 'OFF'}`);
+    }
+
     function clearChat() {
-        if(confirm('Pulire SOLO la tua visualizzazione della chat?\n(I messaggi restano nel database)')) {
+        if(confirm('Pulire la visualizzazione della chat?\n(I messaggi restano nel database)')) {
             document.getElementById('messages').innerHTML = '';
         }
     }
@@ -642,7 +788,10 @@
         document.getElementById('my-id').innerText = callsign;
         document.getElementById('login-overlay').style.display = 'none';
         
-        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        initAudioContext();
+        
+        document.body.addEventListener('touchstart', initAudioContext, { once: true });
+        document.body.addEventListener('click', initAudioContext, { once: true });
 
         const userRef = db.ref('users/' + callsign);
         userRef.set({ 
@@ -671,7 +820,8 @@
             const data = snap.val();
             if(data && data.user && data.text) {
                 if(!lastMsgUser[data.user] || lastMsgUser[data.user] !== snap.key) {
-                    addMsgToUI(data.user, data.text);
+                    const isRemote = data.user !== callsign;
+                    addMsgToUI(data.user, data.text, isRemote);
                     lastMsgUser[data.user] = snap.key;
                 }
             }
@@ -694,10 +844,15 @@
         trackSession();
         
         console.log('✅ Connesso come:', callsign);
+        console.log('🎵 Audio context:', audioCtx.state);
     }
 
     function play() {
         if(!audioCtx) return;
+        
+        if(audioCtx.state === 'suspended') {
+            audioCtx.resume();
+        }
         
         oscillator = audioCtx.createOscillator();
         gainNode = audioCtx.createGain();
@@ -800,7 +955,7 @@
         });
         
         db.ref('admin/chatOpacity').once('value').then(snap => {
-            const opacity = snap.val() || 90;
+            const opacity = snap.val() || 70;
             document.getElementById('opacity-slider').value = opacity;
             document.getElementById('opacity-value').innerText = opacity;
             applyChatOpacity(opacity);
@@ -886,21 +1041,18 @@
         const messagesBox = document.getElementById('messages');
         messagesBox.style.backgroundColor = `rgba(0, 0, 0, ${opacity})`;
         
-        // Migliora leggibilità con blur quando molto trasparente
         if(value < 70) {
             messagesBox.style.backdropFilter = 'blur(10px)';
             messagesBox.style.webkitBackdropFilter = 'blur(10px)';
         } else {
-            messagesBox.style.backdropFilter = 'blur(5px)';
-            messagesBox.style.webkitBackdropFilter = 'blur(5px)';
+            messagesBox.style.backdropFilter = 'blur(8px)';
+            messagesBox.style.webkitBackdropFilter = 'blur(8px)';
         }
-        
-        console.log(`🎨 Opacità chat: ${value}%`);
     }
     
     function resetOpacity() {
-        updateChatOpacity(90);
-        document.getElementById('opacity-slider').value = 90;
+        updateChatOpacity(70);
+        document.getElementById('opacity-slider').value = 70;
     }
     
     function updateStatistics() {
@@ -963,7 +1115,9 @@
     window.addEventListener('keyup', up);
 
     document.body.addEventListener('touchmove', (e) => {
-        e.preventDefault();
+        if(e.target.id === 'key' || e.target.closest('#morse-pad')) {
+            e.preventDefault();
+        }
     }, { passive: false });
 
     document.addEventListener('DOMContentLoaded', () => {
