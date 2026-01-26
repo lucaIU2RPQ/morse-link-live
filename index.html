@@ -138,7 +138,7 @@
         
         #messages { 
             flex: 1; 
-            background: #000; 
+            background: rgba(0, 0, 0, 0.9); 
             border: 1px solid #333; 
             padding: 10px; 
             overflow-y: auto; 
@@ -147,6 +147,12 @@
             font-size: 1.2rem;
             line-height: 1.5;
             -webkit-overflow-scrolling: touch;
+            transition: background-color 0.3s ease;
+        }
+        
+        body.has-background #messages {
+            backdrop-filter: blur(5px);
+            -webkit-backdrop-filter: blur(5px);
         }
         
         #decoder-preview { 
@@ -331,6 +337,46 @@
             background: #c00;
         }
         
+        input[type="range"] {
+            -webkit-appearance: none;
+            appearance: none;
+            height: 8px;
+            background: #333;
+            border-radius: 5px;
+            outline: none;
+        }
+        
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 20px;
+            height: 20px;
+            background: var(--amber);
+            border-radius: 50%;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        input[type="range"]::-webkit-slider-thumb:hover {
+            background: #ffcc00;
+            transform: scale(1.2);
+        }
+        
+        input[type="range"]::-moz-range-thumb {
+            width: 20px;
+            height: 20px;
+            background: var(--amber);
+            border-radius: 50%;
+            cursor: pointer;
+            border: none;
+            transition: all 0.2s;
+        }
+        
+        input[type="range"]::-moz-range-thumb:hover {
+            background: #ffcc00;
+            transform: scale(1.2);
+        }
+        
         @keyframes flash {
             0% { border-color: #333; }
             50% { border-color: var(--green); }
@@ -428,6 +474,31 @@
             <img id="bg-preview" class="bg-preview">
             <button onclick="removeBackground()" style="background: #f00; border-color: #f00;">🗑️ RIMUOVI SFONDO</button>
         </div>
+        
+        <h3 style="color: var(--green); margin-top: 30px;">🎨 TRASPARENZA CHAT</h3>
+        <p style="color: #888; font-size: 0.9rem;">Regola l'opacità della finestra messaggi per vedere lo sfondo</p>
+        
+        <div style="margin: 20px 0;">
+            <label style="display: block; margin-bottom: 10px;">
+                Opacità: <span id="opacity-value">90</span>%
+            </label>
+            <input 
+                type="range" 
+                id="opacity-slider" 
+                min="0" 
+                max="100" 
+                value="90" 
+                style="width: 100%; cursor: pointer;"
+                oninput="updateChatOpacity(this.value)">
+            <div style="display: flex; justify-content: space-between; color: #666; font-size: 0.8rem; margin-top: 5px;">
+                <span>Trasparente</span>
+                <span>Opaco</span>
+            </div>
+        </div>
+        
+        <button onclick="resetOpacity()" style="width: 100%; margin-top: 10px;">
+            🔄 RESET OPACITÀ (90%)
+        </button>
         
         <h3 style="color: var(--green); margin-top: 30px;">📊 STATISTICHE TRAFFICO</h3>
         
@@ -612,6 +683,13 @@
                 applyBackground(bgData);
             }
         });
+        
+        db.ref('admin/chatOpacity').once('value').then(snap => {
+            const opacity = snap.val();
+            if(opacity !== null && opacity !== undefined) {
+                applyChatOpacity(opacity);
+            }
+        });
 
         trackSession();
         
@@ -721,6 +799,13 @@
             }
         });
         
+        db.ref('admin/chatOpacity').once('value').then(snap => {
+            const opacity = snap.val() || 90;
+            document.getElementById('opacity-slider').value = opacity;
+            document.getElementById('opacity-value').innerText = opacity;
+            applyChatOpacity(opacity);
+        });
+        
         updateStatistics();
     }
     
@@ -788,6 +873,34 @@
             document.body.classList.remove('has-background');
             document.getElementById('bg-preview-container').style.display = 'none';
         }
+    }
+    
+    function updateChatOpacity(value) {
+        document.getElementById('opacity-value').innerText = value;
+        applyChatOpacity(value);
+        db.ref('admin/chatOpacity').set(parseInt(value));
+    }
+    
+    function applyChatOpacity(value) {
+        const opacity = value / 100;
+        const messagesBox = document.getElementById('messages');
+        messagesBox.style.backgroundColor = `rgba(0, 0, 0, ${opacity})`;
+        
+        // Migliora leggibilità con blur quando molto trasparente
+        if(value < 70) {
+            messagesBox.style.backdropFilter = 'blur(10px)';
+            messagesBox.style.webkitBackdropFilter = 'blur(10px)';
+        } else {
+            messagesBox.style.backdropFilter = 'blur(5px)';
+            messagesBox.style.webkitBackdropFilter = 'blur(5px)';
+        }
+        
+        console.log(`🎨 Opacità chat: ${value}%`);
+    }
+    
+    function resetOpacity() {
+        updateChatOpacity(90);
+        document.getElementById('opacity-slider').value = 90;
     }
     
     function updateStatistics() {
