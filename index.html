@@ -35,6 +35,15 @@
             background-attachment: fixed;
         }
         
+        @media (max-width: 768px) {
+            body {
+                height: auto;
+                min-height: 100vh;
+                overflow-y: auto;
+                overflow-x: hidden;
+            }
+        }
+        
         #login-overlay { 
             position: fixed; 
             inset: 0; 
@@ -103,6 +112,17 @@
             gap: 0;
         }
         
+        @media (max-width: 768px) {
+            #main {
+                display: block;
+                overflow: visible;
+                flex: none;
+                height: auto;
+                min-height: 0;
+                position: relative;
+            }
+        }
+        
         #main::before {
             content: '';
             position: absolute;
@@ -149,6 +169,7 @@
             padding: 10px;
             overflow: hidden;
             min-height: 200px;
+            padding-bottom: 20px;
         }
         
         @media (max-width: 768px) {
@@ -161,6 +182,7 @@
                 min-height: 250px;
                 height: 250px;
                 flex-shrink: 0;
+                padding-bottom: 30px;
             }
         }
         
@@ -268,6 +290,24 @@
             display: flex;
             gap: 8px;
             flex-shrink: 0;
+        }
+        
+        @media (max-width: 768px) {
+            #text-input-area {
+                display: block;
+                width: 100%;
+            }
+            
+            #text-input-area input {
+                width: 100%;
+                display: block;
+                margin-bottom: 10px;
+            }
+            
+            #text-input-area button {
+                width: 100%;
+                display: block;
+            }
         }
         
         #text-input {
@@ -598,116 +638,164 @@
         @media (max-width: 768px) {
             body {
                 overflow-y: auto;
+                -webkit-overflow-scrolling: touch;
+                height: auto;
+                min-height: 100vh;
+                scroll-padding-bottom: 50px;
+                padding-bottom: 80px;
             }
             
             #main { 
-                grid-template-columns: 1fr; 
-                grid-template-rows: 80px 1fr 250px;
-                min-height: calc(100vh - 60px);
-                max-height: calc(100vh - 60px);
+                display: block;
+                height: auto;
+                min-height: 0;
+                overflow: visible;
             }
             
             #sidebar { 
+                display: block;
                 border-right: none;
                 border-bottom: 1px solid #333;
-                height: 80px;
-                max-height: 80px;
-                flex-direction: row;
-                flex-wrap: wrap;
-                padding: 5px;
-                gap: 5px;
-                overflow: hidden;
+                height: auto;
+                min-height: 60px;
+                max-height: none;
+                padding: 8px;
+                margin-bottom: 10px;
             }
             
             #morse-section {
+                display: block;
                 height: auto;
                 min-height: 0;
+                overflow: visible;
+                margin-bottom: 10px;
             }
             
             #text-chat-section {
+                display: block !important;
                 border-left: none;
                 border-top: 2px solid var(--blue);
-                min-height: 250px;
-                height: 250px;
-                max-height: 250px;
-                flex-shrink: 0;
-                display: flex !important;
+                height: auto;
+                min-height: 0;
+                max-height: none;
                 background: rgba(30, 30, 30, 0.98);
+                overflow: visible;
+                padding: 10px;
+                padding-bottom: 80px;
+                margin-bottom: 60px;
+            }
+            
+            #text-chat-section > * {
+                display: block !important;
+                width: 100%;
+            }
+            
+            .section-title {
+                display: block;
+                margin-bottom: 10px;
             }
             
             #messages {
                 font-size: 1rem;
-                min-height: 100px;
-                flex: 1;
+                min-height: 150px;
+                max-height: 400px;
+                overflow-y: auto;
+                margin-bottom: 10px;
             }
             
             #text-messages {
-                font-size: 0.85rem;
-                min-height: 120px;
-                flex: 1;
+                font-size: 0.9rem;
+                min-height: 150px;
+                max-height: 300px;
+                overflow-y: auto;
+                margin-bottom: 10px;
             }
             
             #decoder-preview {
-                height: 20px;
+                height: 25px;
                 font-size: 1.1rem;
+                margin-bottom: 10px;
             }
             
             #morse-pad {
-                height: 120px;
+                height: 140px;
+                margin-bottom: 10px;
             }
             
             #key {
-                width: 80px;
-                height: 80px;
+                width: 90px;
+                height: 90px;
             }
             
             header {
                 padding: 8px;
                 font-size: 0.85rem;
+                position: sticky;
+                top: 0;
+                z-index: 100;
             }
             
             button {
-                padding: 6px 10px;
-                font-size: 0.8rem;
+                padding: 10px 14px;
+                font-size: 0.9rem;
+                display: block;
+                width: 100%;
+                margin-bottom: 8px;
             }
             
             .section-title {
-                font-size: 0.8rem;
-                padding: 5px;
-                flex-shrink: 0;
+                font-size: 0.9rem;
+                padding: 10px;
             }
             
             .text-msg {
-                margin-bottom: 8px;
-                padding: 6px;
+                margin-bottom: 12px;
+                padding: 10px;
             }
             
             .text-msg .author {
-                font-size: 0.8rem;
+                font-size: 0.9rem;
+                margin-bottom: 5px;
             }
             
             .text-msg .content {
-                font-size: 0.85rem;
+                font-size: 1rem;
             }
             
             #text-input {
                 font-size: 16px;
-                height: 38px;
+                height: 45px;
+                padding: 12px;
+                display: block;
+                width: 100%;
+                margin-bottom: 10px;
             }
             
             #text-input-area {
-                flex-shrink: 0;
+                display: block;
+                margin-bottom: 12px;
             }
             
             #text-send {
-                padding: 8px 12px;
-                font-size: 0.85rem;
+                padding: 12px 16px;
+                font-size: 1rem;
+                width: 100%;
+                display: block;
+                margin-bottom: 12px;
             }
             
             #morse-keyboard-toggle {
-                padding: 6px;
-                font-size: 0.75rem;
-                margin-top: 5px;
+                padding: 12px;
+                font-size: 0.9rem;
+                width: 100%;
+                display: block !important;
+                margin-top: 12px;
+                margin-bottom: 12px;
+            }
+            
+            /* Pulsante TEST CHAT */
+            #text-chat-section button:last-child {
+                margin-bottom: 40px;
             }
         }
         
