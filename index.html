@@ -1053,33 +1053,26 @@
         console.log('   state:', audioCtx.state);
     }
     
-    function playBeep(duration) {
-        return new Promise((resolve) => {
-            console.log('🔊 playBeep:', duration + 'ms');
-            
-            if(!audioCtx) {
-                console.warn('⚠️ playBeep: audioCtx NULL, inizializzo...');
-                initAudio();
-            }
-            
-            // CHROME FIX: Verifica state prima di ogni beep
-            if(audioCtx && audioCtx.state === 'suspended') {
-                console.warn('⚠️ Chrome: AudioContext suspended in playBeep');
-                audioCtx.resume().then(() => {
-                    console.log('   ✅ Chrome: Resume OK, riprovo beep...');
-                    playBeepInternal(duration).then(resolve);
-                }).catch(err => {
-                    console.error('   ❌ Chrome: Resume failed:', err);
-                    resolve();
-                });
+    async function playBeep(duration) {
+        console.log('🔊 playBeep:', duration + 'ms');
+        
+        if(!audioCtx) {
+            console.warn('⚠️ playBeep: audioCtx NULL, inizializzo...');
+            initAudio();
+        }
+        
+        // CHROME FIX: await resume se suspended
+        if(audioCtx && audioCtx.state === 'suspended') {
+            console.warn('⚠️ Chrome suspended in playBeep, await resume...');
+            try {
+                await audioCtx.resume();
+                console.log('   ✅ Chrome resumed, state:', audioCtx.state);
+            } catch(err) {
+                console.error('   ❌ Resume failed:', err);
                 return;
             }
-            
-            playBeepInternal(duration).then(resolve);
-        });
-    }
-    
-    function playBeepInternal(duration) {
+        }
+        
         return new Promise((resolve) => {
             try {
                 console.log('   Creating oscillator...');
@@ -1106,7 +1099,7 @@
                     resolve();
                 }, duration);
             } catch(err) {
-                console.error('❌ playBeepInternal error:', err);
+                console.error('❌ playBeep error:', err);
                 resolve();
             }
         });
@@ -1536,20 +1529,22 @@
             });
     }
 
-    function play() {
+    async function play() {
         if(!audioCtx) {
             console.log('⚠️ play(): audioCtx null, chiamo initAudio()');
             initAudio();
         }
         
-        // CRITICO per Chrome: verifica state prima di ogni play
+        // CHROME FIX CRITICO: await resume prima di suonare
         if(audioCtx && audioCtx.state === 'suspended') {
-            console.log('⚠️ play(): Chrome AudioContext suspended, forzo resume...');
-            audioCtx.resume().then(() => {
-                console.log('   ✅ Chrome: AudioContext resumed');
-            }).catch(err => {
-                console.error('   ❌ Chrome: Errore resume:', err);
-            });
+            console.log('⚠️ play(): Chrome suspended, await resume...');
+            try {
+                await audioCtx.resume();
+                console.log('✅ play(): Resume OK, state:', audioCtx.state);
+            } catch(err) {
+                console.error('❌ play(): Resume failed:', err);
+                return;
+            }
         }
         
         // IMPORTANTE: Se siamo qui, audio è attivo!
@@ -1568,9 +1563,9 @@
             gainNode.connect(audioCtx.destination);
             oscillator.start();
             
-            console.log('🔊 play(): Oscillator started (trasmissione locale)');
+            console.log('🔊 play(): Oscillator started');
         } catch(err) {
-            console.error('❌ play(): Errore oscillator:', err);
+            console.error('❌ play(): Errore:', err);
         }
     }
 
@@ -1581,7 +1576,7 @@
         }
     }
 
-    function down(e) {
+    async function down(e) {
         if(isMapping) {
             mappedKey = (e.type === 'keydown') ? e.code : 'MOUSE';
             isMapping = false;
@@ -1589,9 +1584,27 @@
             return;
         }
         
-        // IMPORTANTE: Se keyboard Morse è disabilitata, ignora eventi da tastiera
-        if(e.type === 'keydown' && !morseKeyboardEnabled) {
-            return;
+        // FILTRO EVENTI TASTIERA
+        if(e.type === 'keydown') {
+            const target = e.target;
+            const tagName = target.tagName.toLowerCase();
+            
+            // Ignora se siamo in input o textarea
+            if(tagName === 'input' || tagName === 'textarea') {
+                console.log('⚠️ Ignorato: focus su', tagName);
+                return;
+            }
+            
+            // Ignora se siamo su button e premi SPAZIO/INVIO
+            if(tagName === 'button' && (e.code === 'Space' || e.code === 'Enter')) {
+                console.log('⚠️ Ignorato: button + Space/Enter');
+                return;
+            }
+            
+            // Ignora se keyboard Morse è disabilitato
+            if(!morseKeyboardEnabled) {
+                return;
+            }
         }
         
         if(mappedKey && e.type === 'keydown' && e.code !== mappedKey) return;
@@ -1599,7 +1612,7 @@
         
         isDown = true;
         startTime = Date.now();
-        play();
+        await play();  // IMPORTANTE: await per Chrome
     }
 
     function up(e) {
@@ -1875,7 +1888,15 @@
     window.addEventListener('mouseup', (e) => up(e));
     keyEl.addEventListener('touchstart', (e) => { e.preventDefault(); down(e); });
     window.addEventListener('touchend', (e) => up(e));
-    window.addEventListener('keydown', (e) => { if(!e.repeat) down(e); });
+    window.addEventListener('keydown', (e) => { 
+        if(!e.repeat) {
+            // Previeni scroll con Space
+            if(e.code === 'Space' && e.code === mappedKey) {
+                e.preventDefault();
+            }
+            down(e);
+        }
+    });
     window.addEventListener('keyup', (e) => up(e));
 
     document.body.addEventListener('touchmove', (e) => {
