@@ -681,7 +681,7 @@
         </div>
         <div id="text-messages"></div>
         <div id="text-input-area">
-            <input type="text" id="text-input" placeholder="Scrivi messaggio..." maxlength="200" onkeypress="if(event.key==='Enter') sendTextMessage()">
+            <input type="text" id="text-input" placeholder="Scrivi messaggio..." maxlength="200">
             <button id="text-send" onclick="sendTextMessage()">INVIA</button>
         </div>
     </div>
@@ -822,7 +822,6 @@
     
     const ADMIN_PASSWORD = "radio1010";
     const lastMsgUser = {};
-    const lastTextMsgUser = {};
     const DOT_DURATION = 100;
     const DASH_DURATION = 300;
     const SYMBOL_GAP = 100;
@@ -959,12 +958,21 @@
         const input = document.getElementById('text-input');
         const text = input.value.trim();
         
-        if(!text) return;
+        if(!text) {
+            console.log('⚠️ Messaggio vuoto');
+            return;
+        }
+        
+        console.log('📤 Invio messaggio:', text);
         
         db.ref('textChat').push({
             user: callsign,
             message: text,
             time: Date.now()
+        }).then(() => {
+            console.log('✅ Messaggio inviato!');
+        }).catch(err => {
+            console.error('❌ Errore invio:', err);
         });
         
         input.value = '';
@@ -1117,17 +1125,11 @@
             }
         });
         
-        let initialTextLoad = true;
-        db.ref('textChat').limitToLast(50).once('value', () => { initialTextLoad = false; });
-        
         db.ref('textChat').limitToLast(50).on('child_added', snap => {
             const data = snap.val();
             if(data && data.user && data.message) {
-                const isNewMessage = !lastTextMsgUser[data.user] || lastTextMsgUser[data.user] !== snap.key;
-                if(isNewMessage) {
-                    addTextMsgToUI(data.user, data.message, data.time);
-                    lastTextMsgUser[data.user] = snap.key;
-                }
+                console.log('📩 Messaggio text ricevuto:', data);
+                addTextMsgToUI(data.user, data.message, data.time);
             }
         });
 
@@ -1407,6 +1409,19 @@
             e.preventDefault();
         }
     }, { passive: false });
+    
+    // Event listener per chat text input
+    document.addEventListener('DOMContentLoaded', () => {
+        const textInput = document.getElementById('text-input');
+        if(textInput) {
+            textInput.addEventListener('keypress', (e) => {
+                if(e.key === 'Enter') {
+                    e.preventDefault();
+                    sendTextMessage();
+                }
+            });
+        }
+    });
 
     console.log('🔧 MORSE-LINK LIVE + TEXT CHAT');
 
