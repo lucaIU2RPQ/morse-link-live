@@ -148,6 +148,20 @@
             flex-direction: column;
             padding: 10px;
             overflow: hidden;
+            min-height: 200px;
+        }
+        
+        @media (max-width: 768px) {
+            #text-chat-section {
+                display: flex !important;
+                visibility: visible !important;
+                opacity: 1 !important;
+                border-left: none;
+                border-top: 1px solid #333;
+                min-height: 250px;
+                height: 250px;
+                flex-shrink: 0;
+            }
         }
         
         .section-title {
@@ -266,6 +280,13 @@
             font-size: 0.9rem;
             resize: none;
             height: 40px;
+        }
+        
+        /* Impedisce zoom automatico su iPhone */
+        @media screen and (max-width: 768px) {
+            #text-input {
+                font-size: 16px;
+            }
         }
         
         #text-send {
@@ -575,34 +596,55 @@
         }
         
         @media (max-width: 768px) {
+            body {
+                overflow-y: auto;
+            }
+            
             #main { 
                 grid-template-columns: 1fr; 
-                grid-template-rows: auto 1fr auto;
+                grid-template-rows: 80px 1fr 250px;
+                min-height: calc(100vh - 60px);
+                max-height: calc(100vh - 60px);
             }
             
             #sidebar { 
                 border-right: none;
                 border-bottom: 1px solid #333;
+                height: 80px;
                 max-height: 80px;
                 flex-direction: row;
                 flex-wrap: wrap;
                 padding: 5px;
                 gap: 5px;
+                overflow: hidden;
+            }
+            
+            #morse-section {
+                height: auto;
+                min-height: 0;
             }
             
             #text-chat-section {
                 border-left: none;
-                border-top: 1px solid #333;
-                max-height: 200px;
+                border-top: 2px solid var(--blue);
+                min-height: 250px;
+                height: 250px;
+                max-height: 250px;
+                flex-shrink: 0;
+                display: flex !important;
+                background: rgba(30, 30, 30, 0.98);
             }
             
             #messages {
                 font-size: 1rem;
-                min-height: 80px;
+                min-height: 100px;
+                flex: 1;
             }
             
             #text-messages {
                 font-size: 0.85rem;
+                min-height: 120px;
+                flex: 1;
             }
             
             #decoder-preview {
@@ -632,6 +674,40 @@
             .section-title {
                 font-size: 0.8rem;
                 padding: 5px;
+                flex-shrink: 0;
+            }
+            
+            .text-msg {
+                margin-bottom: 8px;
+                padding: 6px;
+            }
+            
+            .text-msg .author {
+                font-size: 0.8rem;
+            }
+            
+            .text-msg .content {
+                font-size: 0.85rem;
+            }
+            
+            #text-input {
+                font-size: 16px;
+                height: 38px;
+            }
+            
+            #text-input-area {
+                flex-shrink: 0;
+            }
+            
+            #text-send {
+                padding: 8px 12px;
+                font-size: 0.85rem;
+            }
+            
+            #morse-keyboard-toggle {
+                padding: 6px;
+                font-size: 0.75rem;
+                margin-top: 5px;
             }
         }
         
@@ -1014,7 +1090,12 @@
             .catch(err => {
                 console.error('❌ ERRORE FIREBASE:', err);
                 console.log('═══════════════════════════════');
-                alert('Errore invio: ' + err.message);
+                
+                if(err.code === 'PERMISSION_DENIED') {
+                    alert('❌ ERRORE PERMESSI FIREBASE!\n\nLa text chat non funziona perché mancano i permessi nel database.\n\nSoluzione:\n1. Vai su Firebase Console\n2. Realtime Database → Rules\n3. Aggiungi permessi per "textChat"\n4. Pubblica le nuove regole\n\nDettagli tecnici: ' + err.message);
+                } else {
+                    alert('Errore invio: ' + err.message);
+                }
             });
         
         input.value = '';
@@ -1242,10 +1323,51 @@
 
         console.log('✅ Connesso:', callsign);
         
+        // Debug layout mobile
+        const isMobile = window.innerWidth <= 768;
+        console.log('📱 Mobile device:', isMobile);
+        console.log('📐 Window size:', window.innerWidth, 'x', window.innerHeight);
+        
+        if(isMobile) {
+            setTimeout(() => {
+                const textChatSection = document.getElementById('text-chat-section');
+                if(textChatSection) {
+                    const style = getComputedStyle(textChatSection);
+                    console.log('💬 Text chat section:');
+                    console.log('  - Display:', style.display);
+                    console.log('  - Visibility:', style.visibility);
+                    console.log('  - Height:', textChatSection.offsetHeight + 'px');
+                    console.log('  - Top:', textChatSection.getBoundingClientRect().top);
+                } else {
+                    console.error('❌ text-chat-section NOT FOUND!');
+                }
+            }, 500);
+        }
+        
+        // Test permessi Firebase per textChat
+        testFirebasePermissions();
+        
         // Messaggio di benvenuto nella text chat
         setTimeout(() => {
             addTextMsgToUI('SYSTEM', 'Benvenuto ' + callsign + '! Text chat attiva.', Date.now());
         }, 1000);
+    }
+    
+    function testFirebasePermissions() {
+        console.log('🔍 Test permessi Firebase textChat...');
+        
+        db.ref('textChat').limitToLast(1).once('value')
+            .then(() => {
+                console.log('✅ Permessi LETTURA: OK');
+            })
+            .catch(err => {
+                console.error('❌ Permessi LETTURA: FALLITO', err);
+                if(err.code === 'PERMISSION_DENIED') {
+                    setTimeout(() => {
+                        alert('⚠️ ATTENZIONE: Text chat non configurata!\n\nPermessi Firebase mancanti.\nLeggi il file FIREBASE-RULES-SETUP.md per la configurazione.');
+                    }, 2000);
+                }
+            });
     }
 
     function play() {
