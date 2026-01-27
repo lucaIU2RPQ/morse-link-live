@@ -790,12 +790,7 @@
                 width: 100%;
                 display: block !important;
                 margin-top: 12px;
-                margin-bottom: 12px;
-            }
-            
-            /* Pulsante TEST CHAT */
-            #text-chat-section button:last-child {
-                margin-bottom: 40px;
+                margin-bottom: 20px;
             }
         }
         
@@ -863,9 +858,6 @@
         </div>
         <button id="morse-keyboard-toggle" onclick="toggleMorseKeyboard()" style="width: 100%; margin-top: 8px; padding: 8px; font-size: 0.85rem; background: var(--green); border-color: var(--green); color: #000; font-weight: bold;">
             ⌨️ MORSE KEYBOARD: ON
-        </button>
-        <button onclick="testTextChat()" style="width: 100%; margin-top: 5px; padding: 6px; font-size: 0.75rem; background: #333; border-color: #666; color: #888;">
-            🧪 TEST CHAT
         </button>
     </div>
 </div>
@@ -1544,56 +1536,6 @@
         }
         
         console.log('⌨️ Morse Keyboard:', morseKeyboardEnabled ? 'ON' : 'OFF');
-    }
-    
-    function testTextChat() {
-        console.log('═══════════════════════════════');
-        console.log('🧪 TEST TEXT CHAT');
-        console.log('═══════════════════════════════');
-        
-        // Test 1: Verifica elemento esista
-        const box = document.getElementById('text-messages');
-        console.log('1. Element text-messages:', box ? '✅ TROVATO' : '❌ NON TROVATO');
-        
-        if(box) {
-            console.log('   - Children count:', box.children.length);
-            console.log('   - Display:', getComputedStyle(box).display);
-            console.log('   - Visibility:', getComputedStyle(box).visibility);
-            console.log('   - Height:', box.offsetHeight + 'px');
-        }
-        
-        // Test 2: Verifica callsign
-        console.log('2. Callsign:', callsign ? '✅ ' + callsign : '❌ NON DEFINITO');
-        
-        // Test 3: Verifica Firebase
-        console.log('3. Firebase db:', db ? '✅ INIZIALIZZATO' : '❌ NON INIZIALIZZATO');
-        
-        // Test 4: Invia messaggio di test
-        if(callsign && db) {
-            console.log('4. Invio messaggio di test...');
-            const testMsg = 'Test ' + Date.now();
-            
-            db.ref('textChat').push({
-                user: callsign,
-                message: testMsg,
-                time: Date.now()
-            }).then(() => {
-                console.log('   ✅ Messaggio test inviato:', testMsg);
-            }).catch(err => {
-                console.error('   ❌ Errore:', err);
-            });
-        } else {
-            console.log('4. ❌ Impossibile inviare test (callsign o db mancante)');
-        }
-        
-        // Test 5: Aggiungi direttamente al DOM
-        console.log('5. Test aggiunta diretta al DOM...');
-        if(box) {
-            addTextMsgToUI('TEST_USER', 'Questo è un test manuale', Date.now());
-            console.log('   ✅ addTextMsgToUI chiamata');
-        }
-        
-        console.log('═══════════════════════════════');
     }
 
     setInterval(() => {
