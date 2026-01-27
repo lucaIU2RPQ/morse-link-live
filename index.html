@@ -1027,13 +1027,23 @@
         
         if(!audioCtx) {
             console.log('   Creazione AudioContext...');
-            audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-            console.log('   AudioContext creato, state:', audioCtx.state);
+            try {
+                audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                console.log('   AudioContext creato, state:', audioCtx.state);
+            } catch(err) {
+                console.error('❌ Errore creazione AudioContext:', err);
+                return;
+            }
         }
         
+        // Chrome richiede resume esplicito dopo user gesture
         if(audioCtx.state === 'suspended') {
-            console.log('   AudioContext suspended, resume...');
-            audioCtx.resume();
+            console.log('   AudioContext suspended, tentativo resume...');
+            audioCtx.resume().then(() => {
+                console.log('   ✅ AudioContext resumed, state:', audioCtx.state);
+            }).catch(err => {
+                console.error('   ❌ Errore resume:', err);
+            });
         }
         
         audioEnabled = true;
@@ -1052,6 +1062,25 @@
                 initAudio();
             }
             
+            // CHROME FIX: Verifica state prima di ogni beep
+            if(audioCtx && audioCtx.state === 'suspended') {
+                console.warn('⚠️ Chrome: AudioContext suspended in playBeep');
+                audioCtx.resume().then(() => {
+                    console.log('   ✅ Chrome: Resume OK, riprovo beep...');
+                    playBeepInternal(duration).then(resolve);
+                }).catch(err => {
+                    console.error('   ❌ Chrome: Resume failed:', err);
+                    resolve();
+                });
+                return;
+            }
+            
+            playBeepInternal(duration).then(resolve);
+        });
+    }
+    
+    function playBeepInternal(duration) {
+        return new Promise((resolve) => {
             try {
                 console.log('   Creating oscillator...');
                 const osc = audioCtx.createOscillator();
@@ -1077,7 +1106,7 @@
                     resolve();
                 }, duration);
             } catch(err) {
-                console.error('❌ playBeep error:', err);
+                console.error('❌ playBeepInternal error:', err);
                 resolve();
             }
         });
@@ -1252,7 +1281,8 @@
         
         scrollToBottom(box);
         
-        if(shouldPlayAudio && audioEnabled) {
+        if(shouldPlayAudio) {
+            console.log('🔊 Riproduzione audio per messaggio remoto...');
             await playMorseChar(text);
         }
     }
@@ -1465,6 +1495,21 @@
             }, 500);
         }
         
+        // CHROME AUDIO FIX: Verifica se AudioContext è suspended
+        setTimeout(() => {
+            if(audioCtx && audioCtx.state === 'suspended') {
+                console.warn('⚠️ CHROME: AudioContext suspended!');
+                console.warn('   Soluzione: Clicca "ATTIVA AUDIO" o premi il tasto Morse');
+                
+                // Mostra avviso se Chrome
+                const isChrome = /Chrome/.test(navigator.userAgent) && /Google Inc/.test(navigator.vendor);
+                if(isChrome) {
+                    console.log('🔍 Browser: Chrome rilevato');
+                    console.log('   Chrome richiede interazione utente per audio');
+                }
+            }
+        }, 1000);
+        
         // Test permessi Firebase per textChat
         testFirebasePermissions();
         
@@ -1497,9 +1542,14 @@
             initAudio();
         }
         
-        if(audioCtx.state === 'suspended') {
-            console.log('⚠️ play(): audioCtx suspended, resume...');
-            audioCtx.resume();
+        // CRITICO per Chrome: verifica state prima di ogni play
+        if(audioCtx && audioCtx.state === 'suspended') {
+            console.log('⚠️ play(): Chrome AudioContext suspended, forzo resume...');
+            audioCtx.resume().then(() => {
+                console.log('   ✅ Chrome: AudioContext resumed');
+            }).catch(err => {
+                console.error('   ❌ Chrome: Errore resume:', err);
+            });
         }
         
         // IMPORTANTE: Se siamo qui, audio è attivo!
@@ -1508,16 +1558,20 @@
             audioEnabled = true;
         }
         
-        oscillator = audioCtx.createOscillator();
-        gainNode = audioCtx.createGain();
-        oscillator.type = 'sine';
-        oscillator.frequency.value = 700;
-        gainNode.gain.value = 0.15;
-        oscillator.connect(gainNode);
-        gainNode.connect(audioCtx.destination);
-        oscillator.start();
-        
-        console.log('🔊 play(): Oscillator started (trasmissione locale)');
+        try {
+            oscillator = audioCtx.createOscillator();
+            gainNode = audioCtx.createGain();
+            oscillator.type = 'sine';
+            oscillator.frequency.value = 700;
+            gainNode.gain.value = 0.15;
+            oscillator.connect(gainNode);
+            gainNode.connect(audioCtx.destination);
+            oscillator.start();
+            
+            console.log('🔊 play(): Oscillator started (trasmissione locale)');
+        } catch(err) {
+            console.error('❌ play(): Errore oscillator:', err);
+        }
     }
 
     function stop() { 
