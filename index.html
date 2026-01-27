@@ -700,6 +700,9 @@
         <button id="morse-keyboard-toggle" onclick="toggleMorseKeyboard()" style="width: 100%; margin-top: 8px; padding: 8px; font-size: 0.85rem; background: var(--green); border-color: var(--green); color: #000; font-weight: bold;">
             ⌨️ MORSE KEYBOARD: ON
         </button>
+        <button onclick="testTextChat()" style="width: 100%; margin-top: 5px; padding: 6px; font-size: 0.75rem; background: #333; border-color: #666; color: #888;">
+            🧪 TEST CHAT
+        </button>
     </div>
 </div>
 
@@ -975,22 +978,44 @@
         const input = document.getElementById('text-input');
         const text = input.value.trim();
         
+        console.log('═══════════════════════════════');
+        console.log('📤 SEND TEXT MESSAGE');
+        console.log('Input value:', input.value);
+        console.log('Trimmed text:', text);
+        console.log('Callsign:', callsign);
+        
         if(!text) {
-            console.log('⚠️ Messaggio vuoto');
+            console.log('⚠️ Messaggio vuoto - ANNULLATO');
+            console.log('═══════════════════════════════');
             return;
         }
         
-        console.log('📤 Invio messaggio:', text);
+        if(!callsign) {
+            console.log('❌ Callsign non definito!');
+            console.log('═══════════════════════════════');
+            alert('Errore: non sei loggato!');
+            return;
+        }
         
-        db.ref('textChat').push({
+        const messageData = {
             user: callsign,
             message: text,
             time: Date.now()
-        }).then(() => {
-            console.log('✅ Messaggio inviato!');
-        }).catch(err => {
-            console.error('❌ Errore invio:', err);
-        });
+        };
+        
+        console.log('📦 Dati da inviare:', messageData);
+        console.log('📡 Invio a Firebase...');
+        
+        db.ref('textChat').push(messageData)
+            .then(() => {
+                console.log('✅ MESSAGGIO INVIATO A FIREBASE!');
+                console.log('═══════════════════════════════');
+            })
+            .catch(err => {
+                console.error('❌ ERRORE FIREBASE:', err);
+                console.log('═══════════════════════════════');
+                alert('Errore invio: ' + err.message);
+            });
         
         input.value = '';
         input.focus();
@@ -1031,14 +1056,37 @@
     }
     
     function addTextMsgToUI(user, message, time) {
+        console.log('═══════════════════════════════');
+        console.log('📩 ADD TEXT MSG TO UI');
+        console.log('User:', user);
+        console.log('Message:', message);
+        console.log('Time:', time);
+        
         const box = document.getElementById('text-messages');
+        
+        if(!box) {
+            console.error('❌ text-messages element NON TROVATO!');
+            console.log('═══════════════════════════════');
+            return;
+        }
+        
+        console.log('📦 Creazione elemento messaggio...');
         
         const div = document.createElement('div');
         div.className = 'text-msg';
         
         const author = document.createElement('div');
         author.className = 'author';
-        author.style.color = user === callsign ? 'var(--amber)' : 'var(--blue)';
+        
+        // Colore diverso per messaggi SYSTEM
+        if(user === 'SYSTEM') {
+            author.style.color = '#888';
+            div.style.borderLeftColor = '#666';
+            div.style.background = 'rgba(100, 100, 100, 0.1)';
+        } else {
+            author.style.color = user === callsign ? 'var(--amber)' : 'var(--blue)';
+        }
+        
         author.textContent = user;
         
         const content = document.createElement('div');
@@ -1054,7 +1102,14 @@
         div.appendChild(timestamp);
         
         box.appendChild(div);
+        
+        console.log('✅ Messaggio aggiunto al DOM!');
+        console.log('Total messages in box:', box.children.length);
+        
         scrollToBottom(box);
+        
+        console.log('✅ Scroll effettuato');
+        console.log('═══════════════════════════════');
     }
 
     function toggleTextDisplay() {
@@ -1142,12 +1197,37 @@
             }
         });
         
+        console.log('🔥 Inizializzazione listener TEXT CHAT Firebase...');
+        
         db.ref('textChat').limitToLast(50).on('child_added', snap => {
+            console.log('═══════════════════════════════');
+            console.log('🔥 FIREBASE: child_added event (textChat)');
+            console.log('Snapshot key:', snap.key);
+            
             const data = snap.val();
-            if(data && data.user && data.message) {
-                console.log('📩 Messaggio text ricevuto:', data);
-                addTextMsgToUI(data.user, data.message, data.time);
+            console.log('Raw data:', data);
+            
+            if(!data) {
+                console.log('⚠️ Data è null/undefined');
+                console.log('═══════════════════════════════');
+                return;
             }
+            
+            if(!data.user) {
+                console.log('⚠️ data.user mancante:', data);
+                console.log('═══════════════════════════════');
+                return;
+            }
+            
+            if(!data.message) {
+                console.log('⚠️ data.message mancante:', data);
+                console.log('═══════════════════════════════');
+                return;
+            }
+            
+            console.log('✅ Dati validi, chiamata addTextMsgToUI...');
+            addTextMsgToUI(data.user, data.message, data.time);
+            console.log('═══════════════════════════════');
         });
 
         db.ref('admin/background').once('value').then(snap => {
@@ -1161,6 +1241,11 @@
         });
 
         console.log('✅ Connesso:', callsign);
+        
+        // Messaggio di benvenuto nella text chat
+        setTimeout(() => {
+            addTextMsgToUI('SYSTEM', 'Benvenuto ' + callsign + '! Text chat attiva.', Date.now());
+        }, 1000);
     }
 
     function play() {
@@ -1249,6 +1334,56 @@
         }
         
         console.log('⌨️ Morse Keyboard:', morseKeyboardEnabled ? 'ON' : 'OFF');
+    }
+    
+    function testTextChat() {
+        console.log('═══════════════════════════════');
+        console.log('🧪 TEST TEXT CHAT');
+        console.log('═══════════════════════════════');
+        
+        // Test 1: Verifica elemento esista
+        const box = document.getElementById('text-messages');
+        console.log('1. Element text-messages:', box ? '✅ TROVATO' : '❌ NON TROVATO');
+        
+        if(box) {
+            console.log('   - Children count:', box.children.length);
+            console.log('   - Display:', getComputedStyle(box).display);
+            console.log('   - Visibility:', getComputedStyle(box).visibility);
+            console.log('   - Height:', box.offsetHeight + 'px');
+        }
+        
+        // Test 2: Verifica callsign
+        console.log('2. Callsign:', callsign ? '✅ ' + callsign : '❌ NON DEFINITO');
+        
+        // Test 3: Verifica Firebase
+        console.log('3. Firebase db:', db ? '✅ INIZIALIZZATO' : '❌ NON INIZIALIZZATO');
+        
+        // Test 4: Invia messaggio di test
+        if(callsign && db) {
+            console.log('4. Invio messaggio di test...');
+            const testMsg = 'Test ' + Date.now();
+            
+            db.ref('textChat').push({
+                user: callsign,
+                message: testMsg,
+                time: Date.now()
+            }).then(() => {
+                console.log('   ✅ Messaggio test inviato:', testMsg);
+            }).catch(err => {
+                console.error('   ❌ Errore:', err);
+            });
+        } else {
+            console.log('4. ❌ Impossibile inviare test (callsign o db mancante)');
+        }
+        
+        // Test 5: Aggiungi direttamente al DOM
+        console.log('5. Test aggiunta diretta al DOM...');
+        if(box) {
+            addTextMsgToUI('TEST_USER', 'Questo è un test manuale', Date.now());
+            console.log('   ✅ addTextMsgToUI chiamata');
+        }
+        
+        console.log('═══════════════════════════════');
     }
 
     setInterval(() => {
