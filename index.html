@@ -1023,114 +1023,53 @@
     }
 
     function initAudio() {
-        console.log('🎵 initAudio() chiamata');
-        
         if(!audioCtx) {
-            console.log('   Creazione AudioContext...');
-            try {
-                audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-                console.log('   AudioContext creato, state:', audioCtx.state);
-            } catch(err) {
-                console.error('❌ Errore creazione AudioContext:', err);
-                return;
-            }
+            audioCtx = new (window.AudioContext || window.webkitAudioContext)();
         }
-        
-        // Chrome richiede resume esplicito dopo user gesture
         if(audioCtx.state === 'suspended') {
-            console.log('   AudioContext suspended, tentativo resume...');
-            audioCtx.resume().then(() => {
-                console.log('   ✅ AudioContext resumed, state:', audioCtx.state);
-            }).catch(err => {
-                console.error('   ❌ Errore resume:', err);
-            });
+            audioCtx.resume();
         }
-        
         audioEnabled = true;
-        console.log('✅ Audio inizializzato');
-        console.log('   audioCtx:', audioCtx ? 'OK' : 'NULL');
-        console.log('   audioEnabled:', audioEnabled);
-        console.log('   state:', audioCtx.state);
+        console.log('🎵 Audio inizializzato, state:', audioCtx.state);
     }
     
-    async function playBeep(duration) {
-        console.log('🔊 playBeep:', duration + 'ms');
-        
-        if(!audioCtx) {
-            console.warn('⚠️ playBeep: audioCtx NULL, inizializzo...');
-            initAudio();
-        }
-        
-        // CHROME FIX: await resume se suspended
-        if(audioCtx && audioCtx.state === 'suspended') {
-            console.warn('⚠️ Chrome suspended in playBeep, await resume...');
-            try {
-                await audioCtx.resume();
-                console.log('   ✅ Chrome resumed, state:', audioCtx.state);
-            } catch(err) {
-                console.error('   ❌ Resume failed:', err);
-                return;
-            }
-        }
+    function playBeep(duration) {
+        if(!audioCtx) return Promise.resolve();
         
         return new Promise((resolve) => {
             try {
-                console.log('   Creating oscillator...');
                 const osc = audioCtx.createOscillator();
                 const gainNode = audioCtx.createGain();
                 
                 osc.frequency.value = 700;
                 osc.type = 'sine';
-                
-                gainNode.gain.value = 0;
-                gainNode.gain.linearRampToValueAtTime(0.2, audioCtx.currentTime + 0.01);
-                gainNode.gain.linearRampToValueAtTime(0, audioCtx.currentTime + (duration / 1000));
+                gainNode.gain.value = 0.15;  // Volume fisso
                 
                 osc.connect(gainNode);
                 gainNode.connect(audioCtx.destination);
                 
-                console.log('   Starting oscillator...');
                 osc.start(audioCtx.currentTime);
                 osc.stop(audioCtx.currentTime + (duration / 1000));
                 
-                console.log('   ✅ Beep started');
-                setTimeout(() => {
-                    console.log('   ✅ Beep completed');
-                    resolve();
-                }, duration);
+                setTimeout(() => resolve(), duration);
             } catch(err) {
-                console.error('❌ playBeep error:', err);
+                console.error('❌ Beep error:', err);
                 resolve();
             }
         });
     }
     
     async function playMorseChar(char) {
-        console.log('🎵 playMorseChar chiamata per:', char);
-        
-        if(!audioCtx) {
-            console.warn('⚠️ playMorseChar: audioCtx NULL, inizializzo...');
-            initAudio();
-        }
-        
-        console.log('   audioCtx:', audioCtx ? 'OK' : 'NULL');
+        if(!audioCtx) return;
         
         const morse = CHAR_TO_MORSE[char.toUpperCase()];
-        if(!morse) {
-            console.log('⚠️ Carattere non morse:', char);
-            return;
-        }
-        
-        console.log('   Sequenza morse:', morse);
+        if(!morse) return;
         
         for(let symbol of morse) {
             const duration = symbol === '.' ? DOT_DURATION : DASH_DURATION;
-            console.log('   Playing:', symbol, duration + 'ms');
             await playBeep(duration);
             await new Promise(resolve => setTimeout(resolve, SYMBOL_GAP));
         }
-        
-        console.log('✅ playMorseChar completato');
     }
     
     function startQRM() {
@@ -1390,6 +1329,23 @@
         document.getElementById('login-overlay').style.display = 'none';
         
         initAudio();
+        
+        // CHROME FIX: Attiva audio al primo click/touch
+        document.body.addEventListener('touchstart', () => {
+            if(audioCtx && audioCtx.state === 'suspended') {
+                audioCtx.resume().then(() => {
+                    console.log('✅ Audio resumed on touch');
+                });
+            }
+        }, { once: true });
+        
+        document.body.addEventListener('click', () => {
+            if(audioCtx && audioCtx.state === 'suspended') {
+                audioCtx.resume().then(() => {
+                    console.log('✅ Audio resumed on click');
+                });
+            }
+        }, { once: true });
 
         const userRef = db.ref('users/' + callsign);
         userRef.set({ status: "online", lastSeen: Date.now() });
@@ -1529,44 +1485,25 @@
             });
     }
 
-    async function play() {
+    function play() {
         if(!audioCtx) {
-            console.log('⚠️ play(): audioCtx null, chiamo initAudio()');
             initAudio();
         }
         
-        // CHROME FIX CRITICO: await resume prima di suonare
-        if(audioCtx && audioCtx.state === 'suspended') {
-            console.log('⚠️ play(): Chrome suspended, await resume...');
-            try {
-                await audioCtx.resume();
-                console.log('✅ play(): Resume OK, state:', audioCtx.state);
-            } catch(err) {
-                console.error('❌ play(): Resume failed:', err);
-                return;
-            }
+        if(audioCtx.state === 'suspended') {
+            audioCtx.resume();
         }
         
-        // IMPORTANTE: Se siamo qui, audio è attivo!
-        if(!audioEnabled) {
-            console.log('⚠️ play(): audioEnabled era false, lo setto true');
-            audioEnabled = true;
-        }
+        oscillator = audioCtx.createOscillator();
+        gainNode = audioCtx.createGain();
+        oscillator.type = 'sine';
+        oscillator.frequency.value = 700;
+        gainNode.gain.value = 0.15;  // Volume fisso semplice
+        oscillator.connect(gainNode);
+        gainNode.connect(audioCtx.destination);
+        oscillator.start();
         
-        try {
-            oscillator = audioCtx.createOscillator();
-            gainNode = audioCtx.createGain();
-            oscillator.type = 'sine';
-            oscillator.frequency.value = 700;
-            gainNode.gain.value = 0.15;
-            oscillator.connect(gainNode);
-            gainNode.connect(audioCtx.destination);
-            oscillator.start();
-            
-            console.log('🔊 play(): Oscillator started');
-        } catch(err) {
-            console.error('❌ play(): Errore:', err);
-        }
+        console.log('🔊 Beep trasmissione');
     }
 
     function stop() { 
@@ -1576,7 +1513,7 @@
         }
     }
 
-    async function down(e) {
+    function down(e) {
         if(isMapping) {
             mappedKey = (e.type === 'keydown') ? e.code : 'MOUSE';
             isMapping = false;
@@ -1591,13 +1528,11 @@
             
             // Ignora se siamo in input o textarea
             if(tagName === 'input' || tagName === 'textarea') {
-                console.log('⚠️ Ignorato: focus su', tagName);
                 return;
             }
             
             // Ignora se siamo su button e premi SPAZIO/INVIO
             if(tagName === 'button' && (e.code === 'Space' || e.code === 'Enter')) {
-                console.log('⚠️ Ignorato: button + Space/Enter');
                 return;
             }
             
@@ -1612,7 +1547,7 @@
         
         isDown = true;
         startTime = Date.now();
-        await play();  // IMPORTANTE: await per Chrome
+        play();  // NO await
     }
 
     function up(e) {
