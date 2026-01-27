@@ -1023,24 +1023,44 @@
     }
 
     function initAudio() {
+        console.log('🎵 initAudio() chiamata');
+        
         if(!audioCtx) {
+            console.log('   Creazione AudioContext...');
             audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            console.log('   AudioContext creato, state:', audioCtx.state);
         }
+        
         if(audioCtx.state === 'suspended') {
+            console.log('   AudioContext suspended, resume...');
             audioCtx.resume();
         }
+        
         audioEnabled = true;
-        console.log('🎵 Audio inizializzato');
+        console.log('✅ Audio inizializzato');
+        console.log('   audioCtx:', audioCtx ? 'OK' : 'NULL');
+        console.log('   audioEnabled:', audioEnabled);
+        console.log('   state:', audioCtx.state);
     }
     
     function playBeep(duration) {
         return new Promise((resolve) => {
-            if(!audioCtx || !audioEnabled) {
+            console.log('🔊 playBeep:', duration + 'ms');
+            
+            if(!audioCtx) {
+                console.error('❌ playBeep: audioCtx NULL');
+                resolve();
+                return;
+            }
+            
+            if(!audioEnabled) {
+                console.error('❌ playBeep: audioEnabled FALSE');
                 resolve();
                 return;
             }
             
             try {
+                console.log('   Creating oscillator...');
                 const osc = audioCtx.createOscillator();
                 const gainNode = audioCtx.createGain();
                 
@@ -1054,28 +1074,53 @@
                 osc.connect(gainNode);
                 gainNode.connect(audioCtx.destination);
                 
+                console.log('   Starting oscillator...');
                 osc.start(audioCtx.currentTime);
                 osc.stop(audioCtx.currentTime + (duration / 1000));
                 
-                setTimeout(() => resolve(), duration);
+                console.log('   ✅ Beep started');
+                setTimeout(() => {
+                    console.log('   ✅ Beep completed');
+                    resolve();
+                }, duration);
             } catch(err) {
-                console.error('❌ Beep error:', err);
+                console.error('❌ playBeep error:', err);
                 resolve();
             }
         });
     }
     
     async function playMorseChar(char) {
-        if(!audioCtx || !audioEnabled) return;
+        console.log('🎵 playMorseChar chiamata per:', char);
+        console.log('   audioCtx:', audioCtx ? 'OK' : 'NULL');
+        console.log('   audioEnabled:', audioEnabled);
+        
+        if(!audioCtx) {
+            console.error('❌ audioCtx è NULL!');
+            return;
+        }
+        
+        if(!audioEnabled) {
+            console.error('❌ audioEnabled è FALSE!');
+            return;
+        }
         
         const morse = CHAR_TO_MORSE[char.toUpperCase()];
-        if(!morse) return;
+        if(!morse) {
+            console.log('⚠️ Carattere non morse:', char);
+            return;
+        }
+        
+        console.log('   Sequenza morse:', morse);
         
         for(let symbol of morse) {
             const duration = symbol === '.' ? DOT_DURATION : DASH_DURATION;
+            console.log('   Playing:', symbol, duration + 'ms');
             await playBeep(duration);
             await new Promise(resolve => setTimeout(resolve, SYMBOL_GAP));
         }
+        
+        console.log('✅ playMorseChar completato');
     }
     
     function startQRM() {
@@ -1548,21 +1593,55 @@
     }, 100);
 
     async function activateAudioManually() {
+        console.log('═══════════════════════════════');
+        console.log('🔊 ATTIVAZIONE AUDIO MANUALE');
+        
         try {
+            console.log('1. Chiamata initAudio()...');
             initAudio();
-            if(audioCtx.state === 'suspended') await audioCtx.resume();
+            
+            console.log('2. AudioContext state:', audioCtx ? audioCtx.state : 'null');
+            console.log('3. audioEnabled:', audioEnabled);
+            
+            if(audioCtx && audioCtx.state === 'suspended') {
+                console.log('4. Resume AudioContext...');
+                await audioCtx.resume();
+                console.log('5. AudioContext resumed, new state:', audioCtx.state);
+            }
+            
+            console.log('6. Test beep 100ms...');
             await playBeep(100);
+            console.log('7. Test beep completato');
             
             const btn = document.getElementById('audio-activate-btn');
             if(btn) {
                 btn.classList.add('activated');
-                btn.innerHTML = '✅ AUDIO OK';
+                btn.innerHTML = '✅ AUDIO ATTIVO';
+                btn.style.background = '#666';
+                btn.style.borderColor = '#666';
+                btn.style.color = '#aaa';
+                console.log('8. Pulsante aggiornato');
+            } else {
+                console.error('8. ❌ Pulsante audio non trovato!');
             }
             
-            if(qrmEnabled) startQRM();
-            console.log('✅ Audio attivo');
+            if(qrmEnabled) {
+                console.log('9. Avvio QRM...');
+                startQRM();
+            }
+            
+            console.log('✅ AUDIO COMPLETAMENTE ATTIVATO');
+            console.log('   audioCtx:', audioCtx ? 'OK' : 'NULL');
+            console.log('   audioEnabled:', audioEnabled);
+            console.log('   state:', audioCtx ? audioCtx.state : 'N/A');
+            console.log('═══════════════════════════════');
+            
+            alert('✅ Audio attivato!\n\nPuoi ora ricevere messaggi Morse.');
+            
         } catch(err) {
-            alert('❌ Errore audio');
+            console.error('❌ ERRORE ATTIVAZIONE AUDIO:', err);
+            console.log('═══════════════════════════════');
+            alert('❌ Errore attivazione audio:\n' + err.message);
         }
     }
 
