@@ -285,6 +285,19 @@
             transform: scale(0.95);
         }
         
+        #morse-keyboard-toggle {
+            transition: all 0.3s;
+            cursor: pointer;
+        }
+        
+        #morse-keyboard-toggle:hover {
+            opacity: 0.9;
+        }
+        
+        #morse-keyboard-toggle:active {
+            transform: scale(0.98);
+        }
+        
         .user-tag { 
             display: block; 
             padding: 5px; 
@@ -684,6 +697,9 @@
             <input type="text" id="text-input" placeholder="Scrivi messaggio..." maxlength="200">
             <button id="text-send" onclick="sendTextMessage()">INVIA</button>
         </div>
+        <button id="morse-keyboard-toggle" onclick="toggleMorseKeyboard()" style="width: 100%; margin-top: 8px; padding: 8px; font-size: 0.85rem; background: var(--green); border-color: var(--green); color: #000; font-weight: bold;">
+            ⌨️ MORSE KEYBOARD: ON
+        </button>
     </div>
 </div>
 
@@ -819,6 +835,7 @@
     let textDisplayEnabled = true;
     let audioEnabled = false;
     let qrmEnabled = false;
+    let morseKeyboardEnabled = true;
     
     const ADMIN_PASSWORD = "radio1010";
     const lastMsgUser = {};
@@ -1175,6 +1192,11 @@
             return;
         }
         
+        // IMPORTANTE: Se keyboard Morse è disabilitata, ignora eventi da tastiera
+        if(e.type === 'keydown' && !morseKeyboardEnabled) {
+            return;
+        }
+        
         if(mappedKey && e.type === 'keydown' && e.code !== mappedKey) return;
         if(isDown) return;
         
@@ -1183,7 +1205,12 @@
         play();
     }
 
-    function up() {
+    function up(e) {
+        // Se keyboard Morse è disabilitata E l'evento viene da tastiera, ignora
+        if(e && e.type === 'keyup' && !morseKeyboardEnabled) {
+            return;
+        }
+        
         if(!isDown) return;
         isDown = false;
         stop();
@@ -1197,6 +1224,31 @@
     function mapExternalKey() {
         isMapping = true;
         document.getElementById('map-btn').innerText = "⏳ PREMI...";
+    }
+    
+    function toggleMorseKeyboard() {
+        morseKeyboardEnabled = !morseKeyboardEnabled;
+        const btn = document.getElementById('morse-keyboard-toggle');
+        const decoder = document.getElementById('decoder-preview');
+        
+        if(morseKeyboardEnabled) {
+            btn.style.background = 'var(--green)';
+            btn.style.borderColor = 'var(--green)';
+            btn.style.color = '#000';
+            btn.innerHTML = '⌨️ MORSE KEYBOARD: ON';
+            decoder.style.color = 'var(--green)';
+            decoder.innerText = '';
+            morseBuffer = ''; // Pulisci buffer
+        } else {
+            btn.style.background = '#666';
+            btn.style.borderColor = '#666';
+            btn.style.color = '#aaa';
+            btn.innerHTML = '⌨️ MORSE KEYBOARD: OFF';
+            decoder.style.color = '#666';
+            decoder.innerText = '⌨️ KEYBOARD OFF';
+        }
+        
+        console.log('⌨️ Morse Keyboard:', morseKeyboardEnabled ? 'ON' : 'OFF');
     }
 
     setInterval(() => {
@@ -1398,11 +1450,11 @@
 
     const keyEl = document.getElementById('key');
     keyEl.addEventListener('mousedown', down);
-    window.addEventListener('mouseup', up);
+    window.addEventListener('mouseup', (e) => up(e));
     keyEl.addEventListener('touchstart', (e) => { e.preventDefault(); down(e); });
-    window.addEventListener('touchend', up);
+    window.addEventListener('touchend', (e) => up(e));
     window.addEventListener('keydown', (e) => { if(!e.repeat) down(e); });
-    window.addEventListener('keyup', up);
+    window.addEventListener('keyup', (e) => up(e));
 
     document.body.addEventListener('touchmove', (e) => {
         if(e.target.id === 'key' || e.target.closest('#morse-pad')) {
@@ -1419,6 +1471,22 @@
                     e.preventDefault();
                     sendTextMessage();
                 }
+            });
+            
+            // Disabilita Morse keyboard quando focus su input text
+            textInput.addEventListener('focus', () => {
+                if(morseKeyboardEnabled) {
+                    const wasMorseOn = morseKeyboardEnabled;
+                    toggleMorseKeyboard();
+                    textInput.dataset.wasMorseOn = wasMorseOn;
+                    console.log('💬 Focus su text input → Morse Keyboard OFF');
+                }
+            });
+            
+            // Riabilita Morse keyboard quando perdi focus (opzionale)
+            textInput.addEventListener('blur', () => {
+                // Non riabilitare automaticamente, l'utente usa il toggle
+                console.log('💬 Blur da text input');
             });
         }
     });
