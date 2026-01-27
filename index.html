@@ -13,6 +13,7 @@
             --bg-black: #0a0a0a; 
             --panel: #1e1e1e; 
             --green: #0f0;
+            --blue: #0af;
         }
         
         * {
@@ -63,7 +64,7 @@
         
         header { 
             background: var(--panel); 
-            padding: 8px; 
+            padding: 10px; 
             border-bottom: 2px solid var(--amber); 
             display: flex; 
             justify-content: space-between;
@@ -80,28 +81,26 @@
             backdrop-filter: blur(10px);
         }
         
-        .admin-btn {
-            background: #222;
-            color: #888;
-            border: 1px solid #444;
-            padding: 5px 10px;
-            font-size: 0.8rem;
-            cursor: pointer;
+        .header-left {
+            display: flex;
+            flex-direction: column;
+            gap: 3px;
         }
         
-        .admin-btn:hover {
-            background: #333;
-            color: var(--amber);
-            border-color: var(--amber);
+        .header-buttons {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
         }
         
         #main { 
             display: grid; 
-            grid-template-columns: 200px 1fr; 
+            grid-template-columns: 160px 1fr 300px; 
             flex: 1; 
             overflow: hidden;
             position: relative;
             min-height: 0;
+            gap: 0;
         }
         
         #main::before {
@@ -118,7 +117,7 @@
             display: block;
         }
         
-        #sidebar, #chat {
+        #sidebar, #morse-section, #text-chat-section {
             position: relative;
             z-index: 1;
         }
@@ -128,15 +127,39 @@
             padding: 10px; 
             overflow-y: auto;
             background: var(--panel);
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
         }
         
-        #chat { 
+        #morse-section { 
             display: flex; 
             flex-direction: column; 
             padding: 10px; 
             flex: 1;
             overflow: hidden;
             min-height: 0;
+        }
+        
+        #text-chat-section {
+            border-left: 1px solid #333;
+            background: var(--panel);
+            display: flex;
+            flex-direction: column;
+            padding: 10px;
+            overflow: hidden;
+        }
+        
+        .section-title {
+            font-size: 0.9rem;
+            font-weight: bold;
+            padding: 8px;
+            background: #000;
+            border: 1px solid #333;
+            border-radius: 5px;
+            text-align: center;
+            margin-bottom: 8px;
+            flex-shrink: 0;
         }
         
         #messages { 
@@ -154,6 +177,20 @@
             min-height: 0;
         }
         
+        #text-messages {
+            flex: 1;
+            background: rgba(0, 0, 0, 0.8);
+            border: 1px solid #333;
+            padding: 10px;
+            overflow-y: auto;
+            overflow-x: hidden;
+            margin-bottom: 10px;
+            font-size: 0.95rem;
+            line-height: 1.4;
+            -webkit-overflow-scrolling: touch;
+            min-height: 0;
+        }
+        
         #messages.hide-text .msg {
             display: none;
         }
@@ -168,7 +205,8 @@
             font-size: 1rem;
         }
         
-        body.has-background #messages {
+        body.has-background #messages,
+        body.has-background #text-messages {
             backdrop-filter: blur(8px);
             -webkit-backdrop-filter: blur(8px);
         }
@@ -212,12 +250,47 @@
             transform: scale(0.95);
         }
         
+        #text-input-area {
+            display: flex;
+            gap: 8px;
+            flex-shrink: 0;
+        }
+        
+        #text-input {
+            flex: 1;
+            background: #000;
+            border: 1px solid var(--blue);
+            color: var(--blue);
+            padding: 10px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9rem;
+            resize: none;
+            height: 40px;
+        }
+        
+        #text-send {
+            background: var(--blue);
+            border: 2px solid var(--blue);
+            color: #000;
+            padding: 10px 20px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+        
+        #text-send:hover {
+            background: #08d;
+        }
+        
+        #text-send:active {
+            transform: scale(0.95);
+        }
+        
         .user-tag { 
             display: block; 
             padding: 5px; 
             color: var(--green); 
             border-bottom: 1px solid #222;
-            font-size: 0.9rem;
+            font-size: 0.8rem;
         }
         
         .msg { 
@@ -225,6 +298,33 @@
             border-left: 2px solid var(--amber); 
             padding-left: 8px;
             word-wrap: break-word;
+        }
+        
+        .text-msg {
+            margin-bottom: 12px;
+            padding: 8px;
+            background: rgba(0, 170, 255, 0.1);
+            border-left: 3px solid var(--blue);
+            border-radius: 5px;
+            word-wrap: break-word;
+        }
+        
+        .text-msg .author {
+            font-weight: bold;
+            color: var(--blue);
+            margin-bottom: 5px;
+            font-size: 0.85rem;
+        }
+        
+        .text-msg .content {
+            color: #ddd;
+            font-size: 0.9rem;
+        }
+        
+        .text-msg .time {
+            font-size: 0.7rem;
+            color: #666;
+            margin-top: 5px;
         }
         
         .input-box { 
@@ -235,17 +335,19 @@
             margin: 5px;
             font-family: 'Courier New', monospace;
             font-size: 1rem;
+            width: 100%;
         }
         
         button {
             background: var(--panel);
             color: var(--amber);
             border: 2px solid var(--amber);
-            padding: 10px 20px;
+            padding: 10px 16px;
             cursor: pointer;
             font-family: 'Courier New', monospace;
-            font-size: 1rem;
+            font-size: 0.9rem;
             transition: all 0.2s;
+            white-space: nowrap;
         }
         
         button:hover {
@@ -257,67 +359,25 @@
             transform: scale(0.95);
         }
         
-        .clear-btn {
-            border-color: #f00;
-            color: #f00;
-            font-size: 0.85rem;
-            padding: 5px 10px;
-        }
-        
-        .clear-btn:hover {
-            background: #f00;
+        .btn-green {
+            background: #0f0;
+            border-color: #0f0;
             color: #000;
-        }
-        
-        .toggle-text-btn {
-            border-color: var(--green);
-            color: var(--green);
-            font-size: 0.85rem;
-            padding: 5px 10px;
-            margin-bottom: 5px;
-        }
-        
-        .toggle-text-btn:hover {
-            background: var(--green);
-            color: #000;
-        }
-        
-        .toggle-text-btn.active {
-            background: var(--green);
-            color: #000;
-        }
-        
-        #audio-activate-btn {
-            width: 100%;
-            margin-top: 10px;
-            background: #0f0 !important;
-            border: 2px solid #0f0 !important;
-            color: #000 !important;
             font-weight: bold;
-            padding: 12px;
-            font-size: 0.95rem;
-            animation: pulse 2s infinite;
         }
         
-        #audio-activate-btn:hover {
-            background: #0c0 !important;
-            transform: scale(1.05);
+        .btn-green:hover {
+            background: #0c0;
         }
         
-        #audio-activate-btn.activated {
-            background: #666 !important;
-            border-color: #666 !important;
-            color: #aaa !important;
-            animation: none;
+        .btn-green.activated {
+            background: #666;
+            border-color: #666;
+            color: #aaa;
             cursor: not-allowed;
         }
         
-        @keyframes pulse {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0.7; }
-        }
-        
-        #admin-modal, #admin-panel {
+        #settings-modal, #admin-modal, #admin-panel {
             position: fixed;
             inset: 0;
             background: rgba(0, 0, 0, 0.95);
@@ -327,11 +387,11 @@
             -webkit-overflow-scrolling: touch;
         }
         
-        #admin-modal.show, #admin-panel.show {
+        #settings-modal.show, #admin-modal.show, #admin-panel.show {
             display: flex;
             justify-content: center;
             align-items: flex-start;
-            padding: 20px 0;
+            padding: 20px;
         }
         
         .modal-content {
@@ -339,8 +399,9 @@
             border: 2px solid var(--amber);
             padding: 30px;
             border-radius: 10px;
-            max-width: 400px;
-            width: 90%;
+            max-width: 500px;
+            width: 100%;
+            position: relative;
         }
         
         .panel-content {
@@ -353,6 +414,54 @@
             max-height: 90vh;
             overflow-y: auto;
             -webkit-overflow-scrolling: touch;
+        }
+        
+        .setting-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px 0;
+            border-bottom: 1px solid #333;
+        }
+        
+        .setting-row:last-child {
+            border-bottom: none;
+        }
+        
+        .setting-label {
+            font-size: 1rem;
+            color: var(--amber);
+        }
+        
+        .toggle-switch {
+            position: relative;
+            width: 60px;
+            height: 30px;
+            background: #333;
+            border-radius: 15px;
+            cursor: pointer;
+            border: 2px solid #555;
+            transition: all 0.3s;
+        }
+        
+        .toggle-switch.active {
+            background: var(--green);
+            border-color: var(--green);
+        }
+        
+        .toggle-slider {
+            position: absolute;
+            width: 22px;
+            height: 22px;
+            background: #fff;
+            border-radius: 50%;
+            top: 2px;
+            left: 2px;
+            transition: all 0.3s;
+        }
+        
+        .toggle-switch.active .toggle-slider {
+            left: 32px;
         }
         
         .stat-box {
@@ -398,11 +507,15 @@
         }
         
         .close-btn {
-            float: right;
+            position: absolute;
+            top: 10px;
+            right: 10px;
             background: #f00;
             border-color: #f00;
             color: #fff;
             padding: 5px 15px;
+            font-size: 1.2rem;
+            line-height: 1;
         }
         
         .close-btn:hover {
@@ -416,6 +529,7 @@
             background: #333;
             border-radius: 5px;
             outline: none;
+            width: 100%;
         }
         
         input[type="range"]::-webkit-slider-thumb {
@@ -426,12 +540,6 @@
             background: var(--amber);
             border-radius: 50%;
             cursor: pointer;
-            transition: all 0.2s;
-        }
-        
-        input[type="range"]::-webkit-slider-thumb:hover {
-            background: #ffcc00;
-            transform: scale(1.2);
         }
         
         input[type="range"]::-moz-range-thumb {
@@ -441,41 +549,47 @@
             border-radius: 50%;
             cursor: pointer;
             border: none;
-            transition: all 0.2s;
         }
         
-        input[type="range"]::-moz-range-thumb:hover {
-            background: #ffcc00;
-            transform: scale(1.2);
-        }
-        
-        @keyframes flash {
-            0% { border-color: #333; }
-            50% { border-color: var(--green); }
-            100% { border-color: #333; }
-        }
-        
-        #messages.new-message {
-            animation: flash 0.5s ease;
+        @media (max-width: 1024px) {
+            #main {
+                grid-template-columns: 140px 1fr 250px;
+            }
+            
+            .user-tag {
+                font-size: 0.75rem;
+            }
         }
         
         @media (max-width: 768px) {
             #main { 
                 grid-template-columns: 1fr; 
-                grid-template-rows: auto 1fr;
+                grid-template-rows: auto 1fr auto;
             }
             
             #sidebar { 
                 border-right: none;
                 border-bottom: 1px solid #333;
-                max-height: 150px;
-                overflow-y: auto;
+                max-height: 80px;
+                flex-direction: row;
+                flex-wrap: wrap;
+                padding: 5px;
+                gap: 5px;
+            }
+            
+            #text-chat-section {
+                border-left: none;
+                border-top: 1px solid #333;
+                max-height: 200px;
             }
             
             #messages {
                 font-size: 1rem;
-                flex: 1;
-                min-height: 120px;
+                min-height: 80px;
+            }
+            
+            #text-messages {
+                font-size: 0.85rem;
             }
             
             #decoder-preview {
@@ -493,13 +607,18 @@
             }
             
             header {
-                padding: 5px;
-                font-size: 0.9rem;
+                padding: 8px;
+                font-size: 0.85rem;
             }
             
             button {
-                padding: 8px 12px;
-                font-size: 0.9rem;
+                padding: 6px 10px;
+                font-size: 0.8rem;
+            }
+            
+            .section-title {
+                font-size: 0.8rem;
+                padding: 5px;
             }
         }
         
@@ -512,10 +631,6 @@
                 width: 70px;
                 height: 70px;
             }
-            
-            #messages {
-                min-height: 80px;
-            }
         }
     </style>
 </head>
@@ -524,45 +639,95 @@
 <div id="login-overlay">
     <h2>📡 MORSE-LINK LIVE</h2>
     <div class="online-badge">🌍 RADIO IN VETTA</div>
-    <p style="color: #888; margin: 0; font-size: 0.9rem;">Real-time Global CW Chat by IU2RPQ</p>
-    <input type="text" id="callsign" class="input-box" placeholder="TUO NOMINATIVO (es. IU2RPQ)" maxlength="10">
+    <p style="color: #888; margin: 0; font-size: 0.9rem;">Real-time Global CW Chat + Text by IU2RPQ</p>
+    <input type="text" id="callsign" class="input-box" placeholder="TUO NOMINATIVO (es. IU2RPQ)" maxlength="10" style="max-width: 300px;">
     <button onclick="startApp()">▶ CONNETTI</button>
 </div>
 
 <header>
-    <div><strong>STAZIONE:</strong> <span id="my-id">---</span></div>
-    <div id="status-indicator" style="color: var(--green);">● ONLINE</div>
-    <div style="display: flex; gap: 8px; flex-wrap: wrap;">
-        <button onclick="mapExternalKey()" id="map-btn" style="padding: 5px 10px; font-size: 0.85rem;">MAPPA TASTO</button>
-        <button class="admin-btn" onclick="showAdminLogin()">🔐 ADMIN</button>
+    <div class="header-left">
+        <div><strong>STAZIONE:</strong> <span id="my-id">---</span></div>
+        <div id="status-indicator" style="color: var(--green); font-size: 0.85rem;">● ONLINE</div>
+    </div>
+    <div class="header-buttons">
+        <button id="audio-activate-btn" class="btn-green" onclick="activateAudioManually()">🔊 ATTIVA AUDIO</button>
+        <button onclick="mapExternalKey()" id="map-btn">⌨️ MAPPA TASTO</button>
+        <button onclick="openSettings()">⚙️ SETTINGS</button>
     </div>
 </header>
 
 <div id="main">
     <div id="sidebar">
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; flex-wrap: wrap; gap: 5px;">
-            <strong style="font-size: 0.9rem;">🌍 ONLINE</strong>
-            <div style="display: flex; gap: 5px; flex-wrap: wrap;">
-                <button class="toggle-text-btn" onclick="toggleTextDisplay()" id="toggle-text-btn" title="Mostra/Nascondi testo">👁️</button>
-                <button class="clear-btn" onclick="clearChat()" title="Pulisci chat">🗑️</button>
-            </div>
+        <div style="font-size: 0.85rem; font-weight: bold; color: var(--green); border-bottom: 1px solid #333; padding-bottom: 5px; margin-bottom: 5px;">
+            🌍 ONLINE
         </div>
         <div id="user-list"></div>
-        <button id="audio-activate-btn" onclick="activateAudioManually()">
-            🔊 ATTIVA AUDIO
-        </button>
     </div>
-    <div id="chat">
+    
+    <div id="morse-section">
+        <div class="section-title" style="color: var(--amber); border-color: var(--amber);">
+            📻 MORSE CODE
+        </div>
         <div id="messages"></div>
         <div id="decoder-preview"></div>
         <div id="morse-pad">
             <div id="key"></div>
         </div>
     </div>
+    
+    <div id="text-chat-section">
+        <div class="section-title" style="color: var(--blue); border-color: var(--blue);">
+            💬 TEXT CHAT
+        </div>
+        <div id="text-messages"></div>
+        <div id="text-input-area">
+            <input type="text" id="text-input" placeholder="Scrivi messaggio..." maxlength="200" onkeypress="if(event.key==='Enter') sendTextMessage()">
+            <button id="text-send" onclick="sendTextMessage()">INVIA</button>
+        </div>
+    </div>
 </div>
 
+<!-- Settings Modal -->
+<div id="settings-modal">
+    <div class="modal-content">
+        <button class="close-btn" onclick="closeSettings()">✕</button>
+        <h2 style="color: var(--amber); margin-top: 0;">⚙️ IMPOSTAZIONI</h2>
+        
+        <div class="setting-row">
+            <div class="setting-label">Mostra/Nascondi Testo</div>
+            <div class="toggle-switch active" id="toggle-text" onclick="toggleTextDisplay()">
+                <div class="toggle-slider"></div>
+            </div>
+        </div>
+        
+        <div class="setting-row">
+            <div class="setting-label">QRM Sottofondo</div>
+            <div class="toggle-switch" id="toggle-qrm" onclick="toggleQRM()">
+                <div class="toggle-slider"></div>
+            </div>
+        </div>
+        
+        <div class="setting-row">
+            <div class="setting-label">Pannello Admin</div>
+            <button onclick="closeSettings(); showAdminLogin();" style="padding: 8px 16px;">🔐 ACCEDI</button>
+        </div>
+        
+        <div class="setting-row">
+            <div class="setting-label">Pulisci Chat Morse</div>
+            <button onclick="clearChat()" style="padding: 8px 16px; background: #f00; border-color: #f00; color: #fff;">🗑️ PULISCI</button>
+        </div>
+        
+        <div class="setting-row">
+            <div class="setting-label">Pulisci Chat Text</div>
+            <button onclick="clearTextChat()" style="padding: 8px 16px; background: #f00; border-color: #f00; color: #fff;">🗑️ PULISCI</button>
+        </div>
+    </div>
+</div>
+
+<!-- Admin Login Modal -->
 <div id="admin-modal">
     <div class="modal-content">
+        <button class="close-btn" onclick="closeAdminModal()">✕</button>
         <h2 style="color: var(--amber); margin-top: 0;">🔐 ACCESSO ADMIN</h2>
         <input type="password" id="admin-pwd" class="input-box" placeholder="Password" style="margin: 20px 0;">
         <div style="display: flex; gap: 10px;">
@@ -573,89 +738,60 @@
     </div>
 </div>
 
+<!-- Admin Panel -->
 <div id="admin-panel">
     <div class="panel-content">
-        <button class="close-btn" onclick="closeAdminPanel()">✕ CHIUDI</button>
+        <button class="close-btn" onclick="closeAdminPanel()">✕</button>
         <h2 style="color: var(--amber);">⚙️ PANNELLO AMMINISTRAZIONE</h2>
         
         <h3 style="color: var(--green); margin-top: 30px;">🖼️ SFONDO PERSONALIZZATO</h3>
         <div class="upload-zone" onclick="document.getElementById('bg-upload').click()">
             <p>📁 Clicca per caricare immagine di sfondo</p>
-            <p style="color: #666; font-size: 0.8rem;">JPG, PNG (max 5MB) - Ottimizzazione automatica</p>
+            <p style="color: #666; font-size: 0.8rem;">JPG, PNG (max 5MB)</p>
         </div>
         <input type="file" id="bg-upload" accept="image/*" style="display: none;" onchange="handleBackgroundUpload(event)">
         
         <div id="bg-preview-container" style="display: none;">
             <img id="bg-preview" class="bg-preview">
-            <button onclick="removeBackground()" style="background: #f00; border-color: #f00;">🗑️ RIMUOVI SFONDO</button>
+            <button onclick="removeBackground()" style="background: #f00; border-color: #f00; color: #fff;">🗑️ RIMUOVI</button>
         </div>
         
         <h3 style="color: var(--green); margin-top: 30px;">🎨 TRASPARENZA CHAT</h3>
-        <p style="color: #888; font-size: 0.9rem;">Regola l'opacità della finestra messaggi per vedere lo sfondo</p>
-        
         <div style="margin: 20px 0;">
             <label style="display: block; margin-bottom: 10px;">
                 Opacità: <span id="opacity-value">70</span>%
             </label>
-            <input 
-                type="range" 
-                id="opacity-slider" 
-                min="0" 
-                max="100" 
-                value="70" 
-                style="width: 100%; cursor: pointer;"
-                oninput="updateChatOpacity(this.value)">
-            <div style="display: flex; justify-content: space-between; color: #666; font-size: 0.8rem; margin-top: 5px;">
-                <span>Trasparente</span>
-                <span>Opaco</span>
-            </div>
+            <input type="range" id="opacity-slider" min="0" max="100" value="70" oninput="updateChatOpacity(this.value)">
         </div>
         
         <button onclick="resetOpacity()" style="width: 100%; margin-top: 10px;">
-            🔄 RESET OPACITÀ (70%)
+            🔄 RESET OPACITÀ
         </button>
         
         <h3 style="color: var(--green); margin-top: 30px;">🔊 TEST AUDIO</h3>
-        <p style="color: #888; font-size: 0.9rem;">Verifica che l'audio in ricezione funzioni</p>
-        
         <button onclick="testAudioReception()" style="width: 100%; margin-top: 10px;">
-            🎵 TEST AUDIO RICEZIONE (SOS)
+            🎵 TEST SOS
         </button>
         <p id="audio-test-result" style="color: #666; font-size: 0.8rem; margin-top: 10px;"></p>
         
-        <h3 style="color: var(--green); margin-top: 30px;">📊 STATISTICHE TRAFFICO</h3>
-        
+        <h3 style="color: var(--green); margin-top: 30px;">📊 STATISTICHE</h3>
         <div class="stat-box">
-            <div class="stat-label">Messaggi Totali</div>
-            <div class="stat-value" id="stat-messages">0</div>
+            <div class="stat-label">Messaggi Morse</div>
+            <div class="stat-value" id="stat-morse">0</div>
         </div>
-        
         <div class="stat-box">
-            <div class="stat-label">Caratteri Trasmessi</div>
-            <div class="stat-value" id="stat-chars">0</div>
+            <div class="stat-label">Messaggi Text</div>
+            <div class="stat-value" id="stat-text">0</div>
         </div>
-        
         <div class="stat-box">
-            <div class="stat-label">Utenti Unici (Globali)</div>
+            <div class="stat-label">Utenti Unici</div>
             <div class="stat-value" id="stat-users">0</div>
         </div>
-        
         <div class="stat-box">
-            <div class="stat-label">Utenti Online Ora</div>
+            <div class="stat-label">Utenti Online</div>
             <div class="stat-value" id="stat-online">0</div>
         </div>
-        
-        <div class="stat-box">
-            <div class="stat-label">Sessioni Totali</div>
-            <div class="stat-value" id="stat-sessions">0</div>
-        </div>
-        
-        <div class="stat-box">
-            <div class="stat-label">Ultimo Messaggio</div>
-            <div class="stat-value" id="stat-last" style="font-size: 1.2rem;">---</div>
-        </div>
-        
-        <button onclick="resetStats()" style="background: #f00; border-color: #f00; margin-top: 20px; width: 100%;">
+        <button onclick="resetStats()" style="background: #f00; border-color: #f00; color: #fff; margin-top: 20px; width: 100%;">
             🗑️ RESET STATISTICHE
         </button>
     </div>
@@ -676,16 +812,17 @@
     const db = firebase.database();
     
     let callsign = "";
-    let audioCtx, oscillator, gainNode;
+    let audioCtx, oscillator, gainNode, qrmInterval;
     let startTime = 0, isDown = false, morseBuffer = "";
     let mappedKey = null, isMapping = false;
     let lastUp = Date.now();
-    let sessionStartTime = null;
     let textDisplayEnabled = true;
     let audioEnabled = false;
+    let qrmEnabled = false;
     
     const ADMIN_PASSWORD = "radio1010";
     const lastMsgUser = {};
+    const lastTextMsgUser = {};
     const DOT_DURATION = 100;
     const DASH_DURATION = 300;
     const SYMBOL_GAP = 100;
@@ -704,10 +841,9 @@
 
     const CHAR_TO_MORSE = Object.fromEntries(Object.entries(MORSE).map(([k, v]) => [v, k]));
 
-    function scrollToBottom() {
-        const box = document.getElementById('messages');
+    function scrollToBottom(container) {
         requestAnimationFrame(() => {
-            box.scrollTop = box.scrollHeight;
+            container.scrollTop = container.scrollHeight;
         });
     }
 
@@ -719,13 +855,12 @@
             audioCtx.resume();
         }
         audioEnabled = true;
-        console.log('🎵 Audio inizializzato:', audioCtx.state);
+        console.log('🎵 Audio inizializzato');
     }
     
     function playBeep(duration) {
         return new Promise((resolve) => {
             if(!audioCtx || !audioEnabled) {
-                console.warn('⚠️ Audio non disponibile');
                 resolve();
                 return;
             }
@@ -749,30 +884,66 @@
                 
                 setTimeout(() => resolve(), duration);
             } catch(err) {
-                console.error('❌ Errore beep:', err);
+                console.error('❌ Beep error:', err);
                 resolve();
             }
         });
     }
     
     async function playMorseChar(char) {
-        if(!audioCtx || !audioEnabled) {
-            console.warn('⚠️ Audio non attivo');
-            return;
-        }
+        if(!audioCtx || !audioEnabled) return;
         
         const morse = CHAR_TO_MORSE[char.toUpperCase()];
-        if(!morse) {
-            console.warn('⚠️ Carattere non valido:', char);
-            return;
-        }
-        
-        console.log('🔊 Riproduzione:', char, '→', morse);
+        if(!morse) return;
         
         for(let symbol of morse) {
             const duration = symbol === '.' ? DOT_DURATION : DASH_DURATION;
             await playBeep(duration);
             await new Promise(resolve => setTimeout(resolve, SYMBOL_GAP));
+        }
+    }
+    
+    function startQRM() {
+        if(!audioCtx || !audioEnabled || qrmInterval) return;
+        
+        qrmInterval = setInterval(() => {
+            if(!qrmEnabled) return;
+            
+            const osc = audioCtx.createOscillator();
+            const gainNode = audioCtx.createGain();
+            
+            osc.frequency.value = 300 + Math.random() * 400;
+            osc.type = 'sawtooth';
+            gainNode.gain.value = 0.02 + Math.random() * 0.03;
+            
+            osc.connect(gainNode);
+            gainNode.connect(audioCtx.destination);
+            
+            osc.start();
+            osc.stop(audioCtx.currentTime + 0.1 + Math.random() * 0.2);
+        }, 200 + Math.random() * 300);
+        
+        console.log('📻 QRM ON');
+    }
+    
+    function stopQRM() {
+        if(qrmInterval) {
+            clearInterval(qrmInterval);
+            qrmInterval = null;
+            console.log('🔇 QRM OFF');
+        }
+    }
+    
+    function toggleQRM() {
+        qrmEnabled = !qrmEnabled;
+        const toggle = document.getElementById('toggle-qrm');
+        
+        if(qrmEnabled) {
+            toggle.classList.add('active');
+            if(audioEnabled) startQRM();
+        } else {
+            toggle.classList.remove('active');
+            stopQRM();
         }
     }
 
@@ -782,8 +953,22 @@
             text: char,
             time: Date.now()
         });
+    }
+    
+    function sendTextMessage() {
+        const input = document.getElementById('text-input');
+        const text = input.value.trim();
         
-        db.ref('admin/stats/totalChars').transaction((current) => (current || 0) + char.length);
+        if(!text) return;
+        
+        db.ref('textChat').push({
+            user: callsign,
+            message: text,
+            time: Date.now()
+        });
+        
+        input.value = '';
+        input.focus();
     }
 
     async function addMsgToUI(user, text, shouldPlayAudio = false) {
@@ -813,48 +998,86 @@
             box.appendChild(div);
         }
         
-        scrollToBottom();
+        scrollToBottom(box);
         
         if(shouldPlayAudio && audioEnabled) {
-            console.log('🎵 Audio richiesto per:', text, 'da', user);
             await playMorseChar(text);
         }
+    }
+    
+    function addTextMsgToUI(user, message, time) {
+        const box = document.getElementById('text-messages');
+        
+        const div = document.createElement('div');
+        div.className = 'text-msg';
+        
+        const author = document.createElement('div');
+        author.className = 'author';
+        author.style.color = user === callsign ? 'var(--amber)' : 'var(--blue)';
+        author.textContent = user;
+        
+        const content = document.createElement('div');
+        content.className = 'content';
+        content.textContent = message;
+        
+        const timestamp = document.createElement('div');
+        timestamp.className = 'time';
+        timestamp.textContent = new Date(time).toLocaleTimeString('it-IT');
+        
+        div.appendChild(author);
+        div.appendChild(content);
+        div.appendChild(timestamp);
+        
+        box.appendChild(div);
+        scrollToBottom(box);
     }
 
     function toggleTextDisplay() {
         textDisplayEnabled = !textDisplayEnabled;
         const box = document.getElementById('messages');
-        const btn = document.getElementById('toggle-text-btn');
+        const toggle = document.getElementById('toggle-text');
         
         if(textDisplayEnabled) {
             box.classList.remove('hide-text');
-            btn.classList.remove('active');
-            btn.innerText = '👁️';
+            toggle.classList.add('active');
         } else {
             box.classList.add('hide-text');
-            btn.classList.add('active');
-            btn.innerText = '🔇';
+            toggle.classList.remove('active');
         }
-        
-        console.log(`📺 Visualizzazione testo: ${textDisplayEnabled ? 'ON' : 'OFF'}`);
     }
 
     function clearChat() {
-        if(confirm('Pulire la visualizzazione della chat?\n(I messaggi restano nel database)')) {
+        if(confirm('Pulire Morse chat?')) {
             document.getElementById('messages').innerHTML = '';
+            closeSettings();
         }
+    }
+    
+    function clearTextChat() {
+        if(confirm('Pulire Text chat?')) {
+            document.getElementById('text-messages').innerHTML = '';
+            closeSettings();
+        }
+    }
+    
+    function openSettings() {
+        document.getElementById('settings-modal').classList.add('show');
+    }
+    
+    function closeSettings() {
+        document.getElementById('settings-modal').classList.remove('show');
     }
 
     function startApp() {
         callsign = document.getElementById('callsign').value.trim().toUpperCase();
         
         if(!callsign) {
-            alert('Inserisci il tuo nominativo!');
+            alert('Inserisci nominativo!');
             return;
         }
         
         if(callsign.length < 3) {
-            alert('Nominativo troppo corto (min 3 caratteri)!');
+            alert('Nominativo troppo corto!');
             return;
         }
         
@@ -864,33 +1087,22 @@
         initAudio();
 
         const userRef = db.ref('users/' + callsign);
-        userRef.set({ 
-            status: "online", 
-            lastSeen: Date.now() 
-        });
+        userRef.set({ status: "online", lastSeen: Date.now() });
         userRef.onDisconnect().remove();
 
         db.ref('users').on('value', snap => {
             const list = document.getElementById('user-list');
             list.innerHTML = "";
-            let count = 0;
             snap.forEach(child => {
                 const isSelf = child.key === callsign;
                 const color = isSelf ? 'var(--amber)' : 'var(--green)';
                 const suffix = isSelf ? ' (TU)' : '';
                 list.innerHTML += `<span class="user-tag" style="color: ${color};">• ${child.key}${suffix}</span>`;
-                count++;
             });
-            if(count === 0) {
-                list.innerHTML = '<span style="color: #666;">Nessuno online</span>';
-            }
         });
 
         let initialLoad = true;
-        db.ref('chat').limitToLast(50).once('value', () => {
-            initialLoad = false;
-            console.log('✅ Caricamento iniziale completato');
-        });
+        db.ref('chat').limitToLast(50).once('value', () => { initialLoad = false; });
         
         db.ref('chat').limitToLast(50).on('child_added', snap => {
             const data = snap.val();
@@ -899,45 +1111,42 @@
                 if(isNewMessage) {
                     const isRemote = data.user !== callsign;
                     const shouldPlayAudio = !initialLoad && isRemote;
-                    
                     addMsgToUI(data.user, data.text, shouldPlayAudio);
                     lastMsgUser[data.user] = snap.key;
-                    
-                    if(shouldPlayAudio) {
-                        console.log('🔊 Nuovo messaggio remoto da:', data.user);
-                    }
+                }
+            }
+        });
+        
+        let initialTextLoad = true;
+        db.ref('textChat').limitToLast(50).once('value', () => { initialTextLoad = false; });
+        
+        db.ref('textChat').limitToLast(50).on('child_added', snap => {
+            const data = snap.val();
+            if(data && data.user && data.message) {
+                const isNewMessage = !lastTextMsgUser[data.user] || lastTextMsgUser[data.user] !== snap.key;
+                if(isNewMessage) {
+                    addTextMsgToUI(data.user, data.message, data.time);
+                    lastTextMsgUser[data.user] = snap.key;
                 }
             }
         });
 
         db.ref('admin/background').once('value').then(snap => {
             const bgData = snap.val();
-            if(bgData) {
-                applyBackground(bgData);
-            }
+            if(bgData) applyBackground(bgData);
         });
         
         db.ref('admin/chatOpacity').once('value').then(snap => {
             const opacity = snap.val();
-            if(opacity !== null && opacity !== undefined) {
-                applyChatOpacity(opacity);
-            }
+            if(opacity !== null) applyChatOpacity(opacity);
         });
 
-        trackSession();
-        
-        console.log('✅ Connesso come:', callsign);
-        console.log('🎵 Audio stato:', audioCtx ? audioCtx.state : 'non inizializzato');
+        console.log('✅ Connesso:', callsign);
     }
 
     function play() {
-        if(!audioCtx) {
-            initAudio();
-        }
-        
-        if(audioCtx.state === 'suspended') {
-            audioCtx.resume();
-        }
+        if(!audioCtx) initAudio();
+        if(audioCtx.state === 'suspended') audioCtx.resume();
         
         oscillator = audioCtx.createOscillator();
         gainNode = audioCtx.createGain();
@@ -960,12 +1169,11 @@
         if(isMapping) {
             mappedKey = (e.type === 'keydown') ? e.code : 'MOUSE';
             isMapping = false;
-            document.getElementById('map-btn').innerText = "TASTO: " + mappedKey;
+            document.getElementById('map-btn').innerText = "✓ " + mappedKey;
             return;
         }
         
         if(mappedKey && e.type === 'keydown' && e.code !== mappedKey) return;
-        
         if(isDown) return;
         
         isDown = true;
@@ -975,7 +1183,6 @@
 
     function up() {
         if(!isDown) return;
-        
         isDown = false;
         stop();
         
@@ -987,7 +1194,7 @@
 
     function mapExternalKey() {
         isMapping = true;
-        document.getElementById('map-btn').innerText = "PREMI TASTO...";
+        document.getElementById('map-btn').innerText = "⏳ PREMI...";
     }
 
     setInterval(() => {
@@ -1002,25 +1209,19 @@
     async function activateAudioManually() {
         try {
             initAudio();
-            
-            if(audioCtx.state === 'suspended') {
-                await audioCtx.resume();
-            }
-            
-            console.log('🔊 Test attivazione audio...');
+            if(audioCtx.state === 'suspended') await audioCtx.resume();
             await playBeep(100);
             
             const btn = document.getElementById('audio-activate-btn');
             if(btn) {
                 btn.classList.add('activated');
-                btn.innerHTML = '✅ AUDIO ATTIVO';
+                btn.innerHTML = '✅ AUDIO OK';
             }
             
-            alert('✅ Audio attivato! Ora puoi sentire i messaggi in arrivo.');
-            console.log('✅ Audio completamente attivo');
+            if(qrmEnabled) startQRM();
+            console.log('✅ Audio attivo');
         } catch(err) {
-            console.error('❌ Errore attivazione:', err);
-            alert('❌ Errore attivazione audio: ' + err.message);
+            alert('❌ Errore audio');
         }
     }
 
@@ -1028,7 +1229,6 @@
         document.getElementById('admin-modal').classList.add('show');
         document.getElementById('admin-pwd').value = '';
         document.getElementById('admin-error').style.display = 'none';
-        setTimeout(() => document.getElementById('admin-pwd').focus(), 100);
     }
     
     function closeAdminModal() {
@@ -1042,7 +1242,6 @@
             openAdminPanel();
         } else {
             document.getElementById('admin-error').style.display = 'block';
-            document.getElementById('admin-pwd').value = '';
         }
     }
     
@@ -1079,12 +1278,7 @@
         if(!file) return;
         
         if(file.size > 5 * 1024 * 1024) {
-            alert('File troppo grande! Max 5MB');
-            return;
-        }
-        
-        if(!file.type.startsWith('image/')) {
-            alert('Seleziona un\'immagine valida!');
+            alert('File troppo grande!');
             return;
         }
         
@@ -1095,15 +1289,13 @@
                 const canvas = document.createElement('canvas');
                 const ctx = canvas.getContext('2d');
                 
-                let width = img.width;
-                let height = img.height;
-                const maxWidth = 1920;
-                const maxHeight = 1080;
+                let width = img.width, height = img.height;
+                const maxWidth = 1920, maxHeight = 1080;
                 
                 if(width > maxWidth || height > maxHeight) {
                     const ratio = Math.min(maxWidth / width, maxHeight / height);
-                    width = width * ratio;
-                    height = height * ratio;
+                    width *= ratio;
+                    height *= ratio;
                 }
                 
                 canvas.width = width;
@@ -1111,15 +1303,11 @@
                 ctx.drawImage(img, 0, 0, width, height);
                 
                 const optimizedData = canvas.toDataURL('image/jpeg', 0.7);
-                
                 db.ref('admin/background').set(optimizedData);
                 
                 document.getElementById('bg-preview').src = optimizedData;
                 document.getElementById('bg-preview-container').style.display = 'block';
-                
                 applyBackground(optimizedData);
-                
-                console.log('✅ Sfondo caricato');
             };
             img.src = e.target.result;
         };
@@ -1132,7 +1320,7 @@
     }
     
     function removeBackground() {
-        if(confirm('Rimuovere lo sfondo?')) {
+        if(confirm('Rimuovere sfondo?')) {
             db.ref('admin/background').remove();
             document.body.style.backgroundImage = 'none';
             document.body.classList.remove('has-background');
@@ -1148,16 +1336,8 @@
     
     function applyChatOpacity(value) {
         const opacity = value / 100;
-        const messagesBox = document.getElementById('messages');
-        messagesBox.style.backgroundColor = `rgba(0, 0, 0, ${opacity})`;
-        
-        if(value < 70) {
-            messagesBox.style.backdropFilter = 'blur(10px)';
-            messagesBox.style.webkitBackdropFilter = 'blur(10px)';
-        } else {
-            messagesBox.style.backdropFilter = 'blur(8px)';
-            messagesBox.style.webkitBackdropFilter = 'blur(8px)';
-        }
+        document.getElementById('messages').style.backgroundColor = `rgba(0, 0, 0, ${opacity})`;
+        document.getElementById('text-messages').style.backgroundColor = `rgba(0, 0, 0, ${opacity * 0.9})`;
     }
     
     function resetOpacity() {
@@ -1170,15 +1350,10 @@
         
         try {
             initAudio();
+            if(audioCtx.state === 'suspended') await audioCtx.resume();
             
-            if(audioCtx.state === 'suspended') {
-                await audioCtx.resume();
-            }
-            
-            resultEl.innerText = '🎵 Riproduzione SOS (... --- ...)';
+            resultEl.innerText = '🎵 SOS...';
             resultEl.style.color = 'var(--amber)';
-            
-            console.log('🧪 Inizio test SOS');
             
             await playMorseChar('S');
             await new Promise(r => setTimeout(r, LETTER_GAP));
@@ -1186,73 +1361,45 @@
             await new Promise(r => setTimeout(r, LETTER_GAP));
             await playMorseChar('S');
             
-            resultEl.innerText = '✅ Test completato! Se hai sentito 3 segnali (... --- ...), l\'audio funziona!';
+            resultEl.innerText = '✅ OK!';
             resultEl.style.color = 'var(--green)';
-            console.log('✅ Test SOS completato');
         } catch(err) {
-            console.error('❌ Errore test:', err);
-            resultEl.innerText = '❌ Errore: ' + err.message;
+            resultEl.innerText = '❌ Errore';
             resultEl.style.color = '#f00';
         }
     }
     
     function updateStatistics() {
         db.ref('chat').once('value').then(snap => {
+            document.getElementById('stat-morse').innerText = snap.numChildren();
+        });
+        
+        db.ref('textChat').once('value').then(snap => {
+            document.getElementById('stat-text').innerText = snap.numChildren();
+            
             const messages = [];
             snap.forEach(child => messages.push(child.val()));
-            
-            document.getElementById('stat-messages').innerText = messages.length;
-            
             const uniqueUsers = [...new Set(messages.map(m => m.user))];
             document.getElementById('stat-users').innerText = uniqueUsers.length;
-            
-            if(messages.length > 0) {
-                const lastMsg = messages[messages.length - 1];
-                const date = new Date(lastMsg.time);
-                document.getElementById('stat-last').innerText = date.toLocaleString('it-IT');
-            }
         });
         
         db.ref('users').once('value').then(snap => {
             document.getElementById('stat-online').innerText = snap.numChildren();
         });
-        
-        db.ref('admin/stats').once('value').then(snap => {
-            const stats = snap.val() || {};
-            document.getElementById('stat-sessions').innerText = stats.totalSessions || 0;
-            document.getElementById('stat-chars').innerText = stats.totalChars || 0;
-        });
     }
     
     function resetStats() {
-        if(confirm('RESET PERMANENTE delle statistiche?')) {
-            db.ref('admin/stats').set({
-                totalSessions: 0,
-                totalChars: 0
-            });
+        if(confirm('RESET?')) {
             updateStatistics();
         }
     }
-    
-    function trackSession() {
-        sessionStartTime = Date.now();
-        db.ref('admin/stats/totalSessions').transaction((current) => (current || 0) + 1);
-    }
 
     const keyEl = document.getElementById('key');
-    
     keyEl.addEventListener('mousedown', down);
     window.addEventListener('mouseup', up);
-    
-    keyEl.addEventListener('touchstart', (e) => { 
-        e.preventDefault(); 
-        down(e); 
-    });
+    keyEl.addEventListener('touchstart', (e) => { e.preventDefault(); down(e); });
     window.addEventListener('touchend', up);
-    
-    window.addEventListener('keydown', (e) => { 
-        if(!e.repeat) down(e); 
-    });
+    window.addEventListener('keydown', (e) => { if(!e.repeat) down(e); });
     window.addEventListener('keyup', up);
 
     document.body.addEventListener('touchmove', (e) => {
@@ -1261,17 +1408,7 @@
         }
     }, { passive: false });
 
-    document.addEventListener('DOMContentLoaded', () => {
-        const adminPwd = document.getElementById('admin-pwd');
-        if(adminPwd) {
-            adminPwd.addEventListener('keypress', (e) => {
-                if(e.key === 'Enter') checkAdminPassword();
-            });
-        }
-    });
-
-    console.log('🔧 MORSE-LINK LIVE - FIREBASE MODE');
-    console.log('📡 Pronto per la connessione globale...');
+    console.log('🔧 MORSE-LINK LIVE + TEXT CHAT');
 
 </script>
 </body>
