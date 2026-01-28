@@ -883,6 +883,11 @@
         </div>
         
         <div class="setting-row">
+            <div class="setting-label">📚 Manuale Utente</div>
+            <button onclick="openManuale()" style="padding: 8px 16px; background: var(--green); border-color: var(--green); color: #000; font-weight: bold;">📖 APRI GUIDA</button>
+        </div>
+        
+        <div class="setting-row">
             <div class="setting-label">Pannello Admin</div>
             <button onclick="closeSettings(); showAdminLogin();" style="padding: 8px 16px;">🔐 ACCEDI</button>
         </div>
@@ -1310,6 +1315,11 @@
     
     function closeSettings() {
         document.getElementById('settings-modal').classList.remove('show');
+    }
+    
+    function openManuale() {
+        // Apri manuale in nuova tab
+        window.open('https://morse.radioinvetta.it/manuale-utente.html', '_blank');
     }
 
     function startApp() {
