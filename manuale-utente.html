@@ -1,1 +1,1072 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MORSE-LINK LIVE - Manuale Utente</title>
+    <style>
+        :root {
+            --amber: #ffb000;
+            --bg-black: #0a0a0a;
+            --panel: #1e1e1e;
+            --green: #0f0;
+            --blue: #0af;
+        }
+        
+        * {
+            box-sizing: border-box;
+        }
+        
+        body {
+            background: var(--bg-black);
+            color: #ddd;
+            font-family: 'Courier New', monospace;
+            margin: 0;
+            padding: 0;
+            line-height: 1.6;
+        }
+        
+        .header {
+            background: var(--panel);
+            border-bottom: 3px solid var(--amber);
+            padding: 20px;
+            text-align: center;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+        
+        .header h1 {
+            color: var(--amber);
+            margin: 0;
+            text-shadow: 0 0 10px var(--amber);
+            font-size: 2rem;
+        }
+        
+        .header p {
+            color: #888;
+            margin: 5px 0 0 0;
+        }
+        
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        .nav {
+            background: var(--panel);
+            border: 2px solid #333;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 30px;
+            position: sticky;
+            top: 100px;
+            z-index: 50;
+        }
+        
+        .nav h2 {
+            color: var(--green);
+            margin-top: 0;
+            font-size: 1.2rem;
+        }
+        
+        .nav ul {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 10px;
+        }
+        
+        .nav a {
+            color: var(--amber);
+            text-decoration: none;
+            display: block;
+            padding: 10px;
+            border: 1px solid #333;
+            border-radius: 5px;
+            transition: all 0.2s;
+        }
+        
+        .nav a:hover {
+            background: var(--amber);
+            color: #000;
+            border-color: var(--amber);
+        }
+        
+        .section {
+            background: var(--panel);
+            border: 2px solid #333;
+            border-radius: 10px;
+            padding: 30px;
+            margin-bottom: 30px;
+        }
+        
+        .section h2 {
+            color: var(--amber);
+            border-bottom: 2px solid var(--amber);
+            padding-bottom: 10px;
+            margin-top: 0;
+        }
+        
+        .section h3 {
+            color: var(--green);
+            margin-top: 25px;
+        }
+        
+        .section h4 {
+            color: var(--blue);
+            margin-top: 20px;
+        }
+        
+        .step {
+            background: #000;
+            border-left: 4px solid var(--amber);
+            padding: 15px;
+            margin: 15px 0;
+        }
+        
+        .step-number {
+            color: var(--amber);
+            font-weight: bold;
+            font-size: 1.2rem;
+        }
+        
+        .platform {
+            display: inline-block;
+            background: #333;
+            color: var(--amber);
+            padding: 5px 15px;
+            border-radius: 20px;
+            margin: 5px;
+            font-size: 0.9rem;
+            border: 1px solid var(--amber);
+        }
+        
+        .warning {
+            background: #331100;
+            border-left: 4px solid #ff6600;
+            padding: 15px;
+            margin: 15px 0;
+            color: #ffaa66;
+        }
+        
+        .tip {
+            background: #003311;
+            border-left: 4px solid var(--green);
+            padding: 15px;
+            margin: 15px 0;
+            color: #66ff88;
+        }
+        
+        .code {
+            background: #000;
+            border: 1px solid #333;
+            padding: 10px;
+            border-radius: 5px;
+            font-family: 'Courier New', monospace;
+            overflow-x: auto;
+            color: var(--green);
+        }
+        
+        .faq-item {
+            background: #000;
+            border: 1px solid #333;
+            border-radius: 5px;
+            padding: 15px;
+            margin: 10px 0;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .faq-item:hover {
+            border-color: var(--amber);
+        }
+        
+        .faq-question {
+            color: var(--amber);
+            font-weight: bold;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .faq-answer {
+            color: #ddd;
+            margin-top: 10px;
+            display: none;
+            padding-top: 10px;
+            border-top: 1px solid #333;
+        }
+        
+        .faq-item.open .faq-answer {
+            display: block;
+        }
+        
+        .faq-item.open .faq-question::after {
+            content: '▲';
+        }
+        
+        .faq-question::after {
+            content: '▼';
+            color: var(--amber);
+        }
+        
+        .button {
+            background: var(--amber);
+            color: #000;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-family: 'Courier New', monospace;
+            font-size: 1rem;
+            font-weight: bold;
+            text-decoration: none;
+            display: inline-block;
+            transition: all 0.2s;
+        }
+        
+        .button:hover {
+            background: #ffcc00;
+            transform: scale(1.05);
+        }
+        
+        .morse-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+        }
+        
+        .morse-table th,
+        .morse-table td {
+            border: 1px solid #333;
+            padding: 10px;
+            text-align: left;
+        }
+        
+        .morse-table th {
+            background: #000;
+            color: var(--amber);
+        }
+        
+        .morse-table td:first-child {
+            color: var(--green);
+            font-weight: bold;
+            text-align: center;
+        }
+        
+        .morse-table td:last-child {
+            color: var(--blue);
+            font-family: 'Courier New', monospace;
+            font-size: 1.2rem;
+        }
+        
+        @media (max-width: 768px) {
+            .container {
+                padding: 10px;
+            }
+            
+            .header h1 {
+                font-size: 1.5rem;
+            }
+            
+            .nav {
+                position: relative;
+                top: 0;
+            }
+            
+            .nav ul {
+                grid-template-columns: 1fr;
+            }
+            
+            .section {
+                padding: 15px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>📡 MORSE-LINK LIVE</h1>
+        <p>Manuale Utente Completo - Radio in Vetta</p>
+    </div>
+    
+    <div class="container">
+        <div class="nav">
+            <h2>🗂️ INDICE RAPIDO</h2>
+            <ul>
+                <li><a href="#introduzione">📖 Introduzione</a></li>
+                <li><a href="#requisiti">💻 Requisiti Sistema</a></li>
+                <li><a href="#primo-accesso">🚀 Primo Accesso</a></li>
+                <li><a href="#funzionalita">⚙️ Funzionalità</a></li>
+                <li><a href="#piattaforme">📱 Guide per Piattaforma</a></li>
+                <li><a href="#risoluzione">🔧 Risoluzione Problemi</a></li>
+                <li><a href="#codice-morse">📻 Codice Morse</a></li>
+                <li><a href="#faq">❓ FAQ</a></li>
+            </ul>
+        </div>
+        
+        <!-- INTRODUZIONE -->
+        <div class="section" id="introduzione">
+            <h2>📖 INTRODUZIONE</h2>
+            <p><strong>MORSE-LINK LIVE</strong> è una piattaforma web real-time per comunicazioni in codice Morse tra radioamatori di tutto il mondo. Sviluppata da <strong>IU2RPQ</strong> per il progetto <strong>Radio in Vetta</strong>.</p>
+            
+            <h3>🎯 Cosa puoi fare:</h3>
+            <ul>
+                <li>✅ Trasmettere messaggi in codice Morse in tempo reale</li>
+                <li>✅ Ricevere messaggi da altri operatori con audio sincronizzato</li>
+                <li>✅ Chattare via testo con altri radioamatori</li>
+                <li>✅ Vedere chi è online in tempo reale</li>
+                <li>✅ Usare la tastiera del PC o il mouse per trasmettere</li>
+                <li>✅ Decodificare automaticamente il codice Morse</li>
+                <li>✅ Accedere da qualsiasi dispositivo (PC, tablet, smartphone)</li>
+            </ul>
+            
+            <div class="tip">
+                💡 <strong>CONSIGLIO:</strong> Per la migliore esperienza, usa MORSE-LINK su un PC/laptop con cuffie. Funziona anche su mobile, ma la trasmissione è più comoda con tastiera fisica.
+            </div>
+        </div>
+        
+        <!-- REQUISITI SISTEMA -->
+        <div class="section" id="requisiti">
+            <h2>💻 REQUISITI SISTEMA</h2>
+            
+            <h3>🖥️ Dispositivi Supportati:</h3>
+            <ul>
+                <li><span class="platform">Windows</span> Windows 10, 11</li>
+                <li><span class="platform">macOS</span> macOS 10.15+</li>
+                <li><span class="platform">Linux</span> Ubuntu, Debian, Fedora</li>
+                <li><span class="platform">iOS</span> iPhone/iPad iOS 14+</li>
+                <li><span class="platform">Android</span> Android 8.0+</li>
+                <li><span class="platform">ChromeOS</span> Chromebook</li>
+            </ul>
+            
+            <h3>🌐 Browser Supportati:</h3>
+            <ul>
+                <li><span class="platform">Chrome</span> Chrome 90+ (consigliato per PC)</li>
+                <li><span class="platform">Firefox</span> Firefox 88+</li>
+                <li><span class="platform">Safari</span> Safari 14+ (consigliato per Mac/iOS)</li>
+                <li><span class="platform">Edge</span> Edge 90+</li>
+                <li><span class="platform">Opera</span> Opera 76+</li>
+            </ul>
+            
+            <h3>📡 Connessione:</h3>
+            <ul>
+                <li>✅ Connessione internet stabile (Wi-Fi o 4G/5G)</li>
+                <li>✅ Velocità minima: 1 Mbps</li>
+                <li>✅ Latenza consigliata: < 100ms</li>
+            </ul>
+            
+            <div class="warning">
+                ⚠️ <strong>ATTENZIONE:</strong> L'audio potrebbe non funzionare correttamente se il browser non ha i permessi audio abilitati. Vedi sezione "Risoluzione Problemi Audio".
+            </div>
+        </div>
+        
+        <!-- PRIMO ACCESSO -->
+        <div class="section" id="primo-accesso">
+            <h2>🚀 PRIMO ACCESSO</h2>
+            
+            <div class="step">
+                <span class="step-number">PASSO 1:</span>
+                <strong>Apri il browser</strong>
+                <p>Apri Chrome, Firefox, Safari o Edge sul tuo dispositivo.</p>
+            </div>
+            
+            <div class="step">
+                <span class="step-number">PASSO 2:</span>
+                <strong>Vai al sito</strong>
+                <p>Digita nella barra degli indirizzi:</p>
+                <div class="code">https://morse.radioinvetta.it</div>
+            </div>
+            
+            <div class="step">
+                <span class="step-number">PASSO 3:</span>
+                <strong>Inserisci il tuo nominativo</strong>
+                <p>Vedrai una schermata di login. Inserisci il tuo <strong>call sign</strong> (es. IU2RPQ, W1AW, etc.)</p>
+                <ul>
+                    <li>✅ Minimo 3 caratteri</li>
+                    <li>✅ Massimo 10 caratteri</li>
+                    <li>✅ Usa il tuo nominativo radioamatoriale ufficiale</li>
+                </ul>
+            </div>
+            
+            <div class="step">
+                <span class="step-number">PASSO 4:</span>
+                <strong>Click su "CONNETTI"</strong>
+                <p>Premi il pulsante verde "▶ CONNETTI" per entrare nella chat globale.</p>
+            </div>
+            
+            <div class="step">
+                <span class="step-number">PASSO 5:</span>
+                <strong>Attiva l'audio (importante!)</strong>
+                <p>Al primo accesso, clicca il pulsante <strong>"🔊 ATTIVA AUDIO"</strong> in alto. Questo è necessario per sentire i messaggi in arrivo.</p>
+            </div>
+            
+            <div class="tip">
+                💡 <strong>PRIMO UTILIZZO:</strong> Dopo aver attivato l'audio, fai un test premendo il tasto Morse (cerchio arancione) o la barra spaziatrice. Dovresti sentire un beep!
+            </div>
+        </div>
+        
+        <!-- FUNZIONALITÀ -->
+        <div class="section" id="funzionalita">
+            <h2>⚙️ FUNZIONALITÀ</h2>
+            
+            <h3>📻 1. TRASMISSIONE MORSE</h3>
+            
+            <h4>🖱️ Con il Mouse:</h4>
+            <div class="step">
+                <p>Click e tieni premuto sul <strong>cerchio arancione grande</strong> al centro dello schermo.</p>
+                <ul>
+                    <li>Pressione breve (< 200ms) = <strong>PUNTO (.)</strong></li>
+                    <li>Pressione lunga (> 200ms) = <strong>LINEA (-)</strong></li>
+                    <li>Pausa tra pressioni = Separatore simboli</li>
+                    <li>Pausa lunga = Fine carattere (invio automatico)</li>
+                </ul>
+            </div>
+            
+            <h4>⌨️ Con la Tastiera:</h4>
+            <div class="step">
+                <p>Premi e tieni premuta la <strong>BARRA SPAZIATRICE</strong> (tasto predefinito).</p>
+                <ul>
+                    <li>Funziona come il tasto fisico di un telegrafo</li>
+                    <li>Stesso comportamento del mouse</li>
+                    <li>Comodo per trasmissioni lunghe</li>
+                </ul>
+            </div>
+            
+            <h4>🎮 Mappatura Tasto Personalizzato:</h4>
+            <div class="step">
+                <span class="step-number">1.</span> Click su <strong>"MAPPA TASTO"</strong> in alto
+                <br><span class="step-number">2.</span> Il pulsante diventa "PREMI TASTO..."
+                <br><span class="step-number">3.</span> Premi il tasto che vuoi usare (es. Enter, Ctrl, Tab)
+                <br><span class="step-number">4.</span> Il pulsante mostra "✓ [TASTO SCELTO]"
+                <br><span class="step-number">5.</span> Ora usa quel tasto per trasmettere!
+            </div>
+            
+            <div class="tip">
+                💡 <strong>SUGGERIMENTO:</strong> Molti operatori preferiscono mappare il tasto <strong>CTRL destro</strong> o un tasto del <strong>mouse esterno</strong> per una trasmissione più ergonomica.
+            </div>
+            
+            <h3>💬 2. TEXT CHAT</h3>
+            
+            <h4>Invio Messaggi di Testo:</h4>
+            <div class="step">
+                <span class="step-number">1.</span> Scrolla in basso fino alla sezione <strong>"💬 TEXT CHAT"</strong>
+                <br><span class="step-number">2.</span> Digita il tuo messaggio nell'input
+                <br><span class="step-number">3.</span> Premi <strong>"INVIA"</strong> o premi <strong>INVIO</strong>
+                <br><span class="step-number">4.</span> Il messaggio apparirà istantaneamente per tutti
+            </div>
+            
+            <h4>⌨️ MORSE KEYBOARD:</h4>
+            <div class="step">
+                <p>Click sul pulsante verde <strong>"⌨️ MORSE KEYBOARD: ON"</strong> per attivare/disattivare l'uso della tastiera per il Morse.</p>
+                <ul>
+                    <li><strong>ON</strong> (verde): Tasti trasmettono Morse</li>
+                    <li><strong>OFF</strong> (grigio): Tasti NON trasmettono (utile per scrivere nella chat)</li>
+                </ul>
+            </div>
+            
+            <div class="warning">
+                ⚠️ <strong>IMPORTANTE:</strong> Se la tastiera Morse è ON, NON potrai scrivere nella text chat! Disattivala prima di digitare messaggi.
+            </div>
+            
+            <h3>🌍 3. LISTA UTENTI ONLINE</h3>
+            
+            <div class="step">
+                <p>Nella <strong>barra laterale sinistra</strong> (o in alto su mobile) vedi tutti gli operatori online:</p>
+                <ul>
+                    <li>🟢 <span style="color: var(--green);">VERDE</span> = Altri operatori</li>
+                    <li>🟠 <span style="color: var(--amber);">ARANCIONE</span> = Tu (con scritta "TU")</li>
+                </ul>
+            </div>
+            
+            <h3>🎛️ 4. PANNELLO SETTINGS</h3>
+            
+            <div class="step">
+                <p>Click su <strong>"⚙️ SETTINGS"</strong> in alto per accedere a:</p>
+                <ul>
+                    <li>📚 <strong>Manuale Utente</strong> (questa pagina)</li>
+                    <li>🎵 <strong>Test Audio Reception</strong> - Verifica funzionamento audio</li>
+                    <li>📻 <strong>Toggle QRM</strong> - Attiva/disattiva rumore di fondo (effetto realistico)</li>
+                </ul>
+            </div>
+            
+            <h3>🔐 5. PANNELLO ADMIN</h3>
+            
+            <div class="step">
+                <p><strong>Solo per amministratori</strong> - Click su "🔐 ADMIN" permette di:</p>
+                <ul>
+                    <li>🖼️ Caricare sfondo personalizzato</li>
+                    <li>🎨 Regolare trasparenza chat</li>
+                    <li>📊 Vedere statistiche traffico</li>
+                </ul>
+            </div>
+            
+            <div class="warning">
+                ⚠️ Password admin richiesta. Solo per gestori del sistema.
+            </div>
+        </div>
+        
+        <!-- GUIDE PER PIATTAFORMA -->
+        <div class="section" id="piattaforme">
+            <h2>📱 GUIDE PER PIATTAFORMA</h2>
+            
+            <h3>🪟 WINDOWS (Chrome/Edge/Firefox)</h3>
+            
+            <h4>✅ Configurazione Ottimale:</h4>
+            <div class="step">
+                <span class="step-number">1.</span> <strong>Browser consigliato:</strong> Chrome o Edge
+                <br><span class="step-number">2.</span> <strong>Attiva audio:</strong> Click "🔊 ATTIVA AUDIO" al primo accesso
+                <br><span class="step-number">3.</span> <strong>Permessi audio:</strong>
+                <div class="code">
+Chrome: Impostazioni → Privacy e sicurezza → Autorizzazioni sito → Audio → Consenti
+                </div>
+                <span class="step-number">4.</span> <strong>Tasto Morse:</strong> Usa BARRA SPAZIATRICE o mappa altro tasto
+                <br><span class="step-number">5.</span> <strong>Cuffie/Speaker:</strong> Verifica volume sistema attivo
+            </div>
+            
+            <h4>🔧 Risoluzione Problemi Windows:</h4>
+            <div class="step">
+                <strong>Audio non funziona:</strong>
+                <ul>
+                    <li>Verifica volume Windows (icona speaker barra task)</li>
+                    <li>Verifica che Chrome non sia mutato (click destro su tab → "Riattiva audio sito")</li>
+                    <li>Prova a ricaricare la pagina (Ctrl+F5)</li>
+                    <li>Prova browser diverso (Edge/Firefox)</li>
+                </ul>
+            </div>
+            
+            <h3>🍎 macOS (Safari/Chrome)</h3>
+            
+            <h4>✅ Configurazione Ottimale:</h4>
+            <div class="step">
+                <span class="step-number">1.</span> <strong>Browser consigliato:</strong> Safari (migliore integrazione) o Chrome
+                <br><span class="step-number">2.</span> <strong>Attiva audio:</strong> Click "🔊 ATTIVA AUDIO" - Safari richiede sempre interazione utente
+                <br><span class="step-number">3.</span> <strong>Permessi audio Safari:</strong>
+                <div class="code">
+Safari → Preferenze → Siti Web → Riproduzione automatica → morse.radioinvetta.it → Consenti
+                </div>
+                <span class="step-number">4.</span> <strong>Tasto Morse:</strong> BARRA SPAZIATRICE o mappa Command/Option
+            </div>
+            
+            <h4>🔧 Risoluzione Problemi macOS:</h4>
+            <div class="step">
+                <strong>Audio non funziona:</strong>
+                <ul>
+                    <li>Verifica volume macOS (icona speaker menu bar)</li>
+                    <li>Verifica uscita audio corretta (Preferenze Sistema → Audio → Uscita)</li>
+                    <li>Safari: Prova Safari → Sviluppo → Svuota cache</li>
+                    <li>Riavvia browser completamente</li>
+                </ul>
+            </div>
+            
+            <h3>📱 iOS (iPhone/iPad - Safari)</h3>
+            
+            <h4>✅ Configurazione Ottimale:</h4>
+            <div class="step">
+                <span class="step-number">1.</span> <strong>Apri Safari</strong> (solo Safari supportato completamente su iOS)
+                <br><span class="step-number">2.</span> <strong>Vai a:</strong> morse.radioinvetta.it
+                <br><span class="step-number">3.</span> <strong>Login:</strong> Inserisci nominativo
+                <br><span class="step-number">4.</span> <strong>Audio:</strong> Tocca "🔊 ATTIVA AUDIO" - IMPORTANTE su iOS!
+                <br><span class="step-number">5.</span> <strong>Trasmissione:</strong> Tocca e tieni premuto il cerchio arancione
+                <br><span class="step-number">6.</span> <strong>Scroll:</strong> Scorri in basso per vedere text chat e pulsanti
+            </div>
+            
+            <h4>🔧 Risoluzione Problemi iOS:</h4>
+            <div class="step">
+                <strong>Audio non funziona:</strong>
+                <ul>
+                    <li>✅ Verifica interruttore silenzioso laterale (deve essere OFF)</li>
+                    <li>✅ Alza volume con pulsanti fisici</li>
+                    <li>✅ Impostazioni → Safari → Cancella dati siti web</li>
+                    <li>✅ Ricarica pagina (tieni premuto reload → "Ricarica senza cache")</li>
+                </ul>
+                
+                <strong>Layout tagliato/pulsanti non visibili:</strong>
+                <ul>
+                    <li>✅ Scorri LENTAMENTE in basso</li>
+                    <li>✅ Ruota schermo (portrait/landscape)</li>
+                    <li>✅ Chiudi Safari completamente e riaprilo</li>
+                </ul>
+            </div>
+            
+            <div class="tip">
+                💡 <strong>CONSIGLIO iOS:</strong> Aggiungi MORSE-LINK alla Home Screen per un'esperienza app-like!
+                <br>Safari → Condividi (icona quadrato freccia) → "Aggiungi a Home"
+            </div>
+            
+            <h3>🤖 ANDROID (Chrome/Firefox)</h3>
+            
+            <h4>✅ Configurazione Ottimale:</h4>
+            <div class="step">
+                <span class="step-number">1.</span> <strong>Browser consigliato:</strong> Chrome
+                <br><span class="step-number">2.</span> <strong>Vai a:</strong> morse.radioinvetta.it
+                <br><span class="step-number">3.</span> <strong>Login:</strong> Inserisci nominativo
+                <br><span class="step-number">4.</span> <strong>Audio:</strong> Tap "🔊 ATTIVA AUDIO"
+                <br><span class="step-number">5.</span> <strong>Permessi:</strong> Accetta permessi audio se richiesti
+                <br><span class="step-number">6.</span> <strong>Trasmissione:</strong> Tap e tieni premuto cerchio arancione
+            </div>
+            
+            <h4>🔧 Risoluzione Problemi Android:</h4>
+            <div class="step">
+                <strong>Audio non funziona:</strong>
+                <ul>
+                    <li>Verifica volume media Android (pulsanti volume)</li>
+                    <li>Chrome: Impostazioni → Impostazioni sito → Audio → Consenti</li>
+                    <li>Verifica modalità "Non disturbare" disattivata</li>
+                    <li>Svuota cache Chrome: Impostazioni → Privacy → Cancella dati</li>
+                </ul>
+            </div>
+            
+            <h3>🐧 LINUX (Chrome/Firefox)</h3>
+            
+            <h4>✅ Configurazione Ottimale:</h4>
+            <div class="step">
+                <span class="step-number">1.</span> <strong>Browser consigliato:</strong> Chrome o Firefox
+                <br><span class="step-number">2.</span> <strong>Verifica PulseAudio/PipeWire attivo</strong>
+                <br><span class="step-number">3.</span> <strong>Attiva audio:</strong> Click "🔊 ATTIVA AUDIO"
+                <br><span class="step-number">4.</span> <strong>Tasto Morse:</strong> BARRA SPAZIATRICE
+            </div>
+            
+            <h4>🔧 Risoluzione Problemi Linux:</h4>
+            <div class="step">
+                <strong>Audio non funziona:</strong>
+                <div class="code">
+# Verifica PulseAudio
+pactl list short sinks
 
+# Restart PulseAudio
+pulseaudio -k && pulseaudio --start
+
+# Test audio sistema
+speaker-test -c 2
+                </div>
+                <ul>
+                    <li>Verifica mixer audio (pavucontrol)</li>
+                    <li>Firefox: about:preferences → Autorizzazioni</li>
+                </ul>
+            </div>
+        </div>
+        
+        <!-- RISOLUZIONE PROBLEMI -->
+        <div class="section" id="risoluzione">
+            <h2>🔧 RISOLUZIONE PROBLEMI</h2>
+            
+            <h3>🔇 PROBLEMA: Audio non si sente</h3>
+            
+            <h4>🔍 Diagnosi Step-by-Step:</h4>
+            
+            <div class="step">
+                <span class="step-number">TEST 1:</span>
+                <strong>Verifica hardware</strong>
+                <ul>
+                    <li>✅ Cuffie/speaker collegati correttamente?</li>
+                    <li>✅ Volume sistema attivo (non muto)?</li>
+                    <li>✅ Prova altro video/audio per confermare hardware ok</li>
+                </ul>
+            </div>
+            
+            <div class="step">
+                <span class="step-number">TEST 2:</span>
+                <strong>Verifica browser</strong>
+                <ul>
+                    <li>✅ Tab non mutato? (Chrome: icona speaker sul tab)</li>
+                    <li>✅ Permessi audio consentiti? (icona lucchetto barra indirizzi → Audio)</li>
+                    <li>✅ Prova ricaricare pagina (Ctrl+F5 o Cmd+Shift+R)</li>
+                </ul>
+            </div>
+            
+            <div class="step">
+                <span class="step-number">TEST 3:</span>
+                <strong>Test integrato nel sito</strong>
+                <ul>
+                    <li>1. Click "⚙️ SETTINGS"</li>
+                    <li>2. Click "🎵 TEST AUDIO RECEPTION"</li>
+                    <li>3. Senti "SOS" in Morse?</li>
+                    <li>✅ SI → Audio ok, problema ricezione messaggi</li>
+                    <li>❌ NO → Permessi audio bloccati</li>
+                </ul>
+            </div>
+            
+            <h4>💡 Soluzioni per Browser:</h4>
+            
+            <div class="step">
+                <strong>Chrome/Edge (Windows/Mac/Linux):</strong>
+                <div class="code">
+1. chrome://settings/content/sound
+2. Verifica "morse.radioinvetta.it" in "Consenti"
+3. Se in "Blocca" → Rimuovi e ricarica pagina
+                </div>
+            </div>
+            
+            <div class="step">
+                <strong>Firefox:</strong>
+                <div class="code">
+1. about:preferences#privacy
+2. Autorizzazioni → Audio → Impostazioni
+3. Cerca "morse.radioinvetta.it"
+4. Stato: Consenti
+                </div>
+            </div>
+            
+            <div class="step">
+                <strong>Safari (Mac/iOS):</strong>
+                <div class="code">
+Mac: Safari → Preferenze → Siti web → Riproduzione automatica
+iOS: Impostazioni → Safari → Cancella dati siti web
+                </div>
+            </div>
+            
+            <h3>⌨️ PROBLEMA: Tastiera attiva pulsanti invece di Morse</h3>
+            
+            <div class="step">
+                <strong>Causa:</strong> Focus su un pulsante quando premi SPAZIO
+                <br><strong>Soluzione:</strong>
+                <ul>
+                    <li>✅ Click su un'area vuota della pagina (sfondo nero)</li>
+                    <li>✅ Oppure click sul cerchio arancione del tasto Morse</li>
+                    <li>✅ Ora premi SPAZIO → Funzionerà per Morse!</li>
+                </ul>
+            </div>
+            
+            <h3>📱 PROBLEMA: Layout mobile tagliato (iPhone)</h3>
+            
+            <div class="step">
+                <strong>Sintomo:</strong> Pulsanti in basso non visibili
+                <br><strong>Soluzione:</strong>
+                <ul>
+                    <li>✅ Scorri LENTAMENTE verso il basso</li>
+                    <li>✅ Safari: Tieni premuto reload → "Ricarica senza contenuti salvati"</li>
+                    <li>✅ Impostazioni iOS → Safari → Cancella cronologia e dati</li>
+                    <li>✅ Chiudi Safari completamente (swipe up) e riaprilo</li>
+                </ul>
+            </div>
+            
+            <h3>🌐 PROBLEMA: Disconnessione frequente</h3>
+            
+            <div class="step">
+                <strong>Causa:</strong> Connessione internet instabile
+                <br><strong>Soluzione:</strong>
+                <ul>
+                    <li>✅ Verifica connessione Wi-Fi/4G stabile</li>
+                    <li>✅ Prova avvicinarti al router Wi-Fi</li>
+                    <li>✅ Disattiva VPN se attiva</li>
+                    <li>✅ Prova connessione dati mobile se Wi-Fi instabile</li>
+                </ul>
+            </div>
+            
+            <h3>💬 PROBLEMA: Text chat non invia messaggi</h3>
+            
+            <div class="step">
+                <strong>Verifica:</strong>
+                <ul>
+                    <li>✅ Hai fatto login? (nominativo inserito?)</li>
+                    <li>✅ Connessione internet attiva?</li>
+                    <li>✅ Prova ricaricare pagina</li>
+                    <li>✅ Prova browser diverso</li>
+                </ul>
+            </div>
+        </div>
+        
+        <!-- CODICE MORSE -->
+        <div class="section" id="codice-morse">
+            <h2>📻 CODICE MORSE</h2>
+            
+            <h3>📖 Alfabeto Completo</h3>
+            
+            <table class="morse-table">
+                <thead>
+                    <tr>
+                        <th>Carattere</th>
+                        <th>Codice Morse</th>
+                        <th>Descrizione</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr><td>A</td><td>·−</td><td>di-DAH</td></tr>
+                    <tr><td>B</td><td>−···</td><td>DAH-di-di-dit</td></tr>
+                    <tr><td>C</td><td>−·−·</td><td>DAH-di-DAH-dit</td></tr>
+                    <tr><td>D</td><td>−··</td><td>DAH-di-dit</td></tr>
+                    <tr><td>E</td><td>·</td><td>dit</td></tr>
+                    <tr><td>F</td><td>··−·</td><td>di-di-DAH-dit</td></tr>
+                    <tr><td>G</td><td>−−·</td><td>DAH-DAH-dit</td></tr>
+                    <tr><td>H</td><td>····</td><td>di-di-di-dit</td></tr>
+                    <tr><td>I</td><td>··</td><td>di-dit</td></tr>
+                    <tr><td>J</td><td>·−−−</td><td>di-DAH-DAH-DAH</td></tr>
+                    <tr><td>K</td><td>−·−</td><td>DAH-di-DAH</td></tr>
+                    <tr><td>L</td><td>·−··</td><td>di-DAH-di-dit</td></tr>
+                    <tr><td>M</td><td>−−</td><td>DAH-DAH</td></tr>
+                    <tr><td>N</td><td>−·</td><td>DAH-dit</td></tr>
+                    <tr><td>O</td><td>−−−</td><td>DAH-DAH-DAH</td></tr>
+                    <tr><td>P</td><td>·−−·</td><td>di-DAH-DAH-dit</td></tr>
+                    <tr><td>Q</td><td>−−·−</td><td>DAH-DAH-di-DAH</td></tr>
+                    <tr><td>R</td><td>·−·</td><td>di-DAH-dit</td></tr>
+                    <tr><td>S</td><td>···</td><td>di-di-dit</td></tr>
+                    <tr><td>T</td><td>−</td><td>DAH</td></tr>
+                    <tr><td>U</td><td>··−</td><td>di-di-DAH</td></tr>
+                    <tr><td>V</td><td>···−</td><td>di-di-di-DAH</td></tr>
+                    <tr><td>W</td><td>·−−</td><td>di-DAH-DAH</td></tr>
+                    <tr><td>X</td><td>−··−</td><td>DAH-di-di-DAH</td></tr>
+                    <tr><td>Y</td><td>−·−−</td><td>DAH-di-DAH-DAH</td></tr>
+                    <tr><td>Z</td><td>−−··</td><td>DAH-DAH-di-dit</td></tr>
+                </tbody>
+            </table>
+            
+            <h3>🔢 Numeri</h3>
+            
+            <table class="morse-table">
+                <thead>
+                    <tr>
+                        <th>Numero</th>
+                        <th>Codice Morse</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr><td>0</td><td>−−−−−</td></tr>
+                    <tr><td>1</td><td>·−−−−</td></tr>
+                    <tr><td>2</td><td>··−−−</td></tr>
+                    <tr><td>3</td><td>···−−</td></tr>
+                    <tr><td>4</td><td>····−</td></tr>
+                    <tr><td>5</td><td>·····</td></tr>
+                    <tr><td>6</td><td>−····</td></tr>
+                    <tr><td>7</td><td>−−···</td></tr>
+                    <tr><td>8</td><td>−−−··</td></tr>
+                    <tr><td>9</td><td>−−−−·</td></tr>
+                </tbody>
+            </table>
+            
+            <h3>📌 Simboli Utili</h3>
+            
+            <table class="morse-table">
+                <thead>
+                    <tr>
+                        <th>Simbolo</th>
+                        <th>Codice Morse</th>
+                        <th>Significato</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr><td>?</td><td>··−−··</td><td>Punto interrogativo</td></tr>
+                    <tr><td>/</td><td>−··−·</td><td>Slash (separatore)</td></tr>
+                    <tr><td>.</td><td>·−·−·−</td><td>Punto</td></tr>
+                </tbody>
+            </table>
+            
+            <h3>⏱️ Timing Morse</h3>
+            
+            <div class="step">
+                <strong>Regole base:</strong>
+                <ul>
+                    <li><strong>PUNTO (dit)</strong> = 1 unità di tempo</li>
+                    <li><strong>LINEA (DAH)</strong> = 3 unità di tempo</li>
+                    <li><strong>Pausa tra simboli</strong> = 1 unità</li>
+                    <li><strong>Pausa tra lettere</strong> = 3 unità</li>
+                    <li><strong>Pausa tra parole</strong> = 7 unità</li>
+                </ul>
+            </div>
+            
+            <div class="tip">
+                💡 <strong>MEMORIZZAZIONE:</strong> Il segreto è ascoltare il "ritmo" più che contare punti/linee!
+                <br>Es: "SOS" (···−−−···) suona come: "di-di-dit DAH-DAH-DAH di-di-dit"
+            </div>
+        </div>
+        
+        <!-- FAQ -->
+        <div class="section" id="faq">
+            <h2>❓ FAQ - Domande Frequenti</h2>
+            
+            <div class="faq-item" onclick="toggleFaq(this)">
+                <div class="faq-question">
+                    Posso usare MORSE-LINK senza essere radioamatore?
+                </div>
+                <div class="faq-answer">
+                    Sì! MORSE-LINK è aperto a tutti. Non serve licenza radioamatoriale per usare la piattaforma web. Tuttavia, rispetta il codice di comportamento e usa un nominativo appropriato (anche inventato, es. "MORSE01").
+                </div>
+            </div>
+            
+            <div class="faq-item" onclick="toggleFaq(this)">
+                <div class="faq-question">
+                    È gratis? Ci sono costi nascosti?
+                </div>
+                <div class="faq-answer">
+                    Completamente GRATUITO! Nessun abbonamento, nessun acquisto in-app, nessuna pubblicità. Progetto open sviluppato da IU2RPQ per la comunità radioamatoriale.
+                </div>
+            </div>
+            
+            <div class="faq-item" onclick="toggleFaq(this)">
+                <div class="faq-question">
+                    Posso usarlo offline?
+                </div>
+                <div class="faq-answer">
+                    No, MORSE-LINK richiede connessione internet attiva per sincronizzare messaggi in tempo reale con altri utenti. È una piattaforma LIVE, non offline.
+                </div>
+            </div>
+            
+            <div class="faq-item" onclick="toggleFaq(this)">
+                <div class="faq-question">
+                    Quante persone possono essere online contemporaneamente?
+                </div>
+                <div class="faq-answer">
+                    Illimitate! Il sistema Firebase supporta migliaia di utenti simultanei. Più siete, più divertente è la chat globale!
+                </div>
+            </div>
+            
+            <div class="faq-item" onclick="toggleFaq(this)">
+                <div class="faq-question">
+                    I messaggi vengono salvati?
+                </div>
+                <div class="faq-answer">
+                    Sì, tutti i messaggi Morse e text chat sono salvati nel database Firebase. Puoi vedere gli ultimi 50 messaggi quando ti connetti. Gli amministratori possono vedere statistiche complete.
+                </div>
+            </div>
+            
+            <div class="faq-item" onclick="toggleFaq(this)">
+                <div class="faq-question">
+                    Posso cancellare un messaggio inviato per errore?
+                </div>
+                <div class="faq-answer">
+                    No, i messaggi inviati sono permanenti e visibili a tutti. Trasmetti con attenzione! Usa il pulsante "🗑️" in alto per pulire la tua visualizzazione locale (solo visivo, non cancella dal database).
+                </div>
+            </div>
+            
+            <div class="faq-item" onclick="toggleFaq(this)">
+                <div class="faq-question">
+                    Perché il mio nominativo appare già occupato?
+                </div>
+                <div class="faq-answer">
+                    Probabilmente hai una sessione ancora attiva da un altro dispositivo/tab. Chiudi tutte le altre finestre MORSE-LINK e riprova. Oppure aggiungi un suffisso (es. "IU2RPQ-2").
+                </div>
+            </div>
+            
+            <div class="faq-item" onclick="toggleFaq(this)">
+                <div class="faq-question">
+                    Cos'è il QRM e a cosa serve?
+                </div>
+                <div class="faq-answer">
+                    Il QRM è un effetto audio che simula il rumore/interferenze tipico delle comunicazioni radio HF. Puoi attivarlo/disattivarlo da Settings per un'esperienza più realistica. Puramente estetico!
+                </div>
+            </div>
+            
+            <div class="faq-item" onclick="toggleFaq(this)">
+                <div class="faq-question">
+                    Posso collegare un tasto telegrafico fisico?
+                </div>
+                <div class="faq-answer">
+                    Tecnicamente sì, se il tuo tasto è collegato a un'interfaccia USB riconosciuta come tastiera/mouse. Mappa il tasto fisico usando la funzione "MAPPA TASTO". Per setup avanzati, contatta IU2RPQ.
+                </div>
+            </div>
+            
+            <div class="faq-item" onclick="toggleFaq(this)">
+                <div class="faq-question">
+                    Funziona su smart TV?
+                </div>
+                <div class="faq-answer">
+                    Dipende. Smart TV con browser moderno (Android TV, WebOS con Chrome) dovrebbero funzionare, ma l'esperienza è ottimizzata per PC/mobile. La trasmissione richiede un controller/telecomando.
+                </div>
+            </div>
+            
+            <div class="faq-item" onclick="toggleFaq(this)">
+                <div class="faq-question">
+                    Come posso contribuire al progetto?
+                </div>
+                <div class="faq-answer">
+                    MORSE-LINK è parte di "Radio in Vetta" (IU2RPQ). Puoi:
+                    <ul style="margin-top: 10px;">
+                        <li>📻 Usarlo e diffonderlo nella comunità radioamatoriale</li>
+                        <li>🐛 Segnalare bug o suggerire migliorie</li>
+                        <li>📝 Contribuire alla documentazione</li>
+                        <li>☕ Supportare con donazione (link su radioinvetta.it)</li>
+                    </ul>
+                </div>
+            </div>
+            
+            <div class="faq-item" onclick="toggleFaq(this)">
+                <div class="faq-question">
+                    C'è un'app dedicata per smartphone?
+                </div>
+                <div class="faq-answer">
+                    No, ma non serve! MORSE-LINK è una Progressive Web App (PWA). Su iOS/Android puoi "Aggiungi a Home Screen" per un'esperienza identica a un'app nativa, senza occupare spazio!
+                </div>
+            </div>
+            
+            <div class="faq-item" onclick="toggleFaq(this)">
+                <div class="faq-question">
+                    Posso creare una stanza privata con amici?
+                </div>
+                <div class="faq-answer">
+                    Al momento no, MORSE-LINK è una chat globale unica. Funzionalità di "stanze private" potrebbe essere aggiunta in futuro. Per ora, tutti comunicano sulla stessa frequenza!
+                </div>
+            </div>
+            
+            <div class="faq-item" onclick="toggleFaq(this)">
+                <div class="faq-question">
+                    Il sito è compatibile con screen reader per non vedenti?
+                </div>
+                <div class="faq-answer">
+                    Parzialmente. L'interfaccia è navigabile con tastiera, ma l'esperienza audio-visiva è ottimizzata per utenti vedenti. Feedback sulla accessibilità è benvenuto per migliorare l'inclusività.
+                </div>
+            </div>
+            
+            <div class="faq-item" onclick="toggleFaq(this)">
+                <div class="faq-question">
+                    Dove trovo il codice sorgente?
+                </div>
+                <div class="faq-answer">
+                    MORSE-LINK è attualmente closed-source ma potrebbe diventare open-source in futuro. Per collaborazioni tecniche, contatta IU2RPQ tramite radioinvetta.it.
+                </div>
+            </div>
+        </div>
+        
+        <!-- CONTATTI -->
+        <div class="section">
+            <h2>📧 CONTATTI & SUPPORTO</h2>
+            
+            <div class="step">
+                <strong>🌐 Sito web:</strong>
+                <br><a href="https://radioinvetta.it" style="color: var(--amber);">https://radioinvetta.it</a>
+                
+                <br><br><strong>📻 Nominativo:</strong> IU2RPQ
+                
+                <br><br><strong>💬 Community:</strong>
+                <br>Unisciti alla chat MORSE-LINK per supporto da altri utenti!
+                
+                <br><br><strong>🐛 Bug Report:</strong>
+                <br>Segnala problemi tecnici tramite il form su radioinvetta.it
+            </div>
+            
+            <div class="tip">
+                💡 <strong>SUGGERIMENTO:</strong> Prima di segnalare un problema, controlla la sezione "Risoluzione Problemi" e le FAQ. La maggior parte dei problemi ha una soluzione rapida!
+            </div>
+        </div>
+        
+        <div style="text-align: center; padding: 40px 20px; color: #666;">
+            <p>📡 MORSE-LINK LIVE - Sviluppato con ❤️ da IU2RPQ</p>
+            <p>🌍 Radio in Vetta Project - 2025</p>
+            <p style="font-size: 0.8rem;">
+                Questo manuale è aggiornato al Gennaio 2025
+                <br>Versione 1.0
+            </p>
+        </div>
+    </div>
+    
+    <script>
+        function toggleFaq(element) {
+            element.classList.toggle('open');
+        }
+        
+        // Smooth scroll per navigazione
+        document.querySelectorAll('.nav a').forEach(link => {
+            link.addEventListener('click', function(e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if(target) {
+                    target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                }
+            });
+        });
+    </script>
+</body>
+</html>
