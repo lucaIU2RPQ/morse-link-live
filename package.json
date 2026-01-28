@@ -1,0 +1,8 @@
+{
+  "name": "morse-link-live-functions",
+  "version": "1.0.0",
+  "description": "Netlify Functions for MORSE-LINK LIVE Virtual QSO",
+  "dependencies": {
+    "node-fetch": "^2.6.7"
+  }
+}
