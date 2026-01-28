@@ -102,6 +102,27 @@
             flex-wrap: wrap;
         }
         
+        /* VIRTUAL QSO BUTTON */
+        #virtual-qso-btn {
+            background: linear-gradient(135deg, var(--amber) 0%, #ff8800 100%);
+            color: var(--bg-black);
+            border: 2px solid var(--amber);
+            padding: 8px 16px;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 0.9rem;
+            border-radius: 5px;
+            transition: all 0.3s ease;
+            text-shadow: none;
+            box-shadow: 0 0 10px rgba(255, 176, 0, 0.3);
+        }
+        
+        #virtual-qso-btn:hover {
+            background: linear-gradient(135deg, #ff8800 0%, var(--amber) 100%);
+            box-shadow: 0 0 20px rgba(255, 176, 0, 0.6);
+            transform: translateY(-2px);
+        }
+        
         #main { 
             display: grid; 
             grid-template-columns: 160px 1fr 300px; 
@@ -822,11 +843,348 @@
         <div id="status-indicator" style="color: var(--green); font-size: 0.85rem;">● ONLINE</div>
     </div>
     <div class="header-buttons">
+        <button id="virtual-qso-btn" onclick="openVirtualQSO()">🤖 VIRTUAL QSO</button>
         <button id="audio-activate-btn" class="btn-green" onclick="activateAudioManually()">🔊 ATTIVA AUDIO</button>
         <button onclick="mapExternalKey()" id="map-btn">⌨️ MAPPA TASTO</button>
         <button onclick="openSettings()">⚙️ SETTINGS</button>
     </div>
 </header>
+
+<!-- VIRTUAL QSO SECTION -->
+<div id="virtual-qso-section" style="display: none; position: fixed; inset: 0; background: var(--bg-black); z-index: 999; overflow-y: auto; padding: 20px;">
+    <div style="max-width: 1400px; margin: 0 auto;">
+        <!-- Header -->
+        <div style="text-align: center; margin-bottom: 30px;">
+            <h1 style="font-size: 2.5rem; color: var(--amber); text-shadow: 0 0 20px var(--amber); letter-spacing: 0.1em; margin: 0 0 10px 0; font-weight: bold;">
+                VIRTUAL QSO
+            </h1>
+            <div style="font-size: 1rem; color: #888; letter-spacing: 0.2em; text-transform: uppercase;">
+                AI-Powered Radio Simulator
+            </div>
+        </div>
+
+        <!-- Setup Area -->
+        <div id="vqso-setup">
+            <div style="display: grid; grid-template-columns: 350px 1fr; gap: 20px; margin-bottom: 20px;">
+                <!-- Pannello Configurazione -->
+                <aside style="background: var(--panel); border: 2px solid var(--amber); border-radius: 8px; padding: 20px;">
+                    <h2 style="font-size: 1.1rem; font-weight: bold; color: var(--amber); margin-bottom: 15px; padding-bottom: 10px; border-bottom: 1px solid #333; text-transform: uppercase; letter-spacing: 0.1em;">
+                        ⚙️ Configurazione QSO
+                    </h2>
+                    
+                    <!-- Livello -->
+                    <div style="margin-bottom: 20px;">
+                        <label style="display: block; font-size: 0.85rem; font-weight: bold; color: var(--green); margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.05em;">
+                            Livello Operatore
+                        </label>
+                        <div id="vqso-level-options" style="display: flex; flex-direction: column; gap: 8px;">
+                            <label style="cursor: pointer; padding: 10px 12px; background: rgba(0, 0, 0, 0.5); border: 1px solid #333; border-radius: 5px; transition: all 0.3s ease;">
+                                <input type="radio" name="vqso-level" value="beginner" checked style="margin-right: 10px;">
+                                <strong>Principiante</strong> (10-12 WPM)
+                                <div style="font-size: 0.75rem; color: #666; margin-top: 3px; line-height: 1.3;">
+                                    Conversazioni lente, frasi brevi, abbreviazioni comuni
+                                </div>
+                            </label>
+                            <label style="cursor: pointer; padding: 10px 12px; background: rgba(0, 0, 0, 0.5); border: 1px solid #333; border-radius: 5px; transition: all 0.3s ease;">
+                                <input type="radio" name="vqso-level" value="intermediate" style="margin-right: 10px;">
+                                <strong>Intermedio</strong> (15-18 WPM)
+                                <div style="font-size: 0.75rem; color: #666; margin-top: 3px; line-height: 1.3;">
+                                    Velocità media, conversazione naturale
+                                </div>
+                            </label>
+                            <label style="cursor: pointer; padding: 10px 12px; background: rgba(0, 0, 0, 0.5); border: 1px solid #333; border-radius: 5px; transition: all 0.3s ease;">
+                                <input type="radio" name="vqso-level" value="advanced" style="margin-right: 10px;">
+                                <strong>Esperto</strong> (20-25 WPM)
+                                <div style="font-size: 0.75rem; color: #666; margin-top: 3px; line-height: 1.3;">
+                                    Veloce, abbreviazioni avanzate, QSB simulato
+                                </div>
+                            </label>
+                        </div>
+                    </div>
+
+                    <!-- Modalità -->
+                    <div style="margin-bottom: 20px;">
+                        <label style="display: block; font-size: 0.85rem; font-weight: bold; color: var(--green); margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.05em;">
+                            Modalità QSO
+                        </label>
+                        <div id="vqso-mode-options" style="display: flex; flex-direction: column; gap: 8px;">
+                            <label style="cursor: pointer; padding: 10px 12px; background: rgba(0, 0, 0, 0.5); border: 1px solid #333; border-radius: 5px;">
+                                <input type="radio" name="vqso-mode" value="ragchew" checked style="margin-right: 10px;">
+                                <strong>Ragchew</strong>
+                                <div style="font-size: 0.75rem; color: #666; margin-top: 3px;">Conversazione rilassata e dettagliata</div>
+                            </label>
+                            <label style="cursor: pointer; padding: 10px 12px; background: rgba(0, 0, 0, 0.5); border: 1px solid #333; border-radius: 5px;">
+                                <input type="radio" name="vqso-mode" value="contest" style="margin-right: 10px;">
+                                <strong>Contest</strong>
+                                <div style="font-size: 0.75rem; color: #666; margin-top: 3px;">Scambi rapidi, solo report e numero</div>
+                            </label>
+                            <label style="cursor: pointer; padding: 10px 12px; background: rgba(0, 0, 0, 0.5); border: 1px solid #333; border-radius: 5px;">
+                                <input type="radio" name="vqso-mode" value="dx" style="margin-right: 10px;">
+                                <strong>DX</strong>
+                                <div style="font-size: 0.75rem; color: #666; margin-top: 3px;">Pile-up, condizioni difficili</div>
+                            </label>
+                            <label style="cursor: pointer; padding: 10px 12px; background: rgba(0, 0, 0, 0.5); border: 1px solid #333; border-radius: 5px;">
+                                <input type="radio" name="vqso-mode" value="sota" style="margin-right: 10px;">
+                                <strong>SOTA/POTA</strong>
+                                <div style="font-size: 0.75rem; color: #666; margin-top: 3px;">Operatore da cima o parco</div>
+                            </label>
+                            <label style="cursor: pointer; padding: 10px 12px; background: rgba(0, 0, 0, 0.5); border: 1px solid #333; border-radius: 5px;">
+                                <input type="radio" name="vqso-mode" value="emergency" style="margin-right: 10px;">
+                                <strong>Emergency</strong>
+                                <div style="font-size: 0.75rem; color: #666; margin-top: 3px;">Simulazione traffico emergenza</div>
+                            </label>
+                        </div>
+                    </div>
+
+                    <button onclick="startVirtualQSO()" style="width: 100%; padding: 15px; font-size: 1.2rem; font-weight: bold; color: var(--bg-black); background: linear-gradient(135deg, var(--amber) 0%, #ff8800 100%); border: 2px solid var(--amber); border-radius: 8px; cursor: pointer; text-transform: uppercase; letter-spacing: 0.15em;">
+                        Inizia QSO
+                    </button>
+                </aside>
+
+                <!-- Pannello Info -->
+                <main style="background: var(--panel); border: 2px solid var(--amber); border-radius: 8px; padding: 20px;">
+                    <h2 style="font-size: 1.1rem; font-weight: bold; color: var(--amber); margin-bottom: 15px; padding-bottom: 10px; border-bottom: 1px solid #333; text-transform: uppercase; letter-spacing: 0.1em;">
+                        📻 Info Virtual QSO
+                    </h2>
+                    <div style="line-height: 1.8; color: #ccc;">
+                        <p style="margin-bottom: 15px;"><strong style="color: var(--amber);">Benvenuto nel Virtual QSO!</strong></p>
+                        <p style="margin-bottom: 15px;">Questo modulo simula conversazioni radioamatoriali realistiche in codice Morse (CW).</p>
+                        
+                        <p style="margin-bottom: 10px;"><strong style="color: var(--green);">Abbreviazioni comuni:</strong></p>
+                        <div style="background: rgba(0, 0, 0, 0.3); padding: 15px; border-radius: 5px; font-size: 0.85rem;">
+                            <strong>CQ</strong> = Chiamata generale | <strong>DE</strong> = Da (from) | <strong>K</strong> = Passo<br>
+                            <strong>RST</strong> = Report | <strong>OM</strong> = Old Man | <strong>FB</strong> = Fine Business<br>
+                            <strong>TNX</strong> = Thanks | <strong>QTH</strong> = Località | <strong>WX</strong> = Weather<br>
+                            <strong>RIG</strong> = Apparato | <strong>ANT</strong> = Antenna | <strong>73</strong> = Saluti<br>
+                            <strong>SK</strong> = Fine | <strong>QSL</strong> = Confermo
+                        </div>
+                        
+                        <p style="margin-top: 15px; font-size: 0.85rem; color: #888;">
+                            <strong>Nota:</strong> Modalità demo. Per AI reale serve backend con API Anthropic.
+                        </p>
+                    </div>
+                </main>
+            </div>
+        </div>
+
+        <!-- Chat Area -->
+        <div id="vqso-chat" style="display: none;">
+            <button onclick="closeVirtualQSO()" style="padding: 10px 20px; margin-bottom: 20px; font-weight: bold; color: var(--amber); background: transparent; border: 2px solid var(--amber); border-radius: 5px; cursor: pointer;">
+                ← Torna a MORSE-LINK
+            </button>
+            
+            <div style="background: var(--panel); border: 2px solid var(--amber); border-radius: 8px; padding: 20px;">
+                <!-- Status Bar -->
+                <div style="display: flex; justify-content: space-between; padding: 12px 15px; background: rgba(0, 0, 0, 0.5); border-radius: 5px; margin-bottom: 15px; border: 1px solid #333;">
+                    <div><span style="display: inline-block; width: 10px; height: 10px; background: var(--green); border-radius: 50%; margin-right: 8px; box-shadow: 0 0 10px var(--green);"></span>QSO ATTIVO</div>
+                    <div id="vqso-operator">---</div>
+                    <div id="vqso-mode-display">---</div>
+                </div>
+
+                <!-- Info Box -->
+                <div id="vqso-info" style="background: rgba(255, 176, 0, 0.05); border: 1px solid var(--amber); border-radius: 5px; padding: 12px; margin-bottom: 15px; font-size: 0.85rem;"></div>
+
+                <!-- Messages Display -->
+                <div id="vqso-messages" style="background: rgba(0, 0, 0, 0.8); border: 2px solid var(--amber); border-radius: 5px; padding: 15px; min-height: 400px; max-height: 500px; overflow-y: auto; margin-bottom: 15px;"></div>
+
+                <!-- Loading -->
+                <div id="vqso-loading" style="display: none; align-items: center; gap: 10px; padding: 12px; background: rgba(255, 176, 0, 0.05); border-radius: 5px; margin-bottom: 15px;">
+                    <div style="width: 18px; height: 18px; border: 3px solid rgba(255, 176, 0, 0.2); border-top-color: var(--amber); border-radius: 50%; animation: spin 0.8s linear infinite;"></div>
+                    <span>Operatore sta trasmettendo...</span>
+                </div>
+
+                <!-- Input Area -->
+                <div style="display: flex; gap: 10px;">
+                    <input type="text" id="vqso-input" placeholder="Scrivi il tuo messaggio in CW (es: GM OM TNX CALL)..." style="flex: 1; padding: 12px; font-family: 'Courier New', monospace; background: rgba(0, 0, 0, 0.7); border: 2px solid var(--amber); border-radius: 5px; color: var(--amber);">
+                    <button onclick="sendVQSOMessage()" style="padding: 12px 25px; font-weight: bold; color: var(--bg-black); background: var(--amber); border: 2px solid var(--amber); border-radius: 5px; cursor: pointer;">INVIA</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+#vqso-level-options label:hover,
+#vqso-mode-options label:hover {
+    background: rgba(255, 176, 0, 0.1) !important;
+    border-color: var(--amber) !important;
+}
+
+#vqso-messages::-webkit-scrollbar {
+    width: 8px;
+}
+
+#vqso-messages::-webkit-scrollbar-track {
+    background: rgba(0, 0, 0, 0.5);
+}
+
+#vqso-messages::-webkit-scrollbar-thumb {
+    background: var(--amber);
+    border-radius: 4px;
+}
+
+@media (max-width: 1024px) {
+    #vqso-setup > div {
+        grid-template-columns: 1fr !important;
+    }
+}
+</style>
+
+<script>
+// VIRTUAL QSO JavaScript
+let vqsoConfig = {
+    level: 'beginner',
+    mode: 'ragchew',
+    botCallsign: '',
+    botName: '',
+    botQTH: '',
+    history: []
+};
+
+function openVirtualQSO() {
+    document.getElementById('virtual-qso-section').style.display = 'block';
+    document.getElementById('main').style.display = 'none';
+    document.querySelector('header').style.display = 'none';
+}
+
+function closeVirtualQSO() {
+    document.getElementById('virtual-qso-section').style.display = 'none';
+    document.getElementById('main').style.display = 'grid';
+    document.querySelector('header').style.display = 'flex';
+    document.getElementById('vqso-setup').style.display = 'block';
+    document.getElementById('vqso-chat').style.display = 'none';
+    document.getElementById('vqso-messages').innerHTML = '';
+    vqsoConfig.history = [];
+}
+
+function generateCallsign() {
+    const prefixes = ['IK', 'I0', 'IZ', 'DL', 'G', 'F', 'EA', 'ON', 'PA', 'SM'];
+    const prefix = prefixes[Math.floor(Math.random() * prefixes.length)];
+    const number = Math.floor(Math.random() * 10);
+    const letters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+    const suffix = letters[Math.floor(Math.random() * 26)] + 
+                   letters[Math.floor(Math.random() * 26)] + 
+                   letters[Math.floor(Math.random() * 26)];
+    return prefix + number + suffix;
+}
+
+function startVirtualQSO() {
+    vqsoConfig.level = document.querySelector('input[name="vqso-level"]:checked').value;
+    vqsoConfig.mode = document.querySelector('input[name="vqso-mode"]:checked').value;
+    
+    const names = ['MARIO', 'GIUSEPPE', 'FRANCO', 'PAOLO', 'ROBERTO'];
+    const cities = ['MILANO', 'ROMA', 'BOLOGNA', 'TORINO', 'UDINE'];
+    
+    vqsoConfig.botCallsign = generateCallsign();
+    vqsoConfig.botName = names[Math.floor(Math.random() * names.length)];
+    vqsoConfig.botQTH = cities[Math.floor(Math.random() * cities.length)];
+    vqsoConfig.history = [];
+    
+    document.getElementById('vqso-setup').style.display = 'none';
+    document.getElementById('vqso-chat').style.display = 'block';
+    
+    document.getElementById('vqso-operator').textContent = vqsoConfig.botCallsign;
+    document.getElementById('vqso-mode-display').textContent = vqsoConfig.mode.toUpperCase();
+    
+    const speeds = { beginner: '10-12 WPM', intermediate: '15-18 WPM', advanced: '20-25 WPM' };
+    document.getElementById('vqso-info').innerHTML = `
+        <strong>Operatore:</strong> ${vqsoConfig.botCallsign} (${vqsoConfig.botName}) da ${vqsoConfig.botQTH}<br>
+        <strong>Modalità:</strong> ${vqsoConfig.mode.toUpperCase()} | <strong>Velocità:</strong> ${speeds[vqsoConfig.level]}
+    `;
+    
+    // First CQ call
+    const firstMessage = `CQ CQ CQ DE ${vqsoConfig.botCallsign} ${vqsoConfig.botCallsign} K`;
+    setTimeout(() => {
+        addVQSOMessage('bot', vqsoConfig.botCallsign, firstMessage);
+        vqsoConfig.history.push({ role: 'assistant', content: firstMessage });
+    }, 500);
+}
+
+function addVQSOMessage(sender, callsign, text) {
+    const div = document.createElement('div');
+    div.style.cssText = `
+        margin-bottom: 12px;
+        padding: 10px 12px;
+        border-radius: 5px;
+        ${sender === 'bot' ? 
+            'background: rgba(255, 176, 0, 0.05); border-left: 3px solid var(--amber); color: var(--amber);' :
+            'background: rgba(0, 255, 0, 0.05); border-left: 3px solid var(--green); color: var(--green); text-align: right;'
+        }
+    `;
+    
+    const time = new Date().toLocaleTimeString('it-IT');
+    div.innerHTML = `
+        <div style="font-weight: bold; font-size: 1rem; margin-bottom: 4px;">${callsign}</div>
+        <div style="font-size: 0.9rem;">${text}</div>
+        <div style="font-size: 0.7rem; opacity: 0.6; margin-top: 4px;">${time} UTC</div>
+    `;
+    
+    document.getElementById('vqso-messages').appendChild(div);
+    document.getElementById('vqso-messages').scrollTop = document.getElementById('vqso-messages').scrollHeight;
+}
+
+async function sendVQSOMessage() {
+    const input = document.getElementById('vqso-input');
+    const msg = input.value.trim();
+    if (!msg) return;
+    
+    addVQSOMessage('user', 'IU2RPQ', msg);
+    vqsoConfig.history.push({ role: 'user', content: msg });
+    
+    input.value = '';
+    input.disabled = true;
+    
+    document.getElementById('vqso-loading').style.display = 'flex';
+    
+    try {
+        // Call Netlify Function
+        const response = await fetch('/.netlify/functions/vqso-chat', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                level: vqsoConfig.level,
+                mode: vqsoConfig.mode,
+                botCallsign: vqsoConfig.botCallsign,
+                botName: vqsoConfig.botName,
+                botQTH: vqsoConfig.botQTH,
+                messages: vqsoConfig.history
+            })
+        });
+        
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        
+        const data = await response.json();
+        const botResponse = data.response;
+        
+        addVQSOMessage('bot', vqsoConfig.botCallsign, botResponse);
+        vqsoConfig.history.push({ role: 'assistant', content: botResponse });
+        
+    } catch (error) {
+        console.error('Error calling AI:', error);
+        addVQSOMessage('bot', 'SISTEMA', `❌ ERRORE: ${error.message}. Verifica che Netlify Functions sia configurato correttamente.`);
+    } finally {
+        document.getElementById('vqso-loading').style.display = 'none';
+        input.disabled = false;
+        input.focus();
+    }
+}
+
+// Enter key support
+document.addEventListener('DOMContentLoaded', () => {
+    const input = document.getElementById('vqso-input');
+    if (input) {
+        input.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') sendVQSOMessage();
+        });
+    }
+});
+</script>
 
 <div id="main">
     <div id="sidebar">
