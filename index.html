@@ -4,6 +4,18 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>MORSE-LINK LIVE | Radio in Vetta</title>
+    
+    <!-- PWA Meta Tags -->
+    <meta name="description" content="Real-time Morse Code communication platform for amateur radio operators worldwide">
+    <meta name="theme-color" content="#ffb000">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="MORSE-LINK">
+    <link rel="manifest" href="/manifest.json">
+    <link rel="icon" type="image/png" sizes="192x192" href="/icon-192.png">
+    <link rel="icon" type="image/png" sizes="512x512" href="/icon-512.png">
+    <link rel="apple-touch-icon" href="/icon-192.png">
+    
     <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-database-compat.js"></script>
     
@@ -276,8 +288,11 @@
             border-radius: 50%; 
             cursor: pointer; 
             touch-action: none;
-            transition: background 0.05s, transform 0.1s;
+            -webkit-tap-highlight-color: transparent;
+            -webkit-touch-callout: none;
+            -webkit-user-select: none;
             user-select: none;
+            transition: background 0.05s, transform 0.05s;
         }
         
         #key:active { 
@@ -839,6 +854,9 @@
     <div id="morse-section">
         <div class="section-title" style="color: var(--amber); border-color: var(--amber);">
             📻 MORSE CODE
+            <button onclick="toggleDecoder()" id="decoder-toggle-top" style="float: right; padding: 5px 10px; font-size: 0.7rem; background: var(--green); border-color: var(--green); color: #000;">
+                👁️ DECODER: ON
+            </button>
         </div>
         <div id="messages"></div>
         <div id="decoder-preview"></div>
@@ -880,6 +898,19 @@
             <div class="toggle-switch" id="toggle-qrm" onclick="toggleQRM()">
                 <div class="toggle-slider"></div>
             </div>
+        </div>
+        
+        <div class="setting-row">
+            <div class="setting-label">🌐 Lingua / Language</div>
+            <select onchange="changeLanguage(this.value)" id="lang-selector" style="padding: 8px; background: #000; color: var(--amber); border: 1px solid var(--amber); font-family: 'Courier New', monospace;">
+                <option value="it">🇮🇹 Italiano</option>
+                <option value="en">🇬🇧 English</option>
+            </select>
+        </div>
+        
+        <div class="setting-row">
+            <div class="setting-label">📧 Contattaci</div>
+            <button onclick="sendEmail()" style="padding: 8px 16px; background: var(--blue); border-color: var(--blue);">✉️ INVIA EMAIL</button>
         </div>
         
         <div class="setting-row">
@@ -997,6 +1028,7 @@
     let mappedKey = null, isMapping = false;
     let lastUp = Date.now();
     let textDisplayEnabled = true;
+    let decoderEnabled = true;
     let audioEnabled = false;
     let qrmEnabled = false;
     let morseKeyboardEnabled = true;
@@ -1294,6 +1326,24 @@
             toggle.classList.remove('active');
         }
     }
+    
+    function toggleDecoder() {
+        decoderEnabled = !decoderEnabled;
+        const decoder = document.getElementById('decoder-preview');
+        const toggleBtn = document.getElementById('decoder-toggle-top');
+        
+        if(decoderEnabled) {
+            decoder.style.display = 'block';
+            toggleBtn.innerHTML = '👁️ DECODER: ON';
+            toggleBtn.style.background = 'var(--green)';
+            toggleBtn.style.borderColor = 'var(--green)';
+        } else {
+            decoder.style.display = 'none';
+            toggleBtn.innerHTML = '👁️ DECODER: OFF';
+            toggleBtn.style.background = '#666';
+            toggleBtn.style.borderColor = '#666';
+        }
+    }
 
     function clearChat() {
         if(confirm('Pulire Morse chat?')) {
@@ -1321,17 +1371,93 @@
         // Apri manuale in nuova tab
         window.open('https://morse.radioinvetta.it/manuale-utente.html', '_blank');
     }
+    
+    function sendEmail() {
+        // Apri client email con indirizzo precompilato
+        const subject = encodeURIComponent('MORSE-LINK Feedback da ' + (callsign || 'Utente'));
+        const body = encodeURIComponent('Ciao,\n\nScrivo riguardo a MORSE-LINK LIVE.\n\n[Il tuo messaggio qui]\n\n---\nCallsign: ' + (callsign || 'N/A') + '\nBrowser: ' + navigator.userAgent);
+        window.location.href = `mailto:info@radioinvetta.it?subject=${subject}&body=${body}`;
+    }
+    
+    // Sistema lingua semplificato
+    let currentLang = 'it';
+    
+    const translations = {
+        it: {
+            callsignPlaceholder: 'TUO NOMINATIVO (es. IU2RPQ)',
+            connectBtn: '▶ CONNETTI',
+            station: 'STAZIONE:',
+            online: '● ONLINE',
+            mapKeyBtn: 'MAPPA TASTO',
+            textInputPlaceholder: 'Scrivi messaggio...',
+            sendBtn: 'INVIA',
+            enterCallsign: 'Inserisci nominativo!',
+            callsignTooShort: 'Nominativo troppo corto!',
+            clearMorseConfirm: 'Pulire Morse chat?',
+            clearTextConfirm: 'Pulire Text chat?'
+        },
+        en: {
+            callsignPlaceholder: 'YOUR CALLSIGN (e.g. W1AW)',
+            connectBtn: '▶ CONNECT',
+            station: 'STATION:',
+            online: '● ONLINE',
+            mapKeyBtn: 'MAP KEY',
+            textInputPlaceholder: 'Type message...',
+            sendBtn: 'SEND',
+            enterCallsign: 'Enter callsign!',
+            callsignTooShort: 'Callsign too short!',
+            clearMorseConfirm: 'Clear Morse chat?',
+            clearTextConfirm: 'Clear Text chat?'
+        }
+    };
+    
+    function changeLanguage(lang) {
+        currentLang = lang;
+        localStorage.setItem('morse-lang', lang);
+        
+        // Aggiorna elementi chiave
+        const t = translations[lang];
+        
+        // Login
+        const callsignInput = document.getElementById('callsign');
+        if(callsignInput) callsignInput.placeholder = t.callsignPlaceholder;
+        
+        // Text chat
+        const textInput = document.getElementById('text-input');
+        if(textInput) textInput.placeholder = t.textInputPlaceholder;
+        
+        const textSend = document.getElementById('text-send');
+        if(textSend) textSend.innerText = t.sendBtn;
+        
+        // Aggiorna HTML lang attribute
+        document.documentElement.lang = lang;
+        
+        console.log('🌐 Lingua cambiata:', lang);
+    }
+    
+    // Carica lingua salvata al caricamento
+    window.addEventListener('DOMContentLoaded', () => {
+        const saved = localStorage.getItem('morse-lang');
+        if(saved && translations[saved]) {
+            currentLang = saved;
+            const selector = document.getElementById('lang-selector');
+            if(selector) selector.value = saved;
+            changeLanguage(saved);
+        }
+    });
 
     function startApp() {
         callsign = document.getElementById('callsign').value.trim().toUpperCase();
         
+        const t = translations[currentLang];
+        
         if(!callsign) {
-            alert('Inserisci nominativo!');
+            alert(t.enterCallsign);
             return;
         }
         
         if(callsign.length < 3) {
-            alert('Nominativo troppo corto!');
+            alert(t.callsignTooShort);
             return;
         }
         
@@ -1339,6 +1465,14 @@
         document.getElementById('login-overlay').style.display = 'none';
         
         initAudio();
+        
+        // CHROME: Mostra avviso OBBLIGATORIO per attivare audio
+        const isChrome = /Chrome/.test(navigator.userAgent) && /Google Inc/.test(navigator.vendor);
+        if(isChrome && audioCtx && audioCtx.state === 'suspended') {
+            setTimeout(() => {
+                alert('⚠️ IMPORTANTE!\n\nSu Chrome devi cliccare il pulsante\n🔊 ATTIVA AUDIO\nin alto per sentire i messaggi Morse in arrivo.');
+            }, 500);
+        }
         
         // CHROME FIX: Attiva audio al primo click/touch
         document.body.addEventListener('touchstart', () => {
@@ -1609,9 +1743,21 @@
     setInterval(() => {
         if(morseBuffer !== "" && (Date.now() - lastUp > 600)) {
             const char = MORSE[morseBuffer] || "?";
-            sendMessage(char);
+            // IMPORTANTE: Invia SEMPRE il pattern morse, non il "?"
+            // Così il suono arriva comunque agli altri utenti
+            const toSend = MORSE[morseBuffer] ? char : morseBuffer;
+            sendMessage(toSend);
             morseBuffer = "";
             document.getElementById('decoder-preview').innerText = "";
+        }
+        
+        // PUNTO 3: Aggiungi spazio nel decoder dopo pausa lunga
+        if(morseBuffer === "" && (Date.now() - lastUp > 1200) && (Date.now() - lastUp < 1300)) {
+            // Aggiungi spazio visivo nel decoder dopo pausa tra parole
+            const decoder = document.getElementById('decoder-preview');
+            if(decoder.innerText && !decoder.innerText.endsWith(' ')) {
+                decoder.innerText += ' ';
+            }
         }
     }, 100);
 
@@ -1831,8 +1977,14 @@
     const keyEl = document.getElementById('key');
     keyEl.addEventListener('mousedown', down);
     window.addEventListener('mouseup', (e) => up(e));
-    keyEl.addEventListener('touchstart', (e) => { e.preventDefault(); down(e); });
-    window.addEventListener('touchend', (e) => up(e));
+    keyEl.addEventListener('touchstart', (e) => { 
+        e.preventDefault(); 
+        e.stopPropagation();
+        down(e); 
+    }, { passive: false });
+    window.addEventListener('touchend', (e) => {
+        if(isDown) up(e);
+    }, { passive: false });
     window.addEventListener('keydown', (e) => { 
         if(!e.repeat) {
             // Previeni scroll con Space
