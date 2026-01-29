@@ -2024,11 +2024,15 @@
         currentWPM = parseInt(document.getElementById('wpm-selector').value);
         decoderTimings = calculateTimings(currentWPM);
         
-        // Aggiorna display info
-        document.getElementById('wpm-info').innerHTML = 
-            `⏱️ Lettera: ${decoderTimings.charTimeout}ms | Spazio: ${decoderTimings.letterGap}ms`;
+        // Calcola finestra spazio (uguale a quella nel decoder loop)
+        const spazioMin = decoderTimings.charTimeout + 50;
+        const spazioMax = decoderTimings.resetTime - 500;
         
-        console.log(`⚡ WPM: ${currentWPM} → Lettera: ${decoderTimings.charTimeout}ms | Spazio: ${decoderTimings.letterGap}ms | Reset: ${decoderTimings.resetTime}ms`);
+        // Aggiorna display info con finestra
+        document.getElementById('wpm-info').innerHTML = 
+            `⏱️ Lettera: ${decoderTimings.charTimeout}ms | Spazio: ${spazioMin}-${spazioMax}ms`;
+        
+        console.log(`⚡ WPM: ${currentWPM} → Lettera: ${decoderTimings.charTimeout}ms | Spazio finestra: ${spazioMin}-${spazioMax}ms | Reset: ${decoderTimings.resetTime}ms`);
     }
     
     // Inizializza timings default
@@ -2057,9 +2061,11 @@
             console.log(`✅ Decodificato: "${char}" | WPM: ${currentWPM} | Attesa: ${now - lastUp}ms`);
         }
         
-        // 2. SPAZIO TRA PAROLE - timing adattivo con finestra di tolleranza
-        const spazioMin = decoderTimings.letterGap;
-        const spazioMax = spazioMin + 300; // Finestra di 300ms per flessibilità
+        // 2. SPAZIO TRA PAROLE - finestra MOLTO ampia per catturare pause naturali
+        // Invece di finestra stretta (letterGap → letterGap+300ms)
+        // Usiamo finestra larga: da subito dopo conferma lettera fino a prima del reset
+        const spazioMin = decoderTimings.charTimeout + 50;  // Dopo conferma + margine
+        const spazioMax = decoderTimings.resetTime - 500;   // Prima del reset
         
         if(decoderContent !== "" && 
            decoderContent.trim() !== "" && 
@@ -2068,7 +2074,7 @@
            (now - lastCharTime < spazioMax)) {
             decoderContent += ' ';
             document.getElementById('decoder-preview').innerText = decoderContent;
-            console.log(`➕ Spazio aggiunto | WPM: ${currentWPM} | Attesa: ${now - lastCharTime}ms`);
+            console.log(`➕ Spazio aggiunto | WPM: ${currentWPM} | Pausa: ${now - lastCharTime}ms | Finestra: ${spazioMin}-${spazioMax}ms`);
         }
         
         // 3. RESET DECODER - dopo pausa molto lunga (inattività)
