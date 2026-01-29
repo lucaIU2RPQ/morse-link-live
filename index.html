@@ -860,6 +860,25 @@
             </button>
         </div>
         <div id="messages"></div>
+        
+        <!-- WPM Selector per Decoder Intelligente -->
+        <div style="display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 8px 10px; background: rgba(0, 255, 0, 0.05); border: 1px solid var(--green); border-radius: 5px; margin-bottom: 8px; flex-wrap: wrap;">
+            <div style="display: flex; align-items: center; gap: 8px;">
+                <label style="font-size: 0.8rem; color: var(--green); font-weight: bold; white-space: nowrap;">⚡ Velocità TX:</label>
+                <select id="wpm-selector" onchange="updateDecoderSpeed()" style="padding: 5px 8px; background: rgba(0, 0, 0, 0.5); border: 1px solid var(--green); border-radius: 3px; color: var(--green); font-family: 'Courier New', monospace; font-size: 0.75rem; cursor: pointer;">
+                    <option value="8">8 WPM (Molto Lento)</option>
+                    <option value="10">10 WPM (Lento)</option>
+                    <option value="12">12 WPM</option>
+                    <option value="15" selected>15 WPM (Medio)</option>
+                    <option value="18">18 WPM</option>
+                    <option value="20">20 WPM</option>
+                    <option value="25">25 WPM (Veloce)</option>
+                    <option value="30">30 WPM (Molto Veloce)</option>
+                </select>
+            </div>
+            <span id="wpm-info" style="font-size: 0.7rem; color: #888; white-space: nowrap;">⏱️ Lettera: 400ms | Spazio: 560ms</span>
+        </div>
+        
         <div id="decoder-preview"></div>
         <div id="morse-pad">
             <div id="key"></div>
@@ -1974,45 +1993,91 @@
         console.log('⌨️ Morse Keyboard:', morseKeyboardEnabled ? 'ON' : 'OFF');
     }
 
-    // Variabile per tracciare ultimo carattere inviato
+    // ===== DECODER INTELLIGENTE CON WPM =====
     let lastCharTime = 0;
     let decoderContent = "";
+    let currentWPM = 15; // Default medio
+    let decoderTimings = {
+        charTimeout: 400,   // Tempo per confermare lettera
+        letterGap: 240,     // Pausa per spazio tra parole  
+        wordGap: 560,       // Pausa più lunga per reset
+        resetTime: 5000     // Tempo inattività per reset
+    };
     
+    // ===== CALCOLA TIMING DA WPM (PARIS METHOD) =====
+    function calculateTimings(wpm) {
+        // Formula standard: PARIS method
+        // 1 WPM = 1 parola "PARIS" (50 unità) al minuto
+        // Quindi 1 unità = 1200ms / WPM
+        const unitTime = 1200 / wpm;
+        
+        return {
+            charTimeout: Math.round(unitTime * 5),   // 5 unità per confermare lettera
+            letterGap: Math.round(unitTime * 3),     // 3 unità tra lettere (per spazio parola)
+            wordGap: Math.round(unitTime * 7),       // 7 unità tra parole
+            resetTime: Math.max(5000, Math.round(unitTime * 15))  // 15 unità o min 5s
+        };
+    }
+    
+    // ===== AGGIORNA VELOCITÀ DECODER =====
+    function updateDecoderSpeed() {
+        currentWPM = parseInt(document.getElementById('wpm-selector').value);
+        decoderTimings = calculateTimings(currentWPM);
+        
+        // Aggiorna display info
+        document.getElementById('wpm-info').innerHTML = 
+            `⏱️ Lettera: ${decoderTimings.charTimeout}ms | Spazio: ${decoderTimings.letterGap}ms`;
+        
+        console.log(`⚡ WPM: ${currentWPM} → Lettera: ${decoderTimings.charTimeout}ms | Spazio: ${decoderTimings.letterGap}ms | Reset: ${decoderTimings.resetTime}ms`);
+    }
+    
+    // Inizializza timings default
+    updateDecoderSpeed();
+    
+    // ===== DECODER LOOP MIGLIORATO CON TIMING ADATTIVI =====
     setInterval(() => {
         const now = Date.now();
         
-        // Invia carattere dopo pausa breve (600ms)
-        if(morseBuffer !== "" && (now - lastUp > 600)) {
+        // 1. DECODIFICA LETTERA - usa timing dinamico basato su WPM
+        if(morseBuffer !== "" && (now - lastUp > decoderTimings.charTimeout)) {
             const char = MORSE[morseBuffer] || "?";
             const toSend = MORSE[morseBuffer] ? char : morseBuffer;
+            
+            // Invia a Firebase
             sendMessage(toSend);
             
             // Aggiungi al contenuto decoder locale
             decoderContent += char;
             lastCharTime = now;
             
+            // Pulisci buffer
             morseBuffer = "";
             document.getElementById('decoder-preview').innerText = decoderContent;
+            
+            console.log(`✅ Decodificato: "${char}" | WPM: ${currentWPM} | Attesa: ${now - lastUp}ms`);
         }
         
-        // Aggiungi SPAZIO dopo pausa lunga tra lettere (1.5 secondi)
+        // 2. SPAZIO TRA PAROLE - timing adattivo con finestra di tolleranza
+        const spazioMin = decoderTimings.letterGap;
+        const spazioMax = spazioMin + 300; // Finestra di 300ms per flessibilità
+        
         if(decoderContent !== "" && 
            decoderContent.trim() !== "" && 
            !decoderContent.endsWith(' ') && 
-           (now - lastCharTime > 1500) && 
-           (now - lastCharTime < 1600)) {
+           (now - lastCharTime > spazioMin) && 
+           (now - lastCharTime < spazioMax)) {
             decoderContent += ' ';
             document.getElementById('decoder-preview').innerText = decoderContent;
-            console.log('➕ Spazio aggiunto nel decoder');
+            console.log(`➕ Spazio aggiunto | WPM: ${currentWPM} | Attesa: ${now - lastCharTime}ms`);
         }
         
-        // Reset decoder dopo pausa molto lunga (5 secondi di inattività)
-        if(decoderContent !== "" && (now - lastCharTime > 5000)) {
+        // 3. RESET DECODER - dopo pausa molto lunga (inattività)
+        if(decoderContent !== "" && (now - lastCharTime > decoderTimings.resetTime)) {
             decoderContent = "";
             document.getElementById('decoder-preview').innerText = "";
-            console.log('🔄 Decoder resettato');
+            console.log(`🔄 Decoder resettato dopo ${decoderTimings.resetTime}ms di inattività`);
         }
-    }, 100);
+    }, 50);  // Polling 50ms invece di 100ms per maggiore precisione su WPM alti
 
     async function activateAudioManually() {
         console.log('═══════════════════════════════');
