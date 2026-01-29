@@ -2030,8 +2030,8 @@
         currentWPM = parseInt(document.getElementById('wpm-selector').value);
         decoderTimings = calculateTimings(currentWPM);
         
-        // Info display
-        const SILENCE_FOR_SPACE = 600;
+        // Info display - timing spazio proporzionale
+        const SILENCE_FOR_SPACE = (decoderTimings.charTimeout * 2) + 200;
         
         document.getElementById('wpm-info').innerHTML = 
             `⏱️ Lettera: ${decoderTimings.charTimeout}ms | Spazio: ${SILENCE_FOR_SPACE}ms silenzio`;
@@ -2066,19 +2066,28 @@
             console.log(`✅ Decodificato: "${char}" | needsSpace: true`);
         }
         
-        // 2. SPAZIO CON FLAG - inserisce quando serve
-        const SILENCE_FOR_SPACE = 600;
+        // 2. SPAZIO CON FLAG - timing proporzionale al WPM
+        // REGOLA: MASSIMO 1 SPAZIO! Non va avanti all'infinito
+        // Formula: 2x il tempo di conferma lettera + 200ms margine
+        const SILENCE_FOR_SPACE = (decoderTimings.charTimeout * 2) + 200;
         
-        if(needsSpace &&                           // Serve spazio
-           (now - lastUp > SILENCE_FOR_SPACE)) {   // Silenzio >600ms
+        // Esempi timing:
+        // 10 WPM: 600*2+200 = 1400ms
+        // 15 WPM: 400*2+200 = 1000ms  
+        // 20 WPM: 300*2+200 = 800ms
+        // 25 WPM: 240*2+200 = 680ms
+        
+        if(needsSpace &&                              // Serve spazio
+           !decoderContent.endsWith(' ') &&           // NON ha già uno spazio!
+           (now - lastUp > SILENCE_FOR_SPACE)) {      // Silenzio proporzionale
             
-            // ← INVIA SPAZIO A FIREBASE!
+            // INVIA SPAZIO A FIREBASE
             sendMessage(' ');
             
             decoderContent += ' ';
             document.getElementById('decoder-preview').innerText = decoderContent;
-            needsSpace = false;  // ← SPAZIO INSERITO!
-            console.log(`➕ SPAZIO inviato a Firebase! Silenzio: ${now - lastUp}ms`);
+            needsSpace = false;  // ← FLAG RESET: spazio inserito!
+            console.log(`➕ SPAZIO UNICO inviato! Silenzio: ${now - lastUp}ms`);
         }
         
         // 3. RESET DECODER - dopo pausa molto lunga (inattività)
