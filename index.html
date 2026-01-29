@@ -262,11 +262,27 @@
         #decoder-preview { 
             height: 25px; 
             font-size: 1.3rem; 
-            text-align: center;
+            text-align: left;  /* Allineato a sinistra per scroll */
             color: var(--green);
             font-weight: bold;
             margin-bottom: 8px;
             flex-shrink: 0;
+            
+            /* SCROLL AUTOMATICO - 1 RIGA */
+            white-space: nowrap;      /* NON va a capo */
+            overflow-x: auto;         /* Scroll orizzontale */
+            overflow-y: hidden;       /* NO scroll verticale */
+            padding: 0 8px;
+            
+            /* Scroll automatico alla fine */
+            display: block;
+        }
+        
+        /* Auto-scroll decoder alla fine quando cambia contenuto */
+        #decoder-preview:after {
+            content: '';
+            display: inline-block;
+            width: 1px;
         }
         
         #morse-pad { 
@@ -1959,10 +1975,16 @@
         stop();
         
         const dur = Date.now() - startTime;
-        morseBuffer += (dur < 200) ? "." : "-";
+        
+        // THRESHOLD OTTIMIZZATO PER TASTIERA:
+        // 150ms invece di 200ms per migliore precisione con tastiera PC
+        // Questo aiuta a distinguere meglio O (−−−) da M (−−) + T (−)
+        const DOT_THRESHOLD = 150;  // ms
+        
+        morseBuffer += (dur < DOT_THRESHOLD) ? "." : "-";
         
         // Mostra contenuto decoder + buffer corrente
-        document.getElementById('decoder-preview').innerText = decoderContent + morseBuffer;
+        updateDecoderDisplay(decoderContent + morseBuffer);
         lastUp = Date.now();
     }
 
@@ -2001,6 +2023,14 @@
     // ===== DECODER INTELLIGENTE CON WPM =====
     let lastCharTime = 0;
     let decoderContent = "";
+    
+    // Funzione helper per aggiornare decoder e scrollare alla fine
+    function updateDecoderDisplay(content) {
+        const decoder = document.getElementById('decoder-preview');
+        decoder.innerText = content;
+        // Auto-scroll alla fine (destra)
+        decoder.scrollLeft = decoder.scrollWidth;
+    }
     let needsSpace = false;  // ← NUOVO: flag per tracciare quando serve spazio
     let currentWPM = 15; // Default medio
     let decoderTimings = {
@@ -2061,7 +2091,7 @@
             
             // Pulisci buffer
             morseBuffer = "";
-            document.getElementById('decoder-preview').innerText = decoderContent;
+            updateDecoderDisplay(decoderContent);
             
             console.log(`✅ Decodificato: "${char}" | needsSpace: true`);
         }
@@ -2085,7 +2115,7 @@
             sendMessage(' ');
             
             decoderContent += ' ';
-            document.getElementById('decoder-preview').innerText = decoderContent;
+            updateDecoderDisplay(decoderContent);
             needsSpace = false;  // ← FLAG RESET: spazio inserito!
             console.log(`➕ SPAZIO UNICO inviato! Silenzio: ${now - lastUp}ms`);
         }
@@ -2093,7 +2123,7 @@
         // 3. RESET DECODER - dopo pausa molto lunga (inattività)
         if(decoderContent !== "" && (now - lastCharTime > decoderTimings.resetTime)) {
             decoderContent = "";
-            document.getElementById('decoder-preview').innerText = "";
+            updateDecoderDisplay("");
             console.log(`🔄 Decoder resettato dopo ${decoderTimings.resetTime}ms di inattività`);
         }
     }, 50);  // Polling 50ms invece di 100ms per maggiore precisione su WPM alti
