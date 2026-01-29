@@ -2024,14 +2024,14 @@
         currentWPM = parseInt(document.getElementById('wpm-selector').value);
         decoderTimings = calculateTimings(currentWPM);
         
-        // Calcola tempo minimo per spazio (come nel decoder loop)
-        const pausaMinSpazio = decoderTimings.charTimeout + 100;
+        // Calcola tempo per spazio (come nel decoder loop)
+        const pausaPerSpazio = decoderTimings.charTimeout + 150;
         
         // Aggiorna display info
         document.getElementById('wpm-info').innerHTML = 
-            `⏱️ Lettera: ${decoderTimings.charTimeout}ms | Spazio dopo: ${pausaMinSpazio}ms`;
+            `⏱️ Lettera: ${decoderTimings.charTimeout}ms | Spazio: ${pausaPerSpazio}ms`;
         
-        console.log(`⚡ WPM: ${currentWPM} → Lettera: ${decoderTimings.charTimeout}ms | Spazio dopo: ${pausaMinSpazio}ms | Reset: ${decoderTimings.resetTime}ms`);
+        console.log(`⚡ WPM: ${currentWPM} → Lettera: ${decoderTimings.charTimeout}ms | Spazio: ${pausaPerSpazio}ms | Reset: ${decoderTimings.resetTime}ms`);
     }
     
     // Inizializza timings default
@@ -2060,22 +2060,21 @@
             console.log(`✅ Decodificato: "${char}" | WPM: ${currentWPM} | Attesa: ${now - lastUp}ms`);
         }
         
-        // 2. SPAZIO IMMEDIATO - inserisce spazio appena rileva pausa tra parole
-        // Logica: Se hai finito una lettera E fai una pausa leggermente più lunga → SPAZIO!
-        // Questo simula il comportamento naturale: pausa tra lettere (breve) vs pausa tra parole (media)
-        
-        // Calcola tempo minimo per spazio: un po' più lungo della conferma lettera
-        const pausaMinSpazio = decoderTimings.charTimeout + 100;  // Es. 15 WPM: 400+100 = 500ms
-        const pausaMaxSpazio = decoderTimings.resetTime - 500;    // Prima del reset
+        // 2. SPAZIO SEMPLICE - inserisce spazio appena fai una pausa
+        // LOGICA SEMPLICISSIMA: Se hai una lettera E aspetti > charTimeout + 150ms → SPAZIO!
+        const pausaPerSpazio = decoderTimings.charTimeout + 150;  // Es. 15 WPM: 400+150 = 550ms
         
         if(decoderContent !== "" && 
            decoderContent.trim() !== "" && 
            !decoderContent.endsWith(' ') && 
-           (now - lastCharTime > pausaMinSpazio) && 
-           (now - lastCharTime < pausaMaxSpazio)) {
-            decoderContent += ' ';
-            document.getElementById('decoder-preview').innerText = decoderContent;
-            console.log(`➕ SPAZIO IMMEDIATO | Pausa: ${now - lastCharTime}ms (>= ${pausaMinSpazio}ms)`);
+           (now - lastCharTime > pausaPerSpazio)) {
+            
+            // Inserisci spazio SOLO se non stiamo per fare reset
+            if((now - lastCharTime) < (decoderTimings.resetTime - 100)) {
+                decoderContent += ' ';
+                document.getElementById('decoder-preview').innerText = decoderContent;
+                console.log(`➕ SPAZIO! Pausa: ${now - lastCharTime}ms (>= ${pausaPerSpazio}ms)`);
+            }
         }
         
         // 3. RESET DECODER - dopo pausa molto lunga (inattività)
