@@ -386,6 +386,9 @@
             margin-bottom: 10px; 
             border-left: 2px solid var(--amber); 
             padding-left: 8px;
+            white-space: pre-wrap;  /* ← PRESERVA SPAZI! */
+            font-family: 'Courier New', monospace; 
+            padding-left: 8px;
             word-wrap: break-word;
         }
         
@@ -1253,10 +1256,12 @@
         if(last && last.dataset.user === user) {
             const strong = last.querySelector('strong');
             const currentContent = last.textContent || last.innerText;
-            const contentAfterName = currentContent.substring(currentContent.indexOf(':') + 1).trim();
+            const contentAfterName = currentContent.substring(currentContent.indexOf(':') + 1);
+            // ↑ RIMOSSO .trim() per preservare spazi!
             
             last.innerHTML = '';
             last.appendChild(strong);
+            // Aggiungi testo SENZA trim per preservare spazi
             last.appendChild(document.createTextNode(' ' + contentAfterName + text));
         } else {
             const div = document.createElement('div');
@@ -1996,6 +2001,7 @@
     // ===== DECODER INTELLIGENTE CON WPM =====
     let lastCharTime = 0;
     let decoderContent = "";
+    let needsSpace = false;  // ← NUOVO: flag per tracciare quando serve spazio
     let currentWPM = 15; // Default medio
     let decoderTimings = {
         charTimeout: 400,   // Tempo per confermare lettera
@@ -2024,14 +2030,13 @@
         currentWPM = parseInt(document.getElementById('wpm-selector').value);
         decoderTimings = calculateTimings(currentWPM);
         
-        // Calcola tempo per spazio (come nel decoder loop)
-        const pausaPerSpazio = decoderTimings.charTimeout + 150;
+        // Info display
+        const SILENCE_FOR_SPACE = 600;
         
-        // Aggiorna display info
         document.getElementById('wpm-info').innerHTML = 
-            `⏱️ Lettera: ${decoderTimings.charTimeout}ms | Spazio: ${pausaPerSpazio}ms`;
+            `⏱️ Lettera: ${decoderTimings.charTimeout}ms | Spazio: ${SILENCE_FOR_SPACE}ms silenzio`;
         
-        console.log(`⚡ WPM: ${currentWPM} → Lettera: ${decoderTimings.charTimeout}ms | Spazio: ${pausaPerSpazio}ms | Reset: ${decoderTimings.resetTime}ms`);
+        console.log(`⚡ WPM: ${currentWPM} → Lettera: ${decoderTimings.charTimeout}ms | Spazio: ${SILENCE_FOR_SPACE}ms`);
     }
     
     // Inizializza timings default
@@ -2052,29 +2057,28 @@
             // Aggiungi al contenuto decoder locale
             decoderContent += char;
             lastCharTime = now;
+            needsSpace = true;  // ← ORA SERVE UNO SPAZIO!
             
             // Pulisci buffer
             morseBuffer = "";
             document.getElementById('decoder-preview').innerText = decoderContent;
             
-            console.log(`✅ Decodificato: "${char}" | WPM: ${currentWPM} | Attesa: ${now - lastUp}ms`);
+            console.log(`✅ Decodificato: "${char}" | needsSpace: true`);
         }
         
-        // 2. SPAZIO SEMPLICE - inserisce spazio appena fai una pausa
-        // LOGICA SEMPLICISSIMA: Se hai una lettera E aspetti > charTimeout + 150ms → SPAZIO!
-        const pausaPerSpazio = decoderTimings.charTimeout + 150;  // Es. 15 WPM: 400+150 = 550ms
+        // 2. SPAZIO CON FLAG - inserisce quando serve
+        const SILENCE_FOR_SPACE = 600;
         
-        if(decoderContent !== "" && 
-           decoderContent.trim() !== "" && 
-           !decoderContent.endsWith(' ') && 
-           (now - lastCharTime > pausaPerSpazio)) {
+        if(needsSpace &&                           // Serve spazio
+           (now - lastUp > SILENCE_FOR_SPACE)) {   // Silenzio >600ms
             
-            // Inserisci spazio SOLO se non stiamo per fare reset
-            if((now - lastCharTime) < (decoderTimings.resetTime - 100)) {
-                decoderContent += ' ';
-                document.getElementById('decoder-preview').innerText = decoderContent;
-                console.log(`➕ SPAZIO! Pausa: ${now - lastCharTime}ms (>= ${pausaPerSpazio}ms)`);
-            }
+            // ← INVIA SPAZIO A FIREBASE!
+            sendMessage(' ');
+            
+            decoderContent += ' ';
+            document.getElementById('decoder-preview').innerText = decoderContent;
+            needsSpace = false;  // ← SPAZIO INSERITO!
+            console.log(`➕ SPAZIO inviato a Firebase! Silenzio: ${now - lastUp}ms`);
         }
         
         // 3. RESET DECODER - dopo pausa molto lunga (inattività)
