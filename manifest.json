@@ -1,0 +1,41 @@
+{
+  "name": "MORSE-LINK LIVE",
+  "short_name": "MORSE-LINK",
+  "description": "Real-time Morse Code communication platform for amateur radio operators",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#0a0a0a",
+  "theme_color": "#ffb000",
+  "orientation": "any",
+  "icons": [
+    {
+      "src": "/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "screenshots": [
+    {
+      "src": "/screenshot1.png",
+      "sizes": "1280x720",
+      "type": "image/png"
+    }
+  ],
+  "categories": ["utilities", "social", "education"],
+  "shortcuts": [
+    {
+      "name": "Quick Connect",
+      "short_name": "Connect",
+      "description": "Quickly connect to MORSE-LINK",
+      "url": "/",
+      "icons": [{ "src": "/icon-192.png", "sizes": "192x192" }]
+    }
+  ]
+}
