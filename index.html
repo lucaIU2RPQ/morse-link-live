@@ -1270,15 +1270,16 @@
         const last = box.lastElementChild;
         
         if(last && last.dataset.user === user) {
+            // STESSO UTENTE: concatena alla riga esistente
             const strong = last.querySelector('strong');
             const currentContent = last.textContent || last.innerText;
             const contentAfterName = currentContent.substring(currentContent.indexOf(':') + 1);
-            // ↑ RIMOSSO .trim() per preservare spazi!
             
+            // Ricostruisci elemento
             last.innerHTML = '';
             last.appendChild(strong);
-            // Aggiungi testo SENZA trim per preservare spazi
-            last.appendChild(document.createTextNode(' ' + contentAfterName + text));
+            // FIX: NON aggiungere spazio extra! Solo concatena
+            last.appendChild(document.createTextNode(contentAfterName + text));
         } else {
             const div = document.createElement('div');
             div.className = 'msg';
