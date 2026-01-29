@@ -826,7 +826,7 @@
 <div id="login-overlay">
     <h2>📡 MORSE-LINK LIVE</h2>
     <div class="online-badge">🌍 RADIO IN VETTA</div>
-    <p style="color: #888; margin: 0; font-size: 0.9rem;">Real-time Global CW Chat + Text by IU2RPQ</p>
+    <p style="color: #888; margin: 0; font-size: 0.9rem;">Real-time Global CW Chat + Text by Luca IU2RPQ</p>
     <input type="text" id="callsign" class="input-box" placeholder="TUO NOMINATIVO (es. IU2RPQ)" maxlength="10" style="max-width: 300px;">
     <button onclick="startApp()">▶ CONNETTI</button>
 </div>
@@ -838,6 +838,7 @@
     </div>
     <div class="header-buttons">
         <button id="audio-activate-btn" class="btn-green" onclick="activateAudioManually()">🔊 ATTIVA AUDIO</button>
+        <button onclick="shareIcon()" style="background: #9c27b0; border-color: #9c27b0;" title="Condividi icona app">📱 INSTALLA APP</button>
         <button onclick="mapExternalKey()" id="map-btn">⌨️ MAPPA TASTO</button>
         <button onclick="openSettings()">⚙️ SETTINGS</button>
     </div>
@@ -898,6 +899,11 @@
             <div class="toggle-switch" id="toggle-qrm" onclick="toggleQRM()">
                 <div class="toggle-slider"></div>
             </div>
+        </div>
+        
+        <div class="setting-row">
+            <div class="setting-label">📱 Scarica Icona App</div>
+            <button onclick="window.open('https://morse.radioinvetta.it/scarica-icona.html', '_blank')" style="padding: 8px 16px; background: #9c27b0; border-color: #9c27b0; color: #fff;">💾 SCARICA</button>
         </div>
         
         <div class="setting-row">
@@ -1331,29 +1337,32 @@
         decoderEnabled = !decoderEnabled;
         const decoder = document.getElementById('decoder-preview');
         const toggleBtn = document.getElementById('decoder-toggle-top');
+        const t = translations[currentLang];
         
         if(decoderEnabled) {
             decoder.style.display = 'block';
-            toggleBtn.innerHTML = '👁️ DECODER: ON';
+            toggleBtn.innerHTML = t.decoderOn;
             toggleBtn.style.background = 'var(--green)';
             toggleBtn.style.borderColor = 'var(--green)';
         } else {
             decoder.style.display = 'none';
-            toggleBtn.innerHTML = '👁️ DECODER: OFF';
+            toggleBtn.innerHTML = t.decoderOff;
             toggleBtn.style.background = '#666';
             toggleBtn.style.borderColor = '#666';
         }
     }
 
     function clearChat() {
-        if(confirm('Pulire Morse chat?')) {
+        const t = translations[currentLang];
+        if(confirm(t.clearMorseConfirm)) {
             document.getElementById('messages').innerHTML = '';
             closeSettings();
         }
     }
     
     function clearTextChat() {
-        if(confirm('Pulire Text chat?')) {
+        const t = translations[currentLang];
+        if(confirm(t.clearTextConfirm)) {
             document.getElementById('text-messages').innerHTML = '';
             closeSettings();
         }
@@ -1379,35 +1388,163 @@
         window.location.href = `mailto:info@radioinvetta.it?subject=${subject}&body=${body}`;
     }
     
+    function shareIcon() {
+        // Mostra istruzioni per installare PWA
+        const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
+        const isAndroid = /Android/.test(navigator.userAgent);
+        
+        let msg = '📱 INSTALLA MORSE-LINK COME APP!\n\n';
+        
+        if(isIOS) {
+            msg += '🍎 ISTRUZIONI iPhone/iPad:\n\n';
+            msg += '1. Tap icona "Condividi" (⬆️) in basso\n';
+            msg += '2. Scorri e seleziona "Aggiungi a Home"\n';
+            msg += '3. Conferma\n';
+            msg += '4. ✅ L\'icona apparirà sulla Home Screen!\n\n';
+            msg += 'L\'app funzionerà come un\'app nativa!';
+        } else if(isAndroid) {
+            msg += '🤖 ISTRUZIONI Android:\n\n';
+            msg += '1. Tap menu Chrome (⋮) in alto\n';
+            msg += '2. Seleziona "Installa app"\n';
+            msg += '3. Conferma\n';
+            msg += '4. ✅ L\'icona apparirà sulla Home Screen!\n\n';
+            msg += 'L\'app funzionerà come un\'app nativa!';
+        } else {
+            msg += '💻 ISTRUZIONI Desktop:\n\n';
+            msg += '1. Chrome: Icona "Installa" nella barra indirizzi\n';
+            msg += '2. Oppure: Menu → Installa MORSE-LINK\n';
+            msg += '3. ✅ L\'app si aprirà in una finestra dedicata!\n\n';
+            msg += '📱 Su mobile:\n';
+            msg += '• iOS: Safari → Condividi → Aggiungi a Home\n';
+            msg += '• Android: Chrome → Menu → Installa app';
+        }
+        
+        alert(msg);
+    }
+    
     // Sistema lingua semplificato
     let currentLang = 'it';
     
     const translations = {
         it: {
+            // Login
             callsignPlaceholder: 'TUO NOMINATIVO (es. IU2RPQ)',
             connectBtn: '▶ CONNETTI',
+            loginSubtitle: 'Real-time Global CW Chat + Text by Luca IU2RPQ',
+            
+            // Header
             station: 'STAZIONE:',
             online: '● ONLINE',
-            mapKeyBtn: 'MAPPA TASTO',
+            activateAudioBtn: '🔊 ATTIVA AUDIO',
+            installAppBtn: '📱 INSTALLA APP',
+            mapKeyBtn: '⌨️ MAPPA TASTO',
+            settingsBtn: '⚙️ SETTINGS',
+            
+            // Sidebar
+            onlineUsers: '🌍 ONLINE',
+            you: '(TU)',
+            
+            // Morse Section
+            morseCode: '📻 MORSE CODE',
+            decoderOn: '👁️ DECODER: ON',
+            decoderOff: '👁️ DECODER: OFF',
+            
+            // Text Chat
+            textChat: '💬 TEXT CHAT',
             textInputPlaceholder: 'Scrivi messaggio...',
             sendBtn: 'INVIA',
+            morseKeyboardOn: '⌨️ MORSE KEYBOARD: ON',
+            morseKeyboardOff: '⌨️ MORSE KEYBOARD: OFF',
+            
+            // Settings Modal
+            settingsTitle: '⚙️ IMPOSTAZIONI',
+            showHideText: 'Mostra/Nascondi Testo',
+            qrmBackground: 'QRM Sottofondo',
+            language: '🌐 Lingua / Language',
+            contactUs: '📧 Contattaci',
+            sendEmailBtn: '✉️ INVIA EMAIL',
+            userManual: '📚 Manuale Utente',
+            openGuideBtn: '📖 APRI GUIDA',
+            adminPanel: 'Pannello Admin',
+            adminAccessBtn: '🔐 ACCEDI',
+            clearMorseChat: 'Pulisci Chat Morse',
+            clearTextChat: 'Pulisci Chat Text',
+            clearBtn: '🗑️ PULISCI',
+            installIcon: '📱 Scarica Icona App',
+            downloadBtn: '💾 SCARICA',
+            closeBtn: '✕ CHIUDI',
+            
+            // Alerts & Messages
             enterCallsign: 'Inserisci nominativo!',
             callsignTooShort: 'Nominativo troppo corto!',
             clearMorseConfirm: 'Pulire Morse chat?',
-            clearTextConfirm: 'Pulire Text chat?'
+            clearTextConfirm: 'Pulire Text chat?',
+            chromeAudioAlert: '⚠️ IMPORTANTE!\n\nSu Chrome devi cliccare il pulsante\n🔊 ATTIVA AUDIO\nin alto per sentire i messaggi Morse in arrivo.',
+            systemWelcome: 'Benvenuto {callsign}! Text chat attiva.',
+            
+            // Map Key
+            mapKeyWaiting: '⏳ PREMI...',
+            mapKeyDone: '✓ {key}'
         },
         en: {
+            // Login
             callsignPlaceholder: 'YOUR CALLSIGN (e.g. W1AW)',
             connectBtn: '▶ CONNECT',
+            loginSubtitle: 'Real-time Global CW Chat + Text by Luca IU2RPQ',
+            
+            // Header
             station: 'STATION:',
             online: '● ONLINE',
-            mapKeyBtn: 'MAP KEY',
+            activateAudioBtn: '🔊 ACTIVATE AUDIO',
+            installAppBtn: '📱 INSTALL APP',
+            mapKeyBtn: '⌨️ MAP KEY',
+            settingsBtn: '⚙️ SETTINGS',
+            
+            // Sidebar
+            onlineUsers: '🌍 ONLINE',
+            you: '(YOU)',
+            
+            // Morse Section
+            morseCode: '📻 MORSE CODE',
+            decoderOn: '👁️ DECODER: ON',
+            decoderOff: '👁️ DECODER: OFF',
+            
+            // Text Chat
+            textChat: '💬 TEXT CHAT',
             textInputPlaceholder: 'Type message...',
             sendBtn: 'SEND',
-            enterCallsign: 'Enter callsign!',
-            callsignTooShort: 'Callsign too short!',
+            morseKeyboardOn: '⌨️ MORSE KEYBOARD: ON',
+            morseKeyboardOff: '⌨️ MORSE KEYBOARD: OFF',
+            
+            // Settings Modal
+            settingsTitle: '⚙️ SETTINGS',
+            showHideText: 'Show/Hide Text',
+            qrmBackground: 'QRM Background',
+            language: '🌐 Lingua / Language',
+            contactUs: '📧 Contact Us',
+            sendEmailBtn: '✉️ SEND EMAIL',
+            userManual: '📚 User Manual',
+            openGuideBtn: '📖 OPEN GUIDE',
+            adminPanel: 'Admin Panel',
+            adminAccessBtn: '🔐 ACCESS',
+            clearMorseChat: 'Clear Morse Chat',
+            clearTextChat: 'Clear Text Chat',
+            clearBtn: '🗑️ CLEAR',
+            installIcon: '📱 Download App Icon',
+            downloadBtn: '💾 DOWNLOAD',
+            closeBtn: '✕ CLOSE',
+            
+            // Alerts & Messages
+            enterCallsign: 'Enter your callsign!',
+            callsignTooShort: 'Callsign too short (min 3 chars)!',
             clearMorseConfirm: 'Clear Morse chat?',
-            clearTextConfirm: 'Clear Text chat?'
+            clearTextConfirm: 'Clear Text chat?',
+            chromeAudioAlert: '⚠️ IMPORTANT!\n\nOn Chrome you must click the\n🔊 ACTIVATE AUDIO\nbutton at the top to hear incoming Morse messages.',
+            systemWelcome: 'Welcome {callsign}! Text chat active.',
+            
+            // Map Key
+            mapKeyWaiting: '⏳ PRESS...',
+            mapKeyDone: '✓ {key}'
         }
     };
     
@@ -1415,19 +1552,108 @@
         currentLang = lang;
         localStorage.setItem('morse-lang', lang);
         
-        // Aggiorna elementi chiave
         const t = translations[lang];
         
-        // Login
+        // === LOGIN SCREEN ===
+        const loginSubtitle = document.querySelector('#login-overlay p');
+        if(loginSubtitle) loginSubtitle.textContent = t.loginSubtitle;
+        
         const callsignInput = document.getElementById('callsign');
         if(callsignInput) callsignInput.placeholder = t.callsignPlaceholder;
         
-        // Text chat
+        const connectBtn = document.querySelector('#login-overlay button');
+        if(connectBtn) connectBtn.innerHTML = t.connectBtn;
+        
+        // === HEADER ===
+        const stationLabel = document.querySelector('header .header-left strong');
+        if(stationLabel) stationLabel.textContent = t.station;
+        
+        const statusIndicator = document.getElementById('status-indicator');
+        if(statusIndicator) statusIndicator.textContent = t.online;
+        
+        const audioBtn = document.getElementById('audio-activate-btn');
+        if(audioBtn) audioBtn.innerHTML = t.activateAudioBtn;
+        
+        const installBtn = document.querySelector('button[onclick="shareIcon()"]');
+        if(installBtn) installBtn.innerHTML = t.installAppBtn;
+        
+        const mapBtn = document.getElementById('map-btn');
+        if(mapBtn && !mapBtn.textContent.includes('✓') && !mapBtn.textContent.includes('⏳')) {
+            mapBtn.innerHTML = t.mapKeyBtn;
+        }
+        
+        const settingsBtn = document.querySelector('button[onclick="openSettings()"]');
+        if(settingsBtn) settingsBtn.innerHTML = t.settingsBtn;
+        
+        // === SIDEBAR ===
+        const onlineTitle = document.querySelector('#sidebar > div:first-child');
+        if(onlineTitle) onlineTitle.textContent = t.onlineUsers;
+        
+        // === MORSE SECTION ===
+        const morseTitle = document.querySelector('#morse-section > div:first-child');
+        if(morseTitle) {
+            const decoderBtn = morseTitle.querySelector('button');
+            if(decoderBtn) {
+                const isOn = decoderBtn.innerHTML.includes('ON');
+                morseTitle.innerHTML = t.morseCode;
+                // Reinserisci il button
+                if(decoderBtn.parentNode === morseTitle) {
+                    decoderBtn.innerHTML = isOn ? t.decoderOn : t.decoderOff;
+                    morseTitle.appendChild(decoderBtn);
+                }
+            }
+        }
+        
+        // === TEXT CHAT ===
+        const textChatTitle = document.querySelector('#text-chat-section > div:first-child');
+        if(textChatTitle) textChatTitle.textContent = t.textChat;
+        
         const textInput = document.getElementById('text-input');
         if(textInput) textInput.placeholder = t.textInputPlaceholder;
         
-        const textSend = document.getElementById('text-send');
-        if(textSend) textSend.innerText = t.sendBtn;
+        const textSendBtn = document.getElementById('text-send');
+        if(textSendBtn) textSendBtn.textContent = t.sendBtn;
+        
+        const morseKeyboardBtn = document.getElementById('morse-keyboard-toggle');
+        if(morseKeyboardBtn) {
+            const isOn = morseKeyboardEnabled;
+            morseKeyboardBtn.innerHTML = isOn ? t.morseKeyboardOn : t.morseKeyboardOff;
+        }
+        
+        // === SETTINGS MODAL ===
+        const settingsTitle = document.querySelector('#settings-modal h2');
+        if(settingsTitle) settingsTitle.textContent = t.settingsTitle;
+        
+        // Settings labels
+        const settingLabels = document.querySelectorAll('#settings-modal .setting-label');
+        if(settingLabels[0]) settingLabels[0].textContent = t.showHideText;
+        if(settingLabels[1]) settingLabels[1].textContent = t.qrmBackground;
+        if(settingLabels[2]) settingLabels[2].textContent = t.installIcon;
+        if(settingLabels[3]) settingLabels[3].textContent = t.language;
+        if(settingLabels[4]) settingLabels[4].textContent = t.contactUs;
+        if(settingLabels[5]) settingLabels[5].textContent = t.userManual;
+        if(settingLabels[6]) settingLabels[6].textContent = t.adminPanel;
+        if(settingLabels[7]) settingLabels[7].textContent = t.clearMorseChat;
+        if(settingLabels[8]) settingLabels[8].textContent = t.clearTextChat;
+        
+        // Settings buttons
+        const contactBtn = document.querySelector('button[onclick="sendEmail()"]');
+        if(contactBtn) contactBtn.innerHTML = t.sendEmailBtn;
+        
+        const manualBtn = document.querySelector('button[onclick="openManuale()"]');
+        if(manualBtn) manualBtn.innerHTML = t.openGuideBtn;
+        
+        const adminBtn = document.querySelector('#settings-modal button[onclick*="showAdminLogin"]');
+        if(adminBtn) adminBtn.innerHTML = t.adminAccessBtn;
+        
+        const clearMorseBtn = document.querySelector('button[onclick="clearChat()"]');
+        if(clearMorseBtn) clearMorseBtn.innerHTML = t.clearBtn;
+        
+        const clearTextBtn = document.querySelector('button[onclick="clearTextChat()"]');
+        if(clearTextBtn) clearTextBtn.innerHTML = t.clearBtn;
+        
+        const closeSettingsBtn = document.querySelector('#settings-modal .close-btn');
+        if(closeSettingsBtn) closeSettingsBtn.textContent = t.closeBtn;
         
         // Aggiorna HTML lang attribute
         document.documentElement.lang = lang;
@@ -1470,7 +1696,8 @@
         const isChrome = /Chrome/.test(navigator.userAgent) && /Google Inc/.test(navigator.vendor);
         if(isChrome && audioCtx && audioCtx.state === 'suspended') {
             setTimeout(() => {
-                alert('⚠️ IMPORTANTE!\n\nSu Chrome devi cliccare il pulsante\n🔊 ATTIVA AUDIO\nin alto per sentire i messaggi Morse in arrivo.');
+                const t = translations[currentLang];
+                alert(t.chromeAudioAlert);
             }, 500);
         }
         
@@ -1608,7 +1835,9 @@
         
         // Messaggio di benvenuto nella text chat
         setTimeout(() => {
-            addTextMsgToUI('SYSTEM', 'Benvenuto ' + callsign + '! Text chat attiva.', Date.now());
+            const t = translations[currentLang];
+            const welcomeMsg = t.systemWelcome.replace('{callsign}', callsign);
+            addTextMsgToUI('SYSTEM', welcomeMsg, Date.now());
         }, 1000);
     }
     
@@ -1661,7 +1890,8 @@
         if(isMapping) {
             mappedKey = (e.type === 'keydown') ? e.code : 'MOUSE';
             isMapping = false;
-            document.getElementById('map-btn').innerText = "✓ " + mappedKey;
+            const t = translations[currentLang];
+            document.getElementById('map-btn').innerText = t.mapKeyDone.replace('{key}', mappedKey);
             return;
         }
         
@@ -1706,25 +1936,29 @@
         
         const dur = Date.now() - startTime;
         morseBuffer += (dur < 200) ? "." : "-";
-        document.getElementById('decoder-preview').innerText = morseBuffer;
+        
+        // Mostra contenuto decoder + buffer corrente
+        document.getElementById('decoder-preview').innerText = decoderContent + morseBuffer;
         lastUp = Date.now();
     }
 
     function mapExternalKey() {
         isMapping = true;
-        document.getElementById('map-btn').innerText = "⏳ PREMI...";
+        const t = translations[currentLang];
+        document.getElementById('map-btn').innerText = t.mapKeyWaiting;
     }
     
     function toggleMorseKeyboard() {
         morseKeyboardEnabled = !morseKeyboardEnabled;
         const btn = document.getElementById('morse-keyboard-toggle');
         const decoder = document.getElementById('decoder-preview');
+        const t = translations[currentLang];
         
         if(morseKeyboardEnabled) {
             btn.style.background = 'var(--green)';
             btn.style.borderColor = 'var(--green)';
             btn.style.color = '#000';
-            btn.innerHTML = '⌨️ MORSE KEYBOARD: ON';
+            btn.innerHTML = t.morseKeyboardOn;
             decoder.style.color = 'var(--green)';
             decoder.innerText = '';
             morseBuffer = ''; // Pulisci buffer
@@ -1732,7 +1966,7 @@
             btn.style.background = '#666';
             btn.style.borderColor = '#666';
             btn.style.color = '#aaa';
-            btn.innerHTML = '⌨️ MORSE KEYBOARD: OFF';
+            btn.innerHTML = t.morseKeyboardOff;
             decoder.style.color = '#666';
             decoder.innerText = '⌨️ KEYBOARD OFF';
         }
@@ -1740,24 +1974,43 @@
         console.log('⌨️ Morse Keyboard:', morseKeyboardEnabled ? 'ON' : 'OFF');
     }
 
+    // Variabile per tracciare ultimo carattere inviato
+    let lastCharTime = 0;
+    let decoderContent = "";
+    
     setInterval(() => {
-        if(morseBuffer !== "" && (Date.now() - lastUp > 600)) {
+        const now = Date.now();
+        
+        // Invia carattere dopo pausa breve (600ms)
+        if(morseBuffer !== "" && (now - lastUp > 600)) {
             const char = MORSE[morseBuffer] || "?";
-            // IMPORTANTE: Invia SEMPRE il pattern morse, non il "?"
-            // Così il suono arriva comunque agli altri utenti
             const toSend = MORSE[morseBuffer] ? char : morseBuffer;
             sendMessage(toSend);
+            
+            // Aggiungi al contenuto decoder locale
+            decoderContent += char;
+            lastCharTime = now;
+            
             morseBuffer = "";
-            document.getElementById('decoder-preview').innerText = "";
+            document.getElementById('decoder-preview').innerText = decoderContent;
         }
         
-        // PUNTO 3: Aggiungi spazio nel decoder dopo pausa lunga
-        if(morseBuffer === "" && (Date.now() - lastUp > 1200) && (Date.now() - lastUp < 1300)) {
-            // Aggiungi spazio visivo nel decoder dopo pausa tra parole
-            const decoder = document.getElementById('decoder-preview');
-            if(decoder.innerText && !decoder.innerText.endsWith(' ')) {
-                decoder.innerText += ' ';
-            }
+        // Aggiungi SPAZIO dopo pausa lunga tra lettere (1.5 secondi)
+        if(decoderContent !== "" && 
+           decoderContent.trim() !== "" && 
+           !decoderContent.endsWith(' ') && 
+           (now - lastCharTime > 1500) && 
+           (now - lastCharTime < 1600)) {
+            decoderContent += ' ';
+            document.getElementById('decoder-preview').innerText = decoderContent;
+            console.log('➕ Spazio aggiunto nel decoder');
+        }
+        
+        // Reset decoder dopo pausa molto lunga (5 secondi di inattività)
+        if(decoderContent !== "" && (now - lastCharTime > 5000)) {
+            decoderContent = "";
+            document.getElementById('decoder-preview').innerText = "";
+            console.log('🔄 Decoder resettato');
         }
     }, 100);
 
