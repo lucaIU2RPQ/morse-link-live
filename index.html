@@ -939,6 +939,21 @@
             </div>
         </div>
         
+        <!-- SLIDER VOLUME QRM -->
+        <div class="setting-row" id="qrm-volume-row" style="display: none; padding-left: 20px; margin-top: -10px;">
+            <div class="setting-label" style="font-size: 0.9rem;">📊 Volume QRM</div>
+            <div style="display: flex; align-items: center; gap: 10px; flex: 1;">
+                <input type="range" 
+                       id="qrm-volume-slider" 
+                       min="0" 
+                       max="100" 
+                       value="50" 
+                       oninput="updateQRMVolume(this.value)"
+                       style="flex: 1; cursor: pointer;">
+                <span id="qrm-volume-value" style="min-width: 35px; text-align: right; color: var(--amber);">50%</span>
+            </div>
+        </div>
+        
         <div class="setting-row">
             <div class="setting-label">📱 Scarica Icona App</div>
             <button onclick="window.open('https://morse.radioinvetta.it/scarica-icona.html', '_blank')" style="padding: 8px 16px; background: #9c27b0; border-color: #9c27b0; color: #fff;">💾 SCARICA</button>
@@ -1144,8 +1159,23 @@
         if(!audioCtx) return;
         
         const morse = CHAR_TO_MORSE[char.toUpperCase()];
-        if(!morse) return;
         
+        if(!morse) {
+            // CARATTERE NON RICONOSCIUTO: suona pattern grezzo
+            // Se text è un pattern morse (es "-..-.-"), suona quello
+            if(/^[.\-]+$/.test(char)) {
+                // È un pattern morse → suonalo!
+                console.log(`🔊 Suono pattern NON riconosciuto: ${char}`);
+                for(let symbol of char) {
+                    const duration = symbol === '.' ? DOT_DURATION : DASH_DURATION;
+                    await playBeep(duration);
+                    await new Promise(resolve => setTimeout(resolve, SYMBOL_GAP));
+                }
+            }
+            return;
+        }
+        
+        // CARATTERE RICONOSCIUTO: suona normalmente
         for(let symbol of morse) {
             const duration = symbol === '.' ? DOT_DURATION : DASH_DURATION;
             await playBeep(duration);
@@ -1153,56 +1183,149 @@
         }
     }
     
+    // Nodi audio per QRM realistico
+    let qrmNoiseNode = null;
+    let qrmToneNode = null;
+    let qrmNoiseGain = null;
+    let qrmToneGain = null;
+    
     function startQRM() {
         if(!audioCtx) {
             console.warn('⚠️ startQRM: audioCtx null, inizializzo...');
             initAudio();
         }
         
-        if(qrmInterval) {
+        if(qrmNoiseNode) {
             console.log('⚠️ QRM già attivo');
             return;
         }
         
+        // === WHITE NOISE (statico radio) ===
+        const bufferSize = audioCtx.sampleRate * 2;
+        const noiseBuffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
+        const output = noiseBuffer.getChannelData(0);
+        for(let i = 0; i < bufferSize; i++) {
+            output[i] = Math.random() * 2 - 1;  // Random -1 a 1
+        }
+        
+        qrmNoiseNode = audioCtx.createBufferSource();
+        qrmNoiseNode.buffer = noiseBuffer;
+        qrmNoiseNode.loop = true;
+        
+        // Filtro per white noise (simula banda radio)
+        const noiseFilter = audioCtx.createBiquadFilter();
+        noiseFilter.type = 'bandpass';
+        noiseFilter.frequency.value = 1500;  // Centro banda
+        noiseFilter.Q.value = 0.5;  // Larghezza banda
+        
+        qrmNoiseGain = audioCtx.createGain();
+        qrmNoiseGain.gain.value = 0.03;  // Volume statico
+        
+        qrmNoiseNode.connect(noiseFilter);
+        noiseFilter.connect(qrmNoiseGain);
+        qrmNoiseGain.connect(audioCtx.destination);
+        qrmNoiseNode.start();
+        
+        // === TONO PORTANTE (fischio) ===
+        qrmToneNode = audioCtx.createOscillator();
+        qrmToneNode.frequency.value = 1200;  // Fischio portante
+        qrmToneNode.type = 'sine';
+        
+        qrmToneGain = audioCtx.createGain();
+        qrmToneGain.gain.value = 0.015;  // Volume fischio
+        
+        qrmToneNode.connect(qrmToneGain);
+        qrmToneGain.connect(audioCtx.destination);
+        qrmToneNode.start();
+        
+        // === CRACKLE OCCASIONALE (interferenze) ===
         qrmInterval = setInterval(() => {
             if(!qrmEnabled) return;
             
-            const osc = audioCtx.createOscillator();
-            const gainNode = audioCtx.createGain();
-            
-            osc.frequency.value = 300 + Math.random() * 400;
-            osc.type = 'sawtooth';
-            gainNode.gain.value = 0.02 + Math.random() * 0.03;
-            
-            osc.connect(gainNode);
-            gainNode.connect(audioCtx.destination);
-            
-            osc.start();
-            osc.stop(audioCtx.currentTime + 0.1 + Math.random() * 0.2);
-        }, 200 + Math.random() * 300);
+            // Random crackle/pop
+            if(Math.random() > 0.7) {
+                const crackle = audioCtx.createOscillator();
+                const crackleGain = audioCtx.createGain();
+                
+                crackle.frequency.value = 200 + Math.random() * 800;
+                crackle.type = 'square';
+                crackleGain.gain.value = 0.02;
+                
+                crackle.connect(crackleGain);
+                crackleGain.connect(audioCtx.destination);
+                
+                crackle.start();
+                crackle.stop(audioCtx.currentTime + 0.02 + Math.random() * 0.05);
+            }
+        }, 300 + Math.random() * 500);
         
-        console.log('📻 QRM ON');
+        console.log('📻 QRM REALISTICO ON (white noise + portante 1200Hz)');
     }
     
     function stopQRM() {
+        // Stop white noise
+        if(qrmNoiseNode) {
+            qrmNoiseNode.stop();
+            qrmNoiseNode.disconnect();
+            qrmNoiseNode = null;
+        }
+        
+        if(qrmNoiseGain) {
+            qrmNoiseGain.disconnect();
+            qrmNoiseGain = null;
+        }
+        
+        // Stop tono portante
+        if(qrmToneNode) {
+            qrmToneNode.stop();
+            qrmToneNode.disconnect();
+            qrmToneNode = null;
+        }
+        
+        if(qrmToneGain) {
+            qrmToneGain.disconnect();
+            qrmToneGain = null;
+        }
+        
+        // Stop crackle interval
         if(qrmInterval) {
             clearInterval(qrmInterval);
             qrmInterval = null;
-            console.log('🔇 QRM OFF');
         }
+        
+        console.log('🔇 QRM OFF');
     }
     
     function toggleQRM() {
         qrmEnabled = !qrmEnabled;
         const toggle = document.getElementById('toggle-qrm');
+        const volumeRow = document.getElementById('qrm-volume-row');
         
         if(qrmEnabled) {
             toggle.classList.add('active');
+            volumeRow.style.display = 'flex';  // Mostra slider
             if(audioEnabled) startQRM();
         } else {
             toggle.classList.remove('active');
+            volumeRow.style.display = 'none';  // Nascondi slider
             stopQRM();
         }
+    }
+    
+    // Funzione per aggiornare volume QRM
+    function updateQRMVolume(value) {
+        const volume = value / 100;  // 0-1
+        document.getElementById('qrm-volume-value').innerText = value + '%';
+        
+        // Aggiorna volume nodi audio se attivi
+        if(qrmNoiseGain) {
+            qrmNoiseGain.gain.value = 0.03 * volume;  // White noise
+        }
+        if(qrmToneGain) {
+            qrmToneGain.gain.value = 0.015 * volume;  // Portante
+        }
+        
+        console.log(`📊 Volume QRM: ${value}%`);
     }
 
     function sendMessage(char) {
@@ -1377,16 +1500,21 @@
     function toggleDecoder() {
         decoderEnabled = !decoderEnabled;
         const decoder = document.getElementById('decoder-preview');
+        const messagesBox = document.getElementById('messages');  // ← Chat arancione
         const toggleBtn = document.getElementById('decoder-toggle-top');
         const t = translations[currentLang];
         
         if(decoderEnabled) {
+            // MOSTRA entrambi
             decoder.style.display = 'block';
+            messagesBox.style.display = 'block';
             toggleBtn.innerHTML = t.decoderOn;
             toggleBtn.style.background = 'var(--green)';
             toggleBtn.style.borderColor = 'var(--green)';
         } else {
+            // NASCONDI entrambi
             decoder.style.display = 'none';
+            messagesBox.style.display = 'none';
             toggleBtn.innerHTML = t.decoderOff;
             toggleBtn.style.background = '#666';
             toggleBtn.style.borderColor = '#666';
