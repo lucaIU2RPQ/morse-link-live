@@ -164,6 +164,12 @@
             gap: 8px;
         }
         
+        @media (max-width: 768px) {
+            #sidebar {
+                display: none;
+            }
+        }
+        
         #morse-section { 
             display: flex; 
             flex-direction: column; 
@@ -244,400 +250,393 @@
         }
         
         #messages.hide-text::after {
-            content: '🔇 MODALITÀ SOLO AUDIO';
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100%;
+            content: '⚡ MORSE AUDIO ONLY ⚡';
+            display: block;
+            text-align: center;
+            padding: 20px;
+            color: var(--amber);
+            font-size: 1.1rem;
+        }
+        
+        .msg {
+            margin-bottom: 8px;
+            padding: 8px;
+            background: rgba(255, 176, 0, 0.05);
+            border-left: 3px solid var(--amber);
+            word-wrap: break-word;
+            animation: fadeIn 0.3s ease;
+        }
+        
+        .text-msg {
+            margin-bottom: 8px;
+            padding: 8px;
+            background: rgba(10, 175, 255, 0.08);
+            border-left: 3px solid var(--blue);
+            word-wrap: break-word;
+            animation: fadeIn 0.3s ease;
+        }
+        
+        .text-msg .user {
+            color: var(--blue);
+            font-weight: bold;
+            margin-right: 8px;
+        }
+        
+        .text-msg .time {
             color: #666;
-            font-size: 1rem;
+            font-size: 0.8rem;
+            margin-left: 8px;
         }
         
-        body.has-background #messages,
-        body.has-background #text-messages {
-            backdrop-filter: blur(8px);
-            -webkit-backdrop-filter: blur(8px);
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
         }
         
-        #decoder-preview { 
-            height: 25px; 
-            font-size: 1.3rem; 
-            text-align: left;  /* Allineato a sinistra per scroll */
+        .user {
             color: var(--green);
             font-weight: bold;
-            margin-bottom: 8px;
-            flex-shrink: 0;
-            
-            /* SCROLL AUTOMATICO - 1 RIGA */
-            white-space: nowrap;      /* NON va a capo */
-            overflow-x: auto;         /* Scroll orizzontale */
-            overflow-y: hidden;       /* NO scroll verticale */
-            padding: 0 8px;
-            
-            /* Scroll automatico alla fine */
-            display: block;
         }
         
-        /* Auto-scroll decoder alla fine quando cambia contenuto */
-        #decoder-preview:after {
-            content: '';
-            display: inline-block;
-            width: 1px;
+        .time {
+            color: #666;
+            font-size: 0.8rem;
         }
         
-        #morse-pad { 
-            height: 140px; 
-            background: var(--panel); 
-            display: flex; 
-            justify-content: center; 
-            align-items: center; 
-            border-radius: 10px; 
-            position: relative;
-            border: 1px solid #333;
+        #morse-pad {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            padding: 10px 0;
             flex-shrink: 0;
         }
         
         #key { 
-            width: 100px; 
-            height: 100px; 
-            border: 4px solid var(--amber); 
-            border-radius: 50%; 
-            cursor: pointer; 
-            touch-action: none;
-            -webkit-tap-highlight-color: transparent;
-            -webkit-touch-callout: none;
-            -webkit-user-select: none;
-            user-select: none;
-            transition: background 0.05s, transform 0.05s;
-        }
-        
-        #key:active { 
             background: var(--amber); 
-            box-shadow: 0 0 20px var(--amber);
-            transform: scale(0.95);
+            color: #000; 
+            border: 3px solid var(--amber); 
+            padding: 25px; 
+            font-size: 1.3rem; 
+            font-weight: bold; 
+            cursor: pointer; 
+            user-select: none;
+            border-radius: 10px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.5);
+            transition: all 0.1s ease;
+            touch-action: none;
+            text-align: center;
         }
         
-        #text-input-area {
-            display: flex;
-            gap: 8px;
-            flex-shrink: 0;
-        }
-        
-        @media (max-width: 768px) {
-            #text-input-area {
-                display: block;
-                width: 100%;
-            }
-            
-            #text-input-area input {
-                width: 100%;
-                display: block;
-                margin-bottom: 10px;
-            }
-            
-            #text-input-area button {
-                width: 100%;
-                display: block;
-            }
-        }
-        
-        #text-input {
-            flex: 1;
-            background: #000;
-            border: 1px solid var(--blue);
-            color: var(--blue);
-            padding: 10px;
-            font-family: 'Courier New', monospace;
-            font-size: 0.9rem;
-            resize: none;
-            height: 40px;
-        }
-        
-        /* Impedisce zoom automatico su iPhone */
-        @media screen and (max-width: 768px) {
-            #text-input {
-                font-size: 16px;
-            }
-        }
-        
-        #text-send {
-            background: var(--blue);
-            border: 2px solid var(--blue);
-            color: #000;
-            padding: 10px 20px;
-            font-weight: bold;
-            cursor: pointer;
-        }
-        
-        #text-send:hover {
-            background: #08d;
-        }
-        
-        #text-send:active {
-            transform: scale(0.95);
-        }
-        
-        #morse-keyboard-toggle {
-            transition: all 0.3s;
-            cursor: pointer;
-        }
-        
-        #morse-keyboard-toggle:hover {
-            opacity: 0.9;
-        }
-        
-        #morse-keyboard-toggle:active {
+        #key:active, #key.pressed { 
+            background: #fff; 
+            box-shadow: 0 0 20px var(--amber); 
             transform: scale(0.98);
         }
         
-        .user-tag { 
-            display: block; 
-            padding: 5px; 
-            color: var(--green); 
-            border-bottom: 1px solid #222;
-            font-size: 0.8rem;
+        @media (max-width: 768px) {
+            #key {
+                padding: 30px;
+                font-size: 1.4rem;
+                border-radius: 15px;
+            }
         }
         
-        .msg { 
-            margin-bottom: 10px; 
-            border-left: 2px solid var(--amber); 
-            padding-left: 8px;
-            white-space: pre-wrap;  /* ← PRESERVA SPAZI! */
-            font-family: 'Courier New', monospace; 
-            padding-left: 8px;
-            word-wrap: break-word;
+        .controls {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            align-items: center;
         }
         
-        .text-msg {
-            margin-bottom: 12px;
-            padding: 8px;
-            background: rgba(0, 170, 255, 0.1);
-            border-left: 3px solid var(--blue);
-            border-radius: 5px;
-            word-wrap: break-word;
-        }
-        
-        .text-msg .author {
-            font-weight: bold;
-            color: var(--blue);
-            margin-bottom: 5px;
-            font-size: 0.85rem;
-        }
-        
-        .text-msg .content {
-            color: #ddd;
-            font-size: 0.9rem;
-        }
-        
-        .text-msg .time {
-            font-size: 0.7rem;
-            color: #666;
-            margin-top: 5px;
-        }
-        
-        .input-box { 
-            background: #000; 
-            border: 1px solid var(--amber); 
-            color: var(--amber); 
-            padding: 10px; 
-            margin: 5px;
-            font-family: 'Courier New', monospace;
-            font-size: 1rem;
-            width: 100%;
-        }
-        
-        button {
-            background: var(--panel);
+        .controls button, input[type="text"], input[type="password"], select {
+            background: #000;
             color: var(--amber);
             border: 2px solid var(--amber);
-            padding: 10px 16px;
+            padding: 8px 12px;
             cursor: pointer;
-            font-family: 'Courier New', monospace;
+            font-family: inherit;
             font-size: 0.9rem;
+            border-radius: 5px;
             transition: all 0.2s;
-            white-space: nowrap;
         }
         
-        button:hover {
+        .controls button:hover {
             background: var(--amber);
             color: #000;
+            box-shadow: 0 0 10px rgba(255, 176, 0, 0.5);
         }
         
-        button:active {
+        .controls button:active {
             transform: scale(0.95);
         }
         
-        .btn-green {
-            background: #0f0;
-            border-color: #0f0;
+        input[type="text"], input[type="password"] {
+            flex: 1;
+            min-width: 150px;
+            cursor: text;
+        }
+        
+        input[type="text"]:focus, input[type="password"]:focus {
+            outline: none;
+            border-color: #fff;
+            box-shadow: 0 0 10px rgba(255, 176, 0, 0.3);
+        }
+        
+        #user-list {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+            font-size: 0.85rem;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+        
+        .user-item {
+            padding: 5px 8px;
+            background: #000;
+            border-left: 3px solid var(--green);
+            border-radius: 3px;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            animation: slideIn 0.3s ease;
+        }
+        
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateX(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+        
+        .online-indicator {
+            width: 8px;
+            height: 8px;
+            background: var(--green);
+            border-radius: 50%;
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% {
+                opacity: 1;
+            }
+            50% {
+                opacity: 0.5;
+            }
+        }
+        
+        #qrm-status {
+            padding: 8px 12px;
+            background: #000;
+            border: 2px solid #666;
+            border-radius: 5px;
+            font-size: 0.85rem;
+            color: #666;
+        }
+        
+        #qrm-status.active {
+            color: #f90;
+            border-color: #f90;
+            animation: pulse 1s infinite;
+        }
+        
+        #ai-status {
+            padding: 8px 12px;
+            background: #000;
+            border: 2px solid #666;
+            border-radius: 5px;
+            font-size: 0.85rem;
+            color: #666;
+        }
+        
+        #ai-status.active {
+            color: var(--blue);
+            border-color: var(--blue);
+            animation: pulse 1.5s infinite;
+        }
+        
+        .audio-alert {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(255, 176, 0, 0.95);
             color: #000;
+            padding: 30px 50px;
+            border-radius: 15px;
+            font-size: 1.5rem;
             font-weight: bold;
+            z-index: 2000;
+            text-align: center;
+            box-shadow: 0 0 30px rgba(255, 176, 0, 0.7);
+            animation: popIn 0.3s ease;
         }
         
-        .btn-green:hover {
-            background: #0c0;
+        @keyframes popIn {
+            from {
+                transform: translate(-50%, -50%) scale(0.8);
+                opacity: 0;
+            }
+            to {
+                transform: translate(-50%, -50%) scale(1);
+                opacity: 1;
+            }
         }
         
-        .btn-green.activated {
-            background: #666;
-            border-color: #666;
-            color: #aaa;
-            cursor: not-allowed;
-        }
-        
-        #settings-modal, #admin-modal, #admin-panel {
+        .modal {
+            display: none;
             position: fixed;
             inset: 0;
-            background: rgba(0, 0, 0, 0.95);
-            z-index: 2000;
-            display: none;
-            overflow-y: auto;
-            -webkit-overflow-scrolling: touch;
+            background: rgba(0, 0, 0, 0.9);
+            z-index: 1500;
+            align-items: center;
+            justify-content: center;
         }
         
-        #settings-modal.show, #admin-modal.show, #admin-panel.show {
+        .modal.show {
             display: flex;
-            justify-content: center;
-            align-items: flex-start;
-            padding: 20px;
         }
         
         .modal-content {
             background: var(--panel);
-            border: 2px solid var(--amber);
+            border: 3px solid var(--amber);
             padding: 30px;
-            border-radius: 10px;
-            max-width: 500px;
-            width: 100%;
-            position: relative;
-        }
-        
-        .panel-content {
-            background: var(--panel);
-            border: 2px solid var(--amber);
-            padding: 20px;
-            border-radius: 10px;
-            max-width: 800px;
-            width: 95%;
-            max-height: 90vh;
-            overflow-y: auto;
-            -webkit-overflow-scrolling: touch;
-        }
-        
-        .setting-row {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 15px 0;
-            border-bottom: 1px solid #333;
-        }
-        
-        .setting-row:last-child {
-            border-bottom: none;
-        }
-        
-        .setting-label {
-            font-size: 1rem;
-            color: var(--amber);
-        }
-        
-        .toggle-switch {
-            position: relative;
-            width: 60px;
-            height: 30px;
-            background: #333;
             border-radius: 15px;
-            cursor: pointer;
-            border: 2px solid #555;
-            transition: all 0.3s;
+            max-width: 500px;
+            width: 90%;
+            max-height: 80vh;
+            overflow-y: auto;
+            box-shadow: 0 0 30px rgba(255, 176, 0, 0.5);
         }
         
-        .toggle-switch.active {
-            background: var(--green);
-            border-color: var(--green);
+        .modal-content h3 {
+            color: var(--amber);
+            margin-top: 0;
+            text-align: center;
+            text-shadow: 0 0 10px var(--amber);
         }
         
-        .toggle-slider {
-            position: absolute;
-            width: 22px;
-            height: 22px;
-            background: #fff;
-            border-radius: 50%;
-            top: 2px;
-            left: 2px;
-            transition: all 0.3s;
+        .error {
+            color: #f00;
+            font-size: 0.9rem;
+            margin-top: 10px;
+            display: none;
         }
         
-        .toggle-switch.active .toggle-slider {
-            left: 32px;
+        .help-section {
+            margin: 15px 0;
+            padding: 15px;
+            background: rgba(0, 0, 0, 0.5);
+            border-left: 3px solid var(--amber);
+            border-radius: 5px;
+        }
+        
+        .help-section h4 {
+            color: var(--amber);
+            margin-top: 0;
+        }
+        
+        .help-section ul {
+            margin: 10px 0;
+            padding-left: 20px;
+        }
+        
+        .help-section li {
+            margin: 8px 0;
+            line-height: 1.5;
+        }
+        
+        .admin-panel {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.95);
+            z-index: 1600;
+            overflow-y: auto;
+            padding: 20px;
+        }
+        
+        .admin-panel.show {
+            display: block;
+        }
+        
+        .admin-content {
+            max-width: 800px;
+            margin: 0 auto;
+            background: var(--panel);
+            border: 3px solid var(--green);
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 0 30px rgba(0, 255, 0, 0.3);
+        }
+        
+        .admin-section {
+            margin: 20px 0;
+            padding: 20px;
+            background: rgba(0, 0, 0, 0.5);
+            border: 1px solid #333;
+            border-radius: 10px;
+        }
+        
+        .admin-section h4 {
+            color: var(--green);
+            margin-top: 0;
+            border-bottom: 2px solid var(--green);
+            padding-bottom: 10px;
+        }
+        
+        .stat-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+            margin: 15px 0;
         }
         
         .stat-box {
             background: #000;
-            border: 1px solid #333;
+            border: 2px solid var(--amber);
             padding: 15px;
-            margin: 10px 0;
-            border-radius: 5px;
+            border-radius: 8px;
+            text-align: center;
         }
         
-        .stat-label {
-            color: #888;
-            font-size: 0.9rem;
-        }
-        
-        .stat-value {
+        .stat-box .value {
+            font-size: 2rem;
             color: var(--amber);
-            font-size: 1.8rem;
             font-weight: bold;
         }
         
-        .upload-zone {
-            border: 2px dashed #666;
-            padding: 20px;
-            text-align: center;
-            margin: 10px 0;
-            cursor: pointer;
-            transition: all 0.3s;
+        .stat-box .label {
+            color: #888;
+            font-size: 0.85rem;
+            margin-top: 5px;
         }
         
-        .upload-zone:hover {
-            border-color: var(--amber);
-            background: rgba(255, 176, 0, 0.1);
-        }
-        
-        .bg-preview {
-            width: 100%;
-            max-height: 200px;
-            object-fit: cover;
-            border: 2px solid var(--amber);
-            border-radius: 5px;
-            margin: 10px 0;
-        }
-        
-        .close-btn {
-            position: absolute;
-            top: 10px;
-            right: 10px;
-            background: #f00;
-            border-color: #f00;
-            color: #fff;
-            padding: 5px 15px;
-            font-size: 1.2rem;
-            line-height: 1;
-        }
-        
-        .close-btn:hover {
-            background: #c00;
+        .slider-container {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin: 15px 0;
         }
         
         input[type="range"] {
-            -webkit-appearance: none;
-            appearance: none;
+            flex: 1;
             height: 8px;
             background: #333;
             border-radius: 5px;
             outline: none;
-            width: 100%;
+            -webkit-appearance: none;
         }
         
         input[type="range"]::-webkit-slider-thumb {
@@ -646,1647 +645,915 @@
             width: 20px;
             height: 20px;
             background: var(--amber);
-            border-radius: 50%;
             cursor: pointer;
+            border-radius: 50%;
+            border: 2px solid #fff;
         }
         
         input[type="range"]::-moz-range-thumb {
             width: 20px;
             height: 20px;
             background: var(--amber);
-            border-radius: 50%;
             cursor: pointer;
-            border: none;
+            border-radius: 50%;
+            border: 2px solid #fff;
         }
         
-        @media (max-width: 1024px) {
-            #main {
-                grid-template-columns: 140px 1fr 250px;
-            }
-            
-            .user-tag {
-                font-size: 0.75rem;
-            }
+        #bg-preview-container {
+            display: none;
+            margin: 15px 0;
+            text-align: center;
+        }
+        
+        #bg-preview {
+            max-width: 100%;
+            max-height: 200px;
+            border: 2px solid var(--amber);
+            border-radius: 10px;
+        }
+        
+        .btn-group {
+            display: flex;
+            gap: 10px;
+            margin: 15px 0;
+            flex-wrap: wrap;
+        }
+        
+        .btn-danger {
+            background: #600;
+            border-color: #f00;
+            color: #f00;
+        }
+        
+        .btn-danger:hover {
+            background: #f00;
+            color: #fff;
+        }
+        
+        .btn-success {
+            background: #060;
+            border-color: var(--green);
+            color: var(--green);
+        }
+        
+        .btn-success:hover {
+            background: var(--green);
+            color: #000;
         }
         
         @media (max-width: 768px) {
-            body {
-                overflow-y: auto;
-                -webkit-overflow-scrolling: touch;
-                height: auto;
-                min-height: 100vh;
-                scroll-padding-bottom: 50px;
-                padding-bottom: 80px;
+            .modal-content, .admin-content {
+                padding: 20px;
+                width: 95%;
             }
             
-            #main { 
-                display: block;
-                height: auto;
-                min-height: 0;
-                overflow: visible;
+            .stat-grid {
+                grid-template-columns: 1fr;
             }
             
-            #sidebar { 
-                display: block;
-                border-right: none;
-                border-bottom: 1px solid #333;
-                height: auto;
-                min-height: 60px;
-                max-height: none;
-                padding: 8px;
-                margin-bottom: 10px;
+            .btn-group {
+                flex-direction: column;
             }
             
-            #morse-section {
-                display: block;
-                height: auto;
-                min-height: 0;
-                overflow: visible;
-                margin-bottom: 10px;
-            }
-            
-            #text-chat-section {
-                display: block !important;
-                border-left: none;
-                border-top: 2px solid var(--blue);
-                height: auto;
-                min-height: 0;
-                max-height: none;
-                background: rgba(30, 30, 30, 0.98);
-                overflow: visible;
-                padding: 10px;
-                padding-bottom: 80px;
-                margin-bottom: 60px;
-            }
-            
-            #text-chat-section > * {
-                display: block !important;
+            .btn-group button {
                 width: 100%;
-            }
-            
-            .section-title {
-                display: block;
-                margin-bottom: 10px;
-            }
-            
-            #messages {
-                font-size: 1rem;
-                min-height: 150px;
-                max-height: 400px;
-                overflow-y: auto;
-                margin-bottom: 10px;
-            }
-            
-            #text-messages {
-                font-size: 0.9rem;
-                min-height: 150px;
-                max-height: 300px;
-                overflow-y: auto;
-                margin-bottom: 10px;
-            }
-            
-            #decoder-preview {
-                height: 25px;
-                font-size: 1.1rem;
-                margin-bottom: 10px;
-            }
-            
-            #morse-pad {
-                height: 140px;
-                margin-bottom: 10px;
-            }
-            
-            #key {
-                width: 90px;
-                height: 90px;
-            }
-            
-            header {
-                padding: 8px;
-                font-size: 0.85rem;
-                position: sticky;
-                top: 0;
-                z-index: 100;
-            }
-            
-            button {
-                padding: 10px 14px;
-                font-size: 0.9rem;
-                display: block;
-                width: 100%;
-                margin-bottom: 8px;
-            }
-            
-            .section-title {
-                font-size: 0.9rem;
-                padding: 10px;
-            }
-            
-            .text-msg {
-                margin-bottom: 12px;
-                padding: 10px;
-            }
-            
-            .text-msg .author {
-                font-size: 0.9rem;
-                margin-bottom: 5px;
-            }
-            
-            .text-msg .content {
-                font-size: 1rem;
-            }
-            
-            #text-input {
-                font-size: 16px;
-                height: 45px;
-                padding: 12px;
-                display: block;
-                width: 100%;
-                margin-bottom: 10px;
-            }
-            
-            #text-input-area {
-                display: block;
-                margin-bottom: 12px;
-            }
-            
-            #text-send {
-                padding: 12px 16px;
-                font-size: 1rem;
-                width: 100%;
-                display: block;
-                margin-bottom: 12px;
-            }
-            
-            #morse-keyboard-toggle {
-                padding: 12px;
-                font-size: 0.9rem;
-                width: 100%;
-                display: block !important;
-                margin-top: 12px;
-                margin-bottom: 20px;
             }
         }
         
-        @media (max-height: 600px) {
-            #morse-pad {
-                height: 100px;
+        .loading-spinner {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255, 176, 0, 0.3);
+            border-radius: 50%;
+            border-top-color: var(--amber);
+            animation: spin 1s linear infinite;
+        }
+        
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
             }
-            
-            #key {
-                width: 70px;
-                height: 70px;
-            }
+        }
+        
+        /* Miglioramenti accessibilità */
+        button:focus-visible,
+        input:focus-visible {
+            outline: 3px solid var(--amber);
+            outline-offset: 2px;
+        }
+        
+        .sr-only {
+            position: absolute;
+            width: 1px;
+            height: 1px;
+            padding: 0;
+            margin: -1px;
+            overflow: hidden;
+            clip: rect(0, 0, 0, 0);
+            white-space: nowrap;
+            border-width: 0;
         }
     </style>
 </head>
 <body>
-
-<div id="login-overlay">
-    <h2>📡 MORSE-LINK LIVE</h2>
-    <div class="online-badge">🌍 RADIO IN VETTA</div>
-    <p style="color: #888; margin: 0; font-size: 0.9rem;">Real-time Global CW Chat + Text by Luca IU2RPQ</p>
-    <input type="text" id="callsign" class="input-box" placeholder="TUO NOMINATIVO (es. IU2RPQ)" maxlength="10" style="max-width: 300px;">
-    <button onclick="startApp()">▶ CONNETTI</button>
-</div>
-
-<header>
-    <div class="header-left">
-        <div><strong>STAZIONE:</strong> <span id="my-id">---</span></div>
-        <div id="status-indicator" style="color: var(--green); font-size: 0.85rem;">● ONLINE</div>
-    </div>
-    <div class="header-buttons">
-        <button id="audio-activate-btn" class="btn-green" onclick="activateAudioManually()">🔊 ATTIVA AUDIO</button>
-        <button onclick="shareIcon()" style="background: #9c27b0; border-color: #9c27b0;" title="Condividi icona app">📱 INSTALLA APP</button>
-        <button onclick="mapExternalKey()" id="map-btn">⌨️ MAPPA TASTO</button>
-        <button onclick="openSettings()">⚙️ SETTINGS</button>
-    </div>
-</header>
-
-<div id="main">
-    <div id="sidebar">
-        <div style="font-size: 0.85rem; font-weight: bold; color: var(--green); border-bottom: 1px solid #333; padding-bottom: 5px; margin-bottom: 5px;">
-            🌍 ONLINE
+    <div id="login-overlay">
+        <h2>🔗 MORSE-LINK LIVE 🔗</h2>
+        <div class="online-badge">
+            <span id="online-count">0</span> ONLINE
         </div>
-        <div id="user-list"></div>
+        <input type="text" id="callsign-input" placeholder="Your CALLSIGN" maxlength="15" aria-label="Enter your callsign">
+        <button onclick="login()" style="padding: 12px 30px; font-size: 1.1rem;">JOIN</button>
     </div>
-    
-    <div id="morse-section">
-        <div class="section-title" style="color: var(--amber); border-color: var(--amber);">
-            📻 MORSE CODE
-            <button onclick="toggleDecoder()" id="decoder-toggle-top" style="float: right; padding: 5px 10px; font-size: 0.7rem; background: var(--green); border-color: var(--green); color: #000;">
-                👁️ DECODER: ON
-            </button>
-        </div>
-        <div id="messages"></div>
-        
-        <!-- WPM Selector per Decoder Intelligente -->
-        <div style="display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 8px 10px; background: rgba(0, 255, 0, 0.05); border: 1px solid var(--green); border-radius: 5px; margin-bottom: 8px; flex-wrap: wrap;">
-            <div style="display: flex; align-items: center; gap: 8px;">
-                <label style="font-size: 0.8rem; color: var(--green); font-weight: bold; white-space: nowrap;">⚡ Velocità TX:</label>
-                <select id="wpm-selector" onchange="updateDecoderSpeed()" style="padding: 5px 8px; background: rgba(0, 0, 0, 0.5); border: 1px solid var(--green); border-radius: 3px; color: var(--green); font-family: 'Courier New', monospace; font-size: 0.75rem; cursor: pointer;">
-                    <option value="8">8 WPM</option>
-                    <option value="10" selected>10 WPM</option>
-                    <option value="12">12 WPM</option>
-                    <option value="15">15 WPM</option>
-                    <option value="18">18 WPM</option>
-                    <option value="20">20 WPM</option>
-                    <option value="25">25 WPM</option>
-                    <option value="30">30 WPM</option>
-                </select>
+
+    <header>
+        <div class="header-left">
+            <div style="font-size: 1.2rem; font-weight: bold; text-shadow: 0 0 10px var(--amber);">
+                🔗 MORSE-LINK LIVE
             </div>
-            <span id="wpm-info" style="font-size: 0.7rem; color: #888; white-space: nowrap;">⏱️ Lettera: 400ms | Spazio: 560ms</span>
-        </div>
-        
-        <div id="decoder-preview"></div>
-        <div id="morse-pad">
-            <div id="key"></div>
-        </div>
-    </div>
-    
-    <div id="text-chat-section">
-        <div class="section-title" style="color: var(--blue); border-color: var(--blue);">
-            💬 TEXT CHAT
-        </div>
-        <div id="text-messages"></div>
-        <div id="text-input-area">
-            <input type="text" id="text-input" placeholder="Scrivi messaggio..." maxlength="200">
-            <button id="text-send" onclick="sendTextMessage()">INVIA</button>
-        </div>
-        <button id="morse-keyboard-toggle" onclick="toggleMorseKeyboard()" style="width: 100%; margin-top: 8px; padding: 8px; font-size: 0.85rem; background: var(--green); border-color: var(--green); color: #000; font-weight: bold;">
-            ⌨️ MORSE KEYBOARD: ON
-        </button>
-    </div>
-</div>
-
-<!-- Settings Modal -->
-<div id="settings-modal">
-    <div class="modal-content">
-        <button class="close-btn" onclick="closeSettings()">✕</button>
-        <h2 style="color: var(--amber); margin-top: 0;">⚙️ IMPOSTAZIONI</h2>
-        
-        <div class="setting-row">
-            <div class="setting-label">Mostra/Nascondi Testo</div>
-            <div class="toggle-switch active" id="toggle-text" onclick="toggleTextDisplay()">
-                <div class="toggle-slider"></div>
+            <div style="font-size: 0.85rem; color: #888;">
+                <span id="username-display"></span> | <span id="online-count-header">0</span> ONLINE
             </div>
         </div>
         
-        <div class="setting-row">
-            <div class="setting-label">QRM Sottofondo</div>
-            <div class="toggle-switch" id="toggle-qrm" onclick="toggleQRM()">
-                <div class="toggle-slider"></div>
+        <div class="header-buttons">
+            <button onclick="showHelp()" title="Help">❓</button>
+            <button onclick="toggleTextMode()" id="text-mode-btn" title="Toggle Text Display">👁️</button>
+            <button onclick="toggleQRM()" id="qrm-btn" title="Toggle QRM/QRN">📻</button>
+            <button onclick="toggleAI()" id="ai-btn" title="Virtual QSO">🤖</button>
+            <button onclick="showAdminLogin()" title="Admin Panel">⚙️</button>
+        </div>
+    </header>
+
+    <div id="main">
+        <div id="sidebar">
+            <div class="section-title">👥 OPERATORS</div>
+            <div id="user-list"></div>
+            <div style="margin-top: auto; padding-top: 10px; font-size: 0.75rem; color: #666; text-align: center;">
+                Radio in Vetta<br>IU2RPQ
             </div>
         </div>
-        
-        <!-- SLIDER VOLUME QRM -->
-        <div class="setting-row" id="qrm-volume-row" style="display: none; padding-left: 20px; margin-top: -10px;">
-            <div class="setting-label" style="font-size: 0.9rem;">📊 Volume QRM</div>
-            <div style="display: flex; align-items: center; gap: 10px; flex: 1;">
-                <input type="range" 
-                       id="qrm-volume-slider" 
-                       min="0" 
-                       max="100" 
-                       value="50" 
-                       oninput="updateQRMVolume(this.value)"
-                       style="flex: 1; cursor: pointer;">
-                <span id="qrm-volume-value" style="min-width: 35px; text-align: right; color: var(--amber);">50%</span>
+
+        <div id="morse-section">
+            <div class="section-title">⚡ MORSE CHAT ⚡</div>
+            
+            <div id="messages" role="log" aria-live="polite" aria-label="Morse messages"></div>
+
+            <div id="morse-pad">
+                <div style="display: flex; gap: 8px; align-items: center;">
+                    <span id="qrm-status">QRM: OFF</span>
+                    <span id="ai-status">AI: OFF</span>
+                </div>
+                
+                <button id="key" aria-label="Morse key - press and hold to transmit">
+                    🔑 PRESS TO TRANSMIT
+                </button>
+                
+                <div class="controls">
+                    <button onclick="toggleMorseKeyboard()" id="kbd-btn" title="Toggle Keyboard Morse">⌨️</button>
+                    <button onclick="showKeyConfig()" title="Configure Keyboard Key">🔧</button>
+                    <span id="mapped-key-display" style="color: #888; font-size: 0.85rem;">Key: SPACE</span>
+                    <button onclick="clearChat()" title="Clear Morse Chat">🗑️</button>
+                </div>
             </div>
         </div>
-        
-        <div class="setting-row">
-            <div class="setting-label">📱 Scarica Icona App</div>
-            <button onclick="window.open('https://morse.radioinvetta.it/scarica-icona.html', '_blank')" style="padding: 8px 16px; background: #9c27b0; border-color: #9c27b0; color: #fff;">💾 SCARICA</button>
-        </div>
-        
-        <div class="setting-row">
-            <div class="setting-label">🌐 Lingua / Language</div>
-            <select onchange="changeLanguage(this.value)" id="lang-selector" style="padding: 8px; background: #000; color: var(--amber); border: 1px solid var(--amber); font-family: 'Courier New', monospace;">
-                <option value="it">🇮🇹 Italiano</option>
-                <option value="en">🇬🇧 English</option>
-            </select>
-        </div>
-        
-        <div class="setting-row">
-            <div class="setting-label">📧 Contattaci</div>
-            <button onclick="sendEmail()" style="padding: 8px 16px; background: var(--blue); border-color: var(--blue);">✉️ INVIA EMAIL</button>
-        </div>
-        
-        <div class="setting-row">
-            <div class="setting-label">📚 Manuale Utente</div>
-            <button onclick="openManuale()" style="padding: 8px 16px; background: var(--green); border-color: var(--green); color: #000; font-weight: bold;">📖 APRI GUIDA</button>
-        </div>
-        
-        <div class="setting-row">
-            <div class="setting-label">Pannello Admin</div>
-            <button onclick="closeSettings(); showAdminLogin();" style="padding: 8px 16px;">🔐 ACCEDI</button>
-        </div>
-        
-        <div class="setting-row">
-            <div class="setting-label">Pulisci Chat Morse</div>
-            <button onclick="clearChat()" style="padding: 8px 16px; background: #f00; border-color: #f00; color: #fff;">🗑️ PULISCI</button>
-        </div>
-        
-        <div class="setting-row">
-            <div class="setting-label">Pulisci Chat Text</div>
-            <button onclick="clearTextChat()" style="padding: 8px 16px; background: #f00; border-color: #f00; color: #fff;">🗑️ PULISCI</button>
-        </div>
-    </div>
-</div>
 
-<!-- Admin Login Modal -->
-<div id="admin-modal">
-    <div class="modal-content">
-        <button class="close-btn" onclick="closeAdminModal()">✕</button>
-        <h2 style="color: var(--amber); margin-top: 0;">🔐 ACCESSO ADMIN</h2>
-        <input type="password" id="admin-pwd" class="input-box" placeholder="Password" style="margin: 20px 0;">
-        <div style="display: flex; gap: 10px;">
-            <button onclick="checkAdminPassword()" style="flex: 1;">ACCEDI</button>
-            <button onclick="closeAdminModal()" style="flex: 1; background: #333;">ANNULLA</button>
+        <div id="text-chat-section">
+            <div class="section-title">💬 TEXT CHAT</div>
+            
+            <div id="text-messages" role="log" aria-live="polite" aria-label="Text messages"></div>
+            
+            <div class="controls">
+                <input type="text" id="text-input" placeholder="Type message..." maxlength="200" aria-label="Text message input">
+                <button onclick="sendTextMessage()" title="Send Text Message">📤</button>
+            </div>
         </div>
-        <p id="admin-error" style="color: #f00; margin-top: 10px; display: none;">Password errata!</p>
     </div>
-</div>
 
-<!-- Admin Panel -->
-<div id="admin-panel">
-    <div class="panel-content">
-        <button class="close-btn" onclick="closeAdminPanel()">✕</button>
-        <h2 style="color: var(--amber);">⚙️ PANNELLO AMMINISTRAZIONE</h2>
-        
-        <h3 style="color: var(--green); margin-top: 30px;">🖼️ SFONDO PERSONALIZZATO</h3>
-        <div class="upload-zone" onclick="document.getElementById('bg-upload').click()">
-            <p>📁 Clicca per caricare immagine di sfondo</p>
-            <p style="color: #666; font-size: 0.8rem;">JPG, PNG (max 5MB)</p>
+    <!-- Modal Help -->
+    <div id="help-modal" class="modal" role="dialog" aria-labelledby="help-title">
+        <div class="modal-content">
+            <h3 id="help-title">📖 MORSE-LINK LIVE HELP</h3>
+            
+            <div class="help-section">
+                <h4>🔑 Morse Transmission</h4>
+                <ul>
+                    <li><strong>Mouse/Touch:</strong> Press and hold the yellow button</li>
+                    <li><strong>Keyboard:</strong> Enable with ⌨️ button, then use SPACE (or configured key)</li>
+                    <li><strong>Timing:</strong> Short press = dot (·), long press = dash (─)</li>
+                </ul>
+            </div>
+            
+            <div class="help-section">
+                <h4>🎛️ Features</h4>
+                <ul>
+                    <li><strong>👁️</strong> Toggle text display in Morse chat</li>
+                    <li><strong>📻</strong> Enable QRM/QRN atmospheric noise</li>
+                    <li><strong>🤖</strong> Practice with AI Virtual QSO</li>
+                    <li><strong>💬</strong> Send text messages alongside Morse</li>
+                </ul>
+            </div>
+            
+            <div class="help-section">
+                <h4>⚡ Audio</h4>
+                <p>If you can't hear incoming Morse signals, click the "ATTIVA AUDIO" alert that appears when someone transmits.</p>
+            </div>
+            
+            <div style="text-align: center; margin-top: 20px;">
+                <button onclick="closeHelp()" style="padding: 10px 30px;">CLOSE</button>
+            </div>
         </div>
-        <input type="file" id="bg-upload" accept="image/*" style="display: none;" onchange="handleBackgroundUpload(event)">
-        
-        <div id="bg-preview-container" style="display: none;">
-            <img id="bg-preview" class="bg-preview">
-            <button onclick="removeBackground()" style="background: #f00; border-color: #f00; color: #fff;">🗑️ RIMUOVI</button>
-        </div>
-        
-        <h3 style="color: var(--green); margin-top: 30px;">🎨 TRASPARENZA CHAT</h3>
-        <div style="margin: 20px 0;">
-            <label style="display: block; margin-bottom: 10px;">
-                Opacità: <span id="opacity-value">70</span>%
-            </label>
-            <input type="range" id="opacity-slider" min="0" max="100" value="70" oninput="updateChatOpacity(this.value)">
-        </div>
-        
-        <button onclick="resetOpacity()" style="width: 100%; margin-top: 10px;">
-            🔄 RESET OPACITÀ
-        </button>
-        
-        <h3 style="color: var(--green); margin-top: 30px;">🔊 TEST AUDIO</h3>
-        <button onclick="testAudioReception()" style="width: 100%; margin-top: 10px;">
-            🎵 TEST SOS
-        </button>
-        <p id="audio-test-result" style="color: #666; font-size: 0.8rem; margin-top: 10px;"></p>
-        
-        <h3 style="color: var(--green); margin-top: 30px;">📊 STATISTICHE</h3>
-        <div class="stat-box">
-            <div class="stat-label">Messaggi Morse</div>
-            <div class="stat-value" id="stat-morse">0</div>
-        </div>
-        <div class="stat-box">
-            <div class="stat-label">Messaggi Text</div>
-            <div class="stat-value" id="stat-text">0</div>
-        </div>
-        <div class="stat-box">
-            <div class="stat-label">Utenti Unici</div>
-            <div class="stat-value" id="stat-users">0</div>
-        </div>
-        <div class="stat-box">
-            <div class="stat-label">Utenti Online</div>
-            <div class="stat-value" id="stat-online">0</div>
-        </div>
-        <button onclick="resetStats()" style="background: #f00; border-color: #f00; color: #fff; margin-top: 20px; width: 100%;">
-            🗑️ RESET STATISTICHE
-        </button>
     </div>
-</div>
+
+    <!-- Modal Key Config -->
+    <div id="key-config-modal" class="modal" role="dialog" aria-labelledby="keyconfig-title">
+        <div class="modal-content">
+            <h3 id="keyconfig-title">🔧 KEYBOARD KEY CONFIG</h3>
+            <p style="text-align: center; margin: 20px 0;">Press the key you want to use for Morse transmission:</p>
+            <div style="text-align: center; font-size: 2rem; color: var(--amber); margin: 20px 0;" id="key-display">
+                SPACE
+            </div>
+            <div style="text-align: center; margin-top: 20px;">
+                <button onclick="closeKeyConfig()" style="padding: 10px 30px;">DONE</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Admin Login -->
+    <div id="admin-modal" class="modal" role="dialog" aria-labelledby="admin-login-title">
+        <div class="modal-content">
+            <h3 id="admin-login-title">🔐 ADMIN ACCESS</h3>
+            <input type="password" id="admin-pwd" placeholder="Admin Password" aria-label="Admin password">
+            <div class="error" id="admin-error">❌ Wrong password!</div>
+            <div style="display: flex; gap: 10px; margin-top: 15px;">
+                <button onclick="checkAdminPassword()" style="flex: 1;">LOGIN</button>
+                <button onclick="closeAdminModal()" style="flex: 1;">CANCEL</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Panel Admin -->
+    <div id="admin-panel" class="admin-panel" role="dialog" aria-labelledby="admin-panel-title">
+        <div class="admin-content">
+            <h3 id="admin-panel-title" style="color: var(--green); text-align: center;">⚙️ ADMIN PANEL ⚙️</h3>
+            
+            <div class="admin-section">
+                <h4>📊 Statistics</h4>
+                <div class="stat-grid">
+                    <div class="stat-box">
+                        <div class="value" id="stat-morse">0</div>
+                        <div class="label">Morse Messages</div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="value" id="stat-text">0</div>
+                        <div class="label">Text Messages</div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="value" id="stat-users">0</div>
+                        <div class="label">Total Users</div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="value" id="stat-online">0</div>
+                        <div class="label">Online Now</div>
+                    </div>
+                </div>
+                <button onclick="resetStats()" class="btn-success">🔄 Refresh</button>
+            </div>
+            
+            <div class="admin-section">
+                <h4>🖼️ Background Image</h4>
+                <input type="file" id="bg-upload" accept="image/*" onchange="handleBackgroundUpload(event)" style="margin: 10px 0;">
+                <div id="bg-preview-container">
+                    <img id="bg-preview" alt="Background preview">
+                </div>
+                <div class="btn-group">
+                    <button onclick="removeBackground()" class="btn-danger">🗑️ Remove Background</button>
+                </div>
+            </div>
+            
+            <div class="admin-section">
+                <h4>🎨 Chat Opacity</h4>
+                <div class="slider-container">
+                    <span>0%</span>
+                    <input type="range" id="opacity-slider" min="0" max="100" value="70" oninput="updateChatOpacity(this.value)">
+                    <span>100%</span>
+                    <span id="opacity-value" style="color: var(--amber); font-weight: bold;">70</span>
+                </div>
+                <button onclick="resetOpacity()">↩️ Reset to Default (70%)</button>
+            </div>
+            
+            <div class="admin-section">
+                <h4>🎵 Test Audio Reception</h4>
+                <p style="color: #888; font-size: 0.9rem;">Test if you can hear incoming Morse signals (plays SOS)</p>
+                <button onclick="testAudioReception()" class="btn-success">▶️ Test Audio (SOS)</button>
+                <div id="audio-test-result" style="margin-top: 10px; text-align: center; font-weight: bold;"></div>
+            </div>
+            
+            <div style="text-align: center; margin-top: 30px;">
+                <button onclick="closeAdminPanel()" style="padding: 12px 40px;">✅ CLOSE</button>
+            </div>
+        </div>
+    </div>
 
 <script>
+    // ═══════════════════════════════════════════════════════════════════════════
+    // MORSE-LINK LIVE - OTTIMIZZATO
+    // ═══════════════════════════════════════════════════════════════════════════
+    
+    // Firebase Configuration
     const firebaseConfig = {
-        apiKey: "AIzaSyA7XqQnQRc0NbxgewBADmpdieylU7eTNHE",
+        apiKey: "AIzaSyAQE9kHNcBU0g-AjKF-LBfn8oMxKnSvNqE",
         authDomain: "morse-link-live.firebaseapp.com",
         databaseURL: "https://morse-link-live-default-rtdb.europe-west1.firebasedatabase.app",
         projectId: "morse-link-live",
         storageBucket: "morse-link-live.firebasestorage.app",
-        messagingSenderId: "170315866392",
-        appId: "1:170315866392:web:91918cc223656b2d40be6d"
+        messagingSenderId: "644043933903",
+        appId: "1:644043933903:web:fd12ae3f2b8b37a5b8f8e7"
     };
 
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
-    
-    let callsign = "";
-    let audioCtx, oscillator, gainNode, qrmInterval;
-    let startTime = 0, isDown = false, morseBuffer = "";
-    let mappedKey = null, isMapping = false;
-    let lastUp = Date.now();
-    let textDisplayEnabled = true;
-    let decoderEnabled = true;
-    let audioEnabled = false;
-    let qrmEnabled = false;
-    let morseKeyboardEnabled = true;
-    
-    const ADMIN_PASSWORD = "radio1010";
-    const lastMsgUser = {};
-    const DOT_DURATION = 100;
-    const DASH_DURATION = 300;
-    const SYMBOL_GAP = 100;
-    const LETTER_GAP = 300;
 
-    const MORSE = { 
-        ".-": "A", "-...": "B", "-.-.": "C", "-..": "D", ".": "E", 
-        "..-.": "F", "--.": "G", "....": "H", "..": "I", ".---": "J", 
-        "-.-": "K", ".-..": "L", "--": "M", "-.": "N", "---": "O", 
-        ".--.": "P", "--.-": "Q", ".-.": "R", "...": "S", "-": "T", 
-        "..-": "U", "...-": "V", ".--": "W", "-..-": "X", "-.--": "Y", 
-        "--..": "Z", "-----": "0", ".----": "1", "..---": "2", "...--": "3", 
-        "....-": "4", ".....": "5", "-....": "6", "--...": "7", "---..": "8", 
-        "----.": "9", "..--..": "?", "-..-.": "/", ".-.-.-": "."
+    // ══════════ CONSTANTS & STATE ══════════
+    const ADMIN_PASSWORD = 'radioInVettaAdmin2025';
+    
+    const MORSE_CODE = {
+        'A': '.-', 'B': '-...', 'C': '-.-.', 'D': '-..', 'E': '.', 'F': '..-.',
+        'G': '--.', 'H': '....', 'I': '..', 'J': '.---', 'K': '-.-', 'L': '.-..',
+        'M': '--', 'N': '-.', 'O': '---', 'P': '.--.', 'Q': '--.-', 'R': '.-.',
+        'S': '...', 'T': '-', 'U': '..-', 'V': '...-', 'W': '.--', 'X': '-..-',
+        'Y': '-.--', 'Z': '--..', '0': '-----', '1': '.----', '2': '..---',
+        '3': '...--', '4': '....-', '5': '.....', '6': '-....', '7': '--...',
+        '8': '---..', '9': '----.', '.': '.-.-.-', ',': '--..--', '?': '..--..',
+        '/': '-..-.', ' ': ' '
     };
 
-    const CHAR_TO_MORSE = Object.fromEntries(Object.entries(MORSE).map(([k, v]) => [v, k]));
+    const DOT_TIME = 80;
+    const DASH_TIME = DOT_TIME * 3;
+    const SYMBOL_GAP = DOT_TIME;
+    const LETTER_GAP = DOT_TIME * 3;
+    const WORD_GAP = DOT_TIME * 7;
 
-    function scrollToBottom(container) {
-        requestAnimationFrame(() => {
-            container.scrollTop = container.scrollHeight;
-        });
-    }
+    let audioCtx = null;
+    let oscillator = null;
+    let gainNode = null;
+    let audioActivated = false;
+    let currentUser = '';
+    let isDown = false;
+    let downTime = 0;
+    let morseBuffer = '';
+    let bufferTimeout = null;
+    let textModeEnabled = true;
+    let qrmEnabled = false;
+    let qrmInterval = null;
+    let aiEnabled = false;
+    let aiTimeout = null;
+    let morseKeyboardEnabled = false;
+    let mappedKey = 'Space';
+    let userListeners = [];
 
+    // ══════════ AUDIO SYSTEM ══════════
     function initAudio() {
-        if(!audioCtx) {
-            audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-        }
-        if(audioCtx.state === 'suspended') {
-            audioCtx.resume();
-        }
-        audioEnabled = true;
-        console.log('🎵 Audio inizializzato, state:', audioCtx.state);
-    }
-    
-    function playBeep(duration) {
-        if(!audioCtx) return Promise.resolve();
+        if (audioCtx) return;
         
-        return new Promise((resolve) => {
+        // Verifica supporto browser
+        const AudioContext = window.AudioContext || window.webkitAudioContext;
+        if (!AudioContext) {
+            console.error('❌ AudioContext non supportato da questo browser');
+            alert('⚠️ Il tuo browser non supporta l\'audio Web Audio API.\nProva con Chrome, Firefox o Edge.');
+            return;
+        }
+        
+        try {
+            audioCtx = new AudioContext();
+            gainNode = audioCtx.createGain();
+            gainNode.connect(audioCtx.destination);
+            gainNode.gain.setValueAtTime(0, audioCtx.currentTime);
+            console.log('🎵 Audio Context inizializzato:', audioCtx.state);
+        } catch (err) {
+            console.error('❌ Errore inizializzazione audio:', err);
+        }
+    }
+
+    function playTone(duration) {
+        if (!audioCtx) return Promise.resolve();
+        
+        return new Promise(resolve => {
             try {
-                const osc = audioCtx.createOscillator();
-                const gainNode = audioCtx.createGain();
+                if (audioCtx.state === 'suspended') {
+                    audioCtx.resume();
+                }
                 
-                osc.frequency.value = 700;
-                osc.type = 'sine';
-                gainNode.gain.value = 0.15;  // Volume fisso
+                oscillator = audioCtx.createOscillator();
+                oscillator.type = 'sine';
+                oscillator.frequency.setValueAtTime(700, audioCtx.currentTime);
+                oscillator.connect(gainNode);
                 
-                osc.connect(gainNode);
-                gainNode.connect(audioCtx.destination);
+                gainNode.gain.setValueAtTime(0, audioCtx.currentTime);
+                gainNode.gain.linearRampToValueAtTime(0.3, audioCtx.currentTime + 0.005);
                 
-                osc.start(audioCtx.currentTime);
-                osc.stop(audioCtx.currentTime + (duration / 1000));
+                oscillator.start(audioCtx.currentTime);
                 
-                setTimeout(() => resolve(), duration);
-            } catch(err) {
-                console.error('❌ Beep error:', err);
+                setTimeout(() => {
+                    if (oscillator) {
+                        gainNode.gain.linearRampToValueAtTime(0, audioCtx.currentTime + 0.005);
+                        oscillator.stop(audioCtx.currentTime + 0.01);
+                        oscillator.disconnect();
+                        oscillator = null;
+                    }
+                    resolve();
+                }, duration);
+            } catch (err) {
+                console.error('❌ Errore riproduzione tono:', err);
                 resolve();
             }
         });
     }
-    
+
     async function playMorseChar(char) {
-        if(!audioCtx) return;
+        const code = MORSE_CODE[char.toUpperCase()];
+        if (!code) return;
         
-        const morse = CHAR_TO_MORSE[char.toUpperCase()];
-        
-        if(!morse) {
-            // CARATTERE NON RICONOSCIUTO: suona pattern grezzo
-            // Se text è un pattern morse (es "-..-.-"), suona quello
-            if(/^[.\-]+$/.test(char)) {
-                // È un pattern morse → suonalo!
-                console.log(`🔊 Suono pattern NON riconosciuto: ${char}`);
-                for(let symbol of char) {
-                    const duration = symbol === '.' ? DOT_DURATION : DASH_DURATION;
-                    await playBeep(duration);
-                    await new Promise(resolve => setTimeout(resolve, SYMBOL_GAP));
+        for (let symbol of code) {
+            if (symbol === '.') {
+                await playTone(DOT_TIME);
+            } else if (symbol === '-') {
+                await playTone(DASH_TIME);
+            }
+            await new Promise(r => setTimeout(r, SYMBOL_GAP));
+        }
+    }
+
+    async function playMorseString(text) {
+        const words = text.split(' ');
+        for (let i = 0; i < words.length; i++) {
+            const word = words[i];
+            for (let j = 0; j < word.length; j++) {
+                await playMorseChar(word[j]);
+                if (j < word.length - 1) {
+                    await new Promise(r => setTimeout(r, LETTER_GAP));
                 }
             }
-            return;
-        }
-        
-        // CARATTERE RICONOSCIUTO: suona normalmente
-        for(let symbol of morse) {
-            const duration = symbol === '.' ? DOT_DURATION : DASH_DURATION;
-            await playBeep(duration);
-            await new Promise(resolve => setTimeout(resolve, SYMBOL_GAP));
-        }
-    }
-    
-    // Nodi audio per QRM realistico
-    let qrmNoiseNode = null;
-    let qrmToneNode = null;
-    let qrmNoiseGain = null;
-    let qrmToneGain = null;
-    
-    function startQRM() {
-        if(!audioCtx) {
-            console.warn('⚠️ startQRM: audioCtx null, inizializzo...');
-            initAudio();
-        }
-        
-        if(qrmNoiseNode) {
-            console.log('⚠️ QRM già attivo');
-            return;
-        }
-        
-        // === WHITE NOISE (statico radio) ===
-        const bufferSize = audioCtx.sampleRate * 2;
-        const noiseBuffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
-        const output = noiseBuffer.getChannelData(0);
-        for(let i = 0; i < bufferSize; i++) {
-            output[i] = Math.random() * 2 - 1;  // Random -1 a 1
-        }
-        
-        qrmNoiseNode = audioCtx.createBufferSource();
-        qrmNoiseNode.buffer = noiseBuffer;
-        qrmNoiseNode.loop = true;
-        
-        // Filtro per white noise (simula banda radio)
-        const noiseFilter = audioCtx.createBiquadFilter();
-        noiseFilter.type = 'bandpass';
-        noiseFilter.frequency.value = 1500;  // Centro banda
-        noiseFilter.Q.value = 0.5;  // Larghezza banda
-        
-        qrmNoiseGain = audioCtx.createGain();
-        qrmNoiseGain.gain.value = 0.03;  // Volume statico
-        
-        qrmNoiseNode.connect(noiseFilter);
-        noiseFilter.connect(qrmNoiseGain);
-        qrmNoiseGain.connect(audioCtx.destination);
-        qrmNoiseNode.start();
-        
-        // === TONO PORTANTE (fischio) ===
-        qrmToneNode = audioCtx.createOscillator();
-        qrmToneNode.frequency.value = 1200;  // Fischio portante
-        qrmToneNode.type = 'sine';
-        
-        qrmToneGain = audioCtx.createGain();
-        qrmToneGain.gain.value = 0.015;  // Volume fischio
-        
-        qrmToneNode.connect(qrmToneGain);
-        qrmToneGain.connect(audioCtx.destination);
-        qrmToneNode.start();
-        
-        // === CRACKLE OCCASIONALE (interferenze) ===
-        qrmInterval = setInterval(() => {
-            if(!qrmEnabled) return;
-            
-            // Random crackle/pop
-            if(Math.random() > 0.7) {
-                const crackle = audioCtx.createOscillator();
-                const crackleGain = audioCtx.createGain();
-                
-                crackle.frequency.value = 200 + Math.random() * 800;
-                crackle.type = 'square';
-                crackleGain.gain.value = 0.02;
-                
-                crackle.connect(crackleGain);
-                crackleGain.connect(audioCtx.destination);
-                
-                crackle.start();
-                crackle.stop(audioCtx.currentTime + 0.02 + Math.random() * 0.05);
+            if (i < words.length - 1) {
+                await new Promise(r => setTimeout(r, WORD_GAP));
             }
-        }, 300 + Math.random() * 500);
-        
-        console.log('📻 QRM REALISTICO ON (white noise + portante 1200Hz)');
+        }
     }
-    
+
+    // ══════════ QRM/QRN SYSTEM ══════════
+    function startQRM() {
+        if (qrmInterval || !audioCtx) return;
+        
+        qrmInterval = setInterval(() => {
+            if (Math.random() < 0.3) {
+                const freq = 300 + Math.random() * 800;
+                const duration = 50 + Math.random() * 150;
+                
+                try {
+                    if (audioCtx.state === 'suspended') audioCtx.resume();
+                    
+                    const qrmOsc = audioCtx.createOscillator();
+                    qrmOsc.type = 'sawtooth';
+                    qrmOsc.frequency.setValueAtTime(freq, audioCtx.currentTime);
+                    
+                    const qrmGain = audioCtx.createGain();
+                    qrmGain.gain.setValueAtTime(0, audioCtx.currentTime);
+                    qrmGain.gain.linearRampToValueAtTime(0.05, audioCtx.currentTime + 0.01);
+                    
+                    qrmOsc.connect(qrmGain);
+                    qrmGain.connect(audioCtx.destination);
+                    qrmOsc.start();
+                    
+                    setTimeout(() => {
+                        qrmGain.gain.linearRampToValueAtTime(0, audioCtx.currentTime + 0.02);
+                        qrmOsc.stop(audioCtx.currentTime + 0.03);
+                    }, duration);
+                } catch (err) {
+                    console.error('QRM error:', err);
+                }
+            }
+        }, 500);
+    }
+
     function stopQRM() {
-        // Stop white noise
-        if(qrmNoiseNode) {
-            qrmNoiseNode.stop();
-            qrmNoiseNode.disconnect();
-            qrmNoiseNode = null;
-        }
-        
-        if(qrmNoiseGain) {
-            qrmNoiseGain.disconnect();
-            qrmNoiseGain = null;
-        }
-        
-        // Stop tono portante
-        if(qrmToneNode) {
-            qrmToneNode.stop();
-            qrmToneNode.disconnect();
-            qrmToneNode = null;
-        }
-        
-        if(qrmToneGain) {
-            qrmToneGain.disconnect();
-            qrmToneGain = null;
-        }
-        
-        // Stop crackle interval
-        if(qrmInterval) {
+        if (qrmInterval) {
             clearInterval(qrmInterval);
             qrmInterval = null;
         }
-        
-        console.log('🔇 QRM OFF');
     }
-    
+
     function toggleQRM() {
         qrmEnabled = !qrmEnabled;
-        const toggle = document.getElementById('toggle-qrm');
-        const volumeRow = document.getElementById('qrm-volume-row');
+        const btn = document.getElementById('qrm-btn');
+        const status = document.getElementById('qrm-status');
         
-        if(qrmEnabled) {
-            toggle.classList.add('active');
-            volumeRow.style.display = 'flex';  // Mostra slider
-            if(audioEnabled) startQRM();
+        if (qrmEnabled) {
+            btn.style.background = '#f90';
+            btn.style.color = '#000';
+            status.classList.add('active');
+            status.innerText = 'QRM: ON';
+            startQRM();
         } else {
-            toggle.classList.remove('active');
-            volumeRow.style.display = 'none';  // Nascondi slider
+            btn.style.background = '';
+            btn.style.color = '';
+            status.classList.remove('active');
+            status.innerText = 'QRM: OFF';
             stopQRM();
         }
     }
-    
-    // Funzione per aggiornare volume QRM
-    function updateQRMVolume(value) {
-        const volume = value / 100;  // 0-1
-        document.getElementById('qrm-volume-value').innerText = value + '%';
+
+    // ══════════ AI VIRTUAL QSO ══════════
+    const AI_RESPONSES = [
+        'CQ CQ CQ DE AI OM',
+        'GM ES TNX FER CALL',
+        'UR RST 599 599',
+        'QTH CLOUD SERVER HI',
+        'WX SUNNY ES WARM',
+        'RIG 100W ANT DIPOLE',
+        'NAME CLAUDE OP AI',
+        'AGE UNDEFINED HI HI',
+        '73 ES GL OM',
+        'QRZ DE AI K'
+    ];
+
+    function scheduleAIResponse() {
+        if (!aiEnabled) return;
         
-        // Aggiorna volume nodi audio se attivi
-        if(qrmNoiseGain) {
-            qrmNoiseGain.gain.value = 0.03 * volume;  // White noise
-        }
-        if(qrmToneGain) {
-            qrmToneGain.gain.value = 0.015 * volume;  // Portante
-        }
-        
-        console.log(`📊 Volume QRM: ${value}%`);
+        const delay = 8000 + Math.random() * 12000;
+        aiTimeout = setTimeout(() => {
+            const response = AI_RESPONSES[Math.floor(Math.random() * AI_RESPONSES.length)];
+            const timestamp = new Date().toISOString();
+            
+            db.ref('chat').push({
+                user: '🤖 AI-OP',
+                text: response,
+                time: timestamp
+            });
+            
+            scheduleAIResponse();
+        }, delay);
     }
 
-    function sendMessage(char) {
-        db.ref('chat').push({
-            user: callsign,
-            text: char,
-            time: Date.now()
+    function toggleAI() {
+        aiEnabled = !aiEnabled;
+        const btn = document.getElementById('ai-btn');
+        const status = document.getElementById('ai-status');
+        
+        if (aiEnabled) {
+            btn.style.background = 'var(--blue)';
+            btn.style.color = '#000';
+            status.classList.add('active');
+            status.innerText = 'AI: ON';
+            scheduleAIResponse();
+        } else {
+            btn.style.background = '';
+            btn.style.color = '';
+            status.classList.remove('active');
+            status.innerText = 'AI: OFF';
+            if (aiTimeout) {
+                clearTimeout(aiTimeout);
+                aiTimeout = null;
+            }
+        }
+    }
+
+    // ══════════ LOGIN & USER MANAGEMENT ══════════
+    function login() {
+        const input = document.getElementById('callsign-input').value.trim().toUpperCase();
+        if (!input || input.length < 2) {
+            alert('⚠️ Inserisci un callsign valido (min 2 caratteri)');
+            return;
+        }
+        
+        currentUser = input;
+        document.getElementById('username-display').innerText = currentUser;
+        document.getElementById('login-overlay').style.display = 'none';
+        
+        // Presenza online
+        const userRef = db.ref('users/' + currentUser);
+        userRef.set({ online: true, lastSeen: firebase.database.ServerValue.TIMESTAMP });
+        userRef.onDisconnect().remove();
+        
+        initializeApp();
+    }
+
+    function initializeApp() {
+        initAudio();
+        loadBackground();
+        loadChatOpacity();
+        listenToMessages();
+        listenToTextMessages();
+        listenToOnlineUsers();
+        
+        console.log('✅ MORSE-LINK LIVE inizializzato per', currentUser);
+    }
+
+    // ══════════ FIREBASE LISTENERS ══════════
+    function listenToMessages() {
+        db.ref('chat').limitToLast(50).on('child_added', snap => {
+            const msg = snap.val();
+            if (!msg) return;
+            
+            const div = document.createElement('div');
+            div.className = 'msg';
+            
+            const time = new Date(msg.time).toLocaleTimeString('it-IT', {
+                hour: '2-digit',
+                minute: '2-digit'
+            });
+            
+            div.innerHTML = `<span class="user">${msg.user}</span> <span class="time">${time}</span><br>${msg.text}`;
+            
+            const messagesEl = document.getElementById('messages');
+            messagesEl.appendChild(div);
+            messagesEl.scrollTop = messagesEl.scrollHeight;
+            
+            // Riproduci audio se non sei tu
+            if (msg.user !== currentUser) {
+                playIncomingMorse(msg.text);
+            }
         });
     }
-    
+
+    function listenToTextMessages() {
+        db.ref('textChat').limitToLast(50).on('child_added', snap => {
+            const msg = snap.val();
+            if (!msg) return;
+            
+            const div = document.createElement('div');
+            div.className = 'text-msg';
+            
+            const time = new Date(msg.time).toLocaleTimeString('it-IT', {
+                hour: '2-digit',
+                minute: '2-digit'
+            });
+            
+            div.innerHTML = `<span class="user">${msg.user}</span> <span class="time">${time}</span><br>${msg.text}`;
+            
+            const textMessagesEl = document.getElementById('text-messages');
+            textMessagesEl.appendChild(div);
+            textMessagesEl.scrollTop = textMessagesEl.scrollHeight;
+        });
+    }
+
+    function listenToOnlineUsers() {
+        // Cleanup vecchi listeners
+        userListeners.forEach(ref => ref.off());
+        userListeners = [];
+        
+        const usersRef = db.ref('users');
+        userListeners.push(usersRef);
+        
+        usersRef.on('value', snap => {
+            const users = snap.val() || {};
+            const userList = document.getElementById('user-list');
+            const count = Object.keys(users).length;
+            
+            document.getElementById('online-count').innerText = count;
+            document.getElementById('online-count-header').innerText = count;
+            
+            userList.innerHTML = '';
+            Object.keys(users).forEach(callsign => {
+                const div = document.createElement('div');
+                div.className = 'user-item';
+                div.innerHTML = `<span class="online-indicator"></span>${callsign}`;
+                userList.appendChild(div);
+            });
+        });
+    }
+
+    async function playIncomingMorse(text) {
+        if (!audioCtx) {
+            showAudioAlert();
+            return;
+        }
+        
+        if (audioCtx.state === 'suspended') {
+            showAudioAlert();
+            return;
+        }
+        
+        await playMorseString(text);
+    }
+
+    function showAudioAlert() {
+        const existing = document.querySelector('.audio-alert');
+        if (existing) return;
+        
+        const alert = document.createElement('div');
+        alert.className = 'audio-alert';
+        alert.innerHTML = '🔊 ATTIVA AUDIO<br><small>Clicca per sentire i messaggi</small>';
+        alert.onclick = activateAudio;
+        document.body.appendChild(alert);
+        
+        setTimeout(() => {
+            alert.style.animation = 'popOut 0.3s ease forwards';
+            setTimeout(() => alert.remove(), 300);
+        }, 4000);
+    }
+
+    // ══════════ MORSE KEY HANDLERS ══════════
+    function down(e) {
+        if (isDown) return;
+        
+        // Verifica se è keyboard e se keyboard morse è attivo
+        if (e instanceof KeyboardEvent) {
+            if (!morseKeyboardEnabled) return;
+            if (e.code !== mappedKey) return;
+            
+            // BUG FIX: Condizione corretta con OR invece di AND
+            if (e.code === 'Space' || e.code === mappedKey) {
+                e.preventDefault();
+            }
+            
+            // Previeni se focus su input
+            const activeEl = document.activeElement;
+            if (activeEl && (activeEl.tagName === 'INPUT' || activeEl.tagName === 'TEXTAREA')) {
+                return;
+            }
+        }
+        
+        isDown = true;
+        downTime = Date.now();
+        
+        document.getElementById('key').classList.add('pressed');
+        
+        initAudio();
+        if (audioCtx && audioCtx.state === 'suspended') {
+            audioCtx.resume();
+        }
+        
+        playTone(10000);
+    }
+
+    function up(e) {
+        if (!isDown) return;
+        
+        // Verifica keyboard
+        if (e instanceof KeyboardEvent) {
+            if (!morseKeyboardEnabled) return;
+            if (e.code !== mappedKey) return;
+        }
+        
+        isDown = false;
+        const duration = Date.now() - downTime;
+        
+        document.getElementById('key').classList.remove('pressed');
+        
+        if (oscillator) {
+            gainNode.gain.linearRampToValueAtTime(0, audioCtx.currentTime + 0.005);
+            oscillator.stop(audioCtx.currentTime + 0.01);
+            oscillator.disconnect();
+            oscillator = null;
+        }
+        
+        const symbol = duration < 200 ? '.' : '-';
+        morseBuffer += symbol;
+        
+        clearTimeout(bufferTimeout);
+        bufferTimeout = setTimeout(sendMorseMessage, 1500);
+    }
+
+    function sendMorseMessage() {
+        if (morseBuffer.length === 0) return;
+        
+        const text = decodeMorse(morseBuffer);
+        morseBuffer = '';
+        
+        if (text) {
+            db.ref('chat').push({
+                user: currentUser,
+                text: text,
+                time: new Date().toISOString()
+            });
+        }
+    }
+
+    function decodeMorse(code) {
+        const reverseCode = Object.fromEntries(
+            Object.entries(MORSE_CODE).map(([k, v]) => [v, k])
+        );
+        
+        const words = code.split('       ');
+        const decoded = words.map(word => {
+            const letters = word.split('   ');
+            return letters.map(letter => reverseCode[letter] || '?').join('');
+        }).join(' ');
+        
+        return decoded;
+    }
+
+    // ══════════ TEXT CHAT ══════════
     function sendTextMessage() {
         const input = document.getElementById('text-input');
         const text = input.value.trim();
         
-        console.log('═══════════════════════════════');
-        console.log('📤 SEND TEXT MESSAGE');
-        console.log('Input value:', input.value);
-        console.log('Trimmed text:', text);
-        console.log('Callsign:', callsign);
+        if (!text) return;
         
-        if(!text) {
-            console.log('⚠️ Messaggio vuoto - ANNULLATO');
-            console.log('═══════════════════════════════');
-            return;
-        }
-        
-        if(!callsign) {
-            console.log('❌ Callsign non definito!');
-            console.log('═══════════════════════════════');
-            alert('Errore: non sei loggato!');
-            return;
-        }
-        
-        const messageData = {
-            user: callsign,
-            message: text,
-            time: Date.now()
-        };
-        
-        console.log('📦 Dati da inviare:', messageData);
-        console.log('📡 Invio a Firebase...');
-        
-        db.ref('textChat').push(messageData)
-            .then(() => {
-                console.log('✅ MESSAGGIO INVIATO A FIREBASE!');
-                console.log('═══════════════════════════════');
-            })
-            .catch(err => {
-                console.error('❌ ERRORE FIREBASE:', err);
-                console.log('═══════════════════════════════');
-                
-                if(err.code === 'PERMISSION_DENIED') {
-                    alert('❌ ERRORE PERMESSI FIREBASE!\n\nLa text chat non funziona perché mancano i permessi nel database.\n\nSoluzione:\n1. Vai su Firebase Console\n2. Realtime Database → Rules\n3. Aggiungi permessi per "textChat"\n4. Pubblica le nuove regole\n\nDettagli tecnici: ' + err.message);
-                } else {
-                    alert('Errore invio: ' + err.message);
-                }
-            });
+        db.ref('textChat').push({
+            user: currentUser,
+            text: text,
+            time: new Date().toISOString()
+        });
         
         input.value = '';
-        input.focus();
     }
 
-    async function addMsgToUI(user, text, shouldPlayAudio = false) {
-        const box = document.getElementById('messages');
-        const last = box.lastElementChild;
+    // ══════════ UI CONTROLS ══════════
+    function toggleTextMode() {
+        textModeEnabled = !textModeEnabled;
+        const messagesEl = document.getElementById('messages');
+        const btn = document.getElementById('text-mode-btn');
         
-        if(last && last.dataset.user === user) {
-            // STESSO UTENTE: concatena alla riga esistente
-            const strong = last.querySelector('strong');
-            const currentContent = last.textContent || last.innerText;
-            const contentAfterName = currentContent.substring(currentContent.indexOf(':') + 1);
-            
-            // Ricostruisci elemento
-            last.innerHTML = '';
-            last.appendChild(strong);
-            // FIX: NON aggiungere spazio extra! Solo concatena
-            last.appendChild(document.createTextNode(contentAfterName + text));
+        if (textModeEnabled) {
+            messagesEl.classList.remove('hide-text');
+            btn.style.background = '';
         } else {
-            const div = document.createElement('div');
-            div.className = 'msg';
-            div.dataset.user = user;
-            const userColor = user === callsign ? 'var(--amber)' : '#0af';
-            
-            const strong = document.createElement('strong');
-            strong.style.color = userColor;
-            strong.textContent = user + ':';
-            
-            div.appendChild(strong);
-            div.appendChild(document.createTextNode(' ' + text));
-            box.appendChild(div);
+            messagesEl.classList.add('hide-text');
+            btn.style.background = '#666';
         }
-        
-        scrollToBottom(box);
-        
-        if(shouldPlayAudio) {
-            console.log('🔊 Riproduzione audio per messaggio remoto...');
-            await playMorseChar(text);
-        }
-    }
-    
-    function addTextMsgToUI(user, message, time) {
-        console.log('═══════════════════════════════');
-        console.log('📩 ADD TEXT MSG TO UI');
-        console.log('User:', user);
-        console.log('Message:', message);
-        console.log('Time:', time);
-        
-        const box = document.getElementById('text-messages');
-        
-        if(!box) {
-            console.error('❌ text-messages element NON TROVATO!');
-            console.log('═══════════════════════════════');
-            return;
-        }
-        
-        console.log('📦 Creazione elemento messaggio...');
-        
-        const div = document.createElement('div');
-        div.className = 'text-msg';
-        
-        const author = document.createElement('div');
-        author.className = 'author';
-        
-        // Colore diverso per messaggi SYSTEM
-        if(user === 'SYSTEM') {
-            author.style.color = '#888';
-            div.style.borderLeftColor = '#666';
-            div.style.background = 'rgba(100, 100, 100, 0.1)';
-        } else {
-            author.style.color = user === callsign ? 'var(--amber)' : 'var(--blue)';
-        }
-        
-        author.textContent = user;
-        
-        const content = document.createElement('div');
-        content.className = 'content';
-        content.textContent = message;
-        
-        const timestamp = document.createElement('div');
-        timestamp.className = 'time';
-        timestamp.textContent = new Date(time).toLocaleTimeString('it-IT');
-        
-        div.appendChild(author);
-        div.appendChild(content);
-        div.appendChild(timestamp);
-        
-        box.appendChild(div);
-        
-        console.log('✅ Messaggio aggiunto al DOM!');
-        console.log('Total messages in box:', box.children.length);
-        
-        scrollToBottom(box);
-        
-        console.log('✅ Scroll effettuato');
-        console.log('═══════════════════════════════');
     }
 
-    function toggleTextDisplay() {
-        textDisplayEnabled = !textDisplayEnabled;
-        const box = document.getElementById('messages');
-        const toggle = document.getElementById('toggle-text');
+    function toggleMorseKeyboard() {
+        morseKeyboardEnabled = !morseKeyboardEnabled;
+        const btn = document.getElementById('kbd-btn');
         
-        if(textDisplayEnabled) {
-            box.classList.remove('hide-text');
-            toggle.classList.add('active');
+        if (morseKeyboardEnabled) {
+            btn.style.background = 'var(--amber)';
+            btn.style.color = '#000';
+            console.log('⌨️ Morse Keyboard: ON');
         } else {
-            box.classList.add('hide-text');
-            toggle.classList.remove('active');
+            btn.style.background = '';
+            btn.style.color = '';
+            console.log('⌨️ Morse Keyboard: OFF');
         }
     }
-    
-    function toggleDecoder() {
-        decoderEnabled = !decoderEnabled;
-        const decoder = document.getElementById('decoder-preview');
-        const messagesBox = document.getElementById('messages');  // ← Chat arancione
-        const toggleBtn = document.getElementById('decoder-toggle-top');
-        const t = translations[currentLang];
+
+    function showKeyConfig() {
+        document.getElementById('key-config-modal').classList.add('show');
+        document.getElementById('key-display').innerText = mappedKey;
         
-        if(decoderEnabled) {
-            // MOSTRA entrambi
-            decoder.style.display = 'block';
-            messagesBox.style.display = 'block';
-            toggleBtn.innerHTML = t.decoderOn;
-            toggleBtn.style.background = 'var(--green)';
-            toggleBtn.style.borderColor = 'var(--green)';
-        } else {
-            // NASCONDI entrambi
-            decoder.style.display = 'none';
-            messagesBox.style.display = 'none';
-            toggleBtn.innerHTML = t.decoderOff;
-            toggleBtn.style.background = '#666';
-            toggleBtn.style.borderColor = '#666';
-        }
+        // Temp listener per catturare prossimo key press
+        const tempListener = (e) => {
+            e.preventDefault();
+            mappedKey = e.code;
+            document.getElementById('key-display').innerText = e.code;
+            document.getElementById('mapped-key-display').innerText = 'Key: ' + e.code;
+            window.removeEventListener('keydown', tempListener);
+        };
+        
+        window.addEventListener('keydown', tempListener);
+    }
+
+    function closeKeyConfig() {
+        document.getElementById('key-config-modal').classList.remove('show');
     }
 
     function clearChat() {
-        const t = translations[currentLang];
-        if(confirm(t.clearMorseConfirm)) {
+        if (confirm('Eliminare tutti i messaggi Morse?')) {
+            db.ref('chat').remove();
             document.getElementById('messages').innerHTML = '';
-            closeSettings();
-        }
-    }
-    
-    function clearTextChat() {
-        const t = translations[currentLang];
-        if(confirm(t.clearTextConfirm)) {
-            document.getElementById('text-messages').innerHTML = '';
-            closeSettings();
-        }
-    }
-    
-    function openSettings() {
-        document.getElementById('settings-modal').classList.add('show');
-    }
-    
-    function closeSettings() {
-        document.getElementById('settings-modal').classList.remove('show');
-    }
-    
-    function openManuale() {
-        // Apri manuale in nuova tab
-        window.open('https://morse.radioinvetta.it/manuale-utente.html', '_blank');
-    }
-    
-    function sendEmail() {
-        // Apri client email con indirizzo precompilato
-        const subject = encodeURIComponent('MORSE-LINK Feedback da ' + (callsign || 'Utente'));
-        const body = encodeURIComponent('Ciao,\n\nScrivo riguardo a MORSE-LINK LIVE.\n\n[Il tuo messaggio qui]\n\n---\nCallsign: ' + (callsign || 'N/A') + '\nBrowser: ' + navigator.userAgent);
-        window.location.href = `mailto:info@radioinvetta.it?subject=${subject}&body=${body}`;
-    }
-    
-    function shareIcon() {
-        // Mostra istruzioni per installare PWA
-        const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
-        const isAndroid = /Android/.test(navigator.userAgent);
-        
-        let msg = '📱 INSTALLA MORSE-LINK COME APP!\n\n';
-        
-        if(isIOS) {
-            msg += '🍎 ISTRUZIONI iPhone/iPad:\n\n';
-            msg += '1. Tap icona "Condividi" (⬆️) in basso\n';
-            msg += '2. Scorri e seleziona "Aggiungi a Home"\n';
-            msg += '3. Conferma\n';
-            msg += '4. ✅ L\'icona apparirà sulla Home Screen!\n\n';
-            msg += 'L\'app funzionerà come un\'app nativa!';
-        } else if(isAndroid) {
-            msg += '🤖 ISTRUZIONI Android:\n\n';
-            msg += '1. Tap menu Chrome (⋮) in alto\n';
-            msg += '2. Seleziona "Installa app"\n';
-            msg += '3. Conferma\n';
-            msg += '4. ✅ L\'icona apparirà sulla Home Screen!\n\n';
-            msg += 'L\'app funzionerà come un\'app nativa!';
-        } else {
-            msg += '💻 ISTRUZIONI Desktop:\n\n';
-            msg += '1. Chrome: Icona "Installa" nella barra indirizzi\n';
-            msg += '2. Oppure: Menu → Installa MORSE-LINK\n';
-            msg += '3. ✅ L\'app si aprirà in una finestra dedicata!\n\n';
-            msg += '📱 Su mobile:\n';
-            msg += '• iOS: Safari → Condividi → Aggiungi a Home\n';
-            msg += '• Android: Chrome → Menu → Installa app';
-        }
-        
-        alert(msg);
-    }
-    
-    // Sistema lingua semplificato
-    let currentLang = 'it';
-    
-    const translations = {
-        it: {
-            // Login
-            callsignPlaceholder: 'TUO NOMINATIVO (es. IU2RPQ)',
-            connectBtn: '▶ CONNETTI',
-            loginSubtitle: 'Real-time Global CW Chat + Text by Luca IU2RPQ',
-            
-            // Header
-            station: 'STAZIONE:',
-            online: '● ONLINE',
-            activateAudioBtn: '🔊 ATTIVA AUDIO',
-            installAppBtn: '📱 INSTALLA APP',
-            mapKeyBtn: '⌨️ MAPPA TASTO',
-            settingsBtn: '⚙️ SETTINGS',
-            
-            // Sidebar
-            onlineUsers: '🌍 ONLINE',
-            you: '(TU)',
-            
-            // Morse Section
-            morseCode: '📻 MORSE CODE',
-            decoderOn: '👁️ DECODER: ON',
-            decoderOff: '👁️ DECODER: OFF',
-            
-            // Text Chat
-            textChat: '💬 TEXT CHAT',
-            textInputPlaceholder: 'Scrivi messaggio...',
-            sendBtn: 'INVIA',
-            morseKeyboardOn: '⌨️ MORSE KEYBOARD: ON',
-            morseKeyboardOff: '⌨️ MORSE KEYBOARD: OFF',
-            
-            // Settings Modal
-            settingsTitle: '⚙️ IMPOSTAZIONI',
-            showHideText: 'Mostra/Nascondi Testo',
-            qrmBackground: 'QRM Sottofondo',
-            language: '🌐 Lingua / Language',
-            contactUs: '📧 Contattaci',
-            sendEmailBtn: '✉️ INVIA EMAIL',
-            userManual: '📚 Manuale Utente',
-            openGuideBtn: '📖 APRI GUIDA',
-            adminPanel: 'Pannello Admin',
-            adminAccessBtn: '🔐 ACCEDI',
-            clearMorseChat: 'Pulisci Chat Morse',
-            clearTextChat: 'Pulisci Chat Text',
-            clearBtn: '🗑️ PULISCI',
-            installIcon: '📱 Scarica Icona App',
-            downloadBtn: '💾 SCARICA',
-            closeBtn: '✕ CHIUDI',
-            
-            // Alerts & Messages
-            enterCallsign: 'Inserisci nominativo!',
-            callsignTooShort: 'Nominativo troppo corto!',
-            clearMorseConfirm: 'Pulire Morse chat?',
-            clearTextConfirm: 'Pulire Text chat?',
-            chromeAudioAlert: '⚠️ IMPORTANTE!\n\nSu Chrome devi cliccare il pulsante\n🔊 ATTIVA AUDIO\nin alto per sentire i messaggi Morse in arrivo.',
-            systemWelcome: 'Benvenuto {callsign}! Text chat attiva.',
-            
-            // Map Key
-            mapKeyWaiting: '⏳ PREMI...',
-            mapKeyDone: '✓ {key}'
-        },
-        en: {
-            // Login
-            callsignPlaceholder: 'YOUR CALLSIGN (e.g. W1AW)',
-            connectBtn: '▶ CONNECT',
-            loginSubtitle: 'Real-time Global CW Chat + Text by Luca IU2RPQ',
-            
-            // Header
-            station: 'STATION:',
-            online: '● ONLINE',
-            activateAudioBtn: '🔊 ACTIVATE AUDIO',
-            installAppBtn: '📱 INSTALL APP',
-            mapKeyBtn: '⌨️ MAP KEY',
-            settingsBtn: '⚙️ SETTINGS',
-            
-            // Sidebar
-            onlineUsers: '🌍 ONLINE',
-            you: '(YOU)',
-            
-            // Morse Section
-            morseCode: '📻 MORSE CODE',
-            decoderOn: '👁️ DECODER: ON',
-            decoderOff: '👁️ DECODER: OFF',
-            
-            // Text Chat
-            textChat: '💬 TEXT CHAT',
-            textInputPlaceholder: 'Type message...',
-            sendBtn: 'SEND',
-            morseKeyboardOn: '⌨️ MORSE KEYBOARD: ON',
-            morseKeyboardOff: '⌨️ MORSE KEYBOARD: OFF',
-            
-            // Settings Modal
-            settingsTitle: '⚙️ SETTINGS',
-            showHideText: 'Show/Hide Text',
-            qrmBackground: 'QRM Background',
-            language: '🌐 Lingua / Language',
-            contactUs: '📧 Contact Us',
-            sendEmailBtn: '✉️ SEND EMAIL',
-            userManual: '📚 User Manual',
-            openGuideBtn: '📖 OPEN GUIDE',
-            adminPanel: 'Admin Panel',
-            adminAccessBtn: '🔐 ACCESS',
-            clearMorseChat: 'Clear Morse Chat',
-            clearTextChat: 'Clear Text Chat',
-            clearBtn: '🗑️ CLEAR',
-            installIcon: '📱 Download App Icon',
-            downloadBtn: '💾 DOWNLOAD',
-            closeBtn: '✕ CLOSE',
-            
-            // Alerts & Messages
-            enterCallsign: 'Enter your callsign!',
-            callsignTooShort: 'Callsign too short (min 3 chars)!',
-            clearMorseConfirm: 'Clear Morse chat?',
-            clearTextConfirm: 'Clear Text chat?',
-            chromeAudioAlert: '⚠️ IMPORTANT!\n\nOn Chrome you must click the\n🔊 ACTIVATE AUDIO\nbutton at the top to hear incoming Morse messages.',
-            systemWelcome: 'Welcome {callsign}! Text chat active.',
-            
-            // Map Key
-            mapKeyWaiting: '⏳ PRESS...',
-            mapKeyDone: '✓ {key}'
-        }
-    };
-    
-    function changeLanguage(lang) {
-        currentLang = lang;
-        localStorage.setItem('morse-lang', lang);
-        
-        const t = translations[lang];
-        
-        // === LOGIN SCREEN ===
-        const loginSubtitle = document.querySelector('#login-overlay p');
-        if(loginSubtitle) loginSubtitle.textContent = t.loginSubtitle;
-        
-        const callsignInput = document.getElementById('callsign');
-        if(callsignInput) callsignInput.placeholder = t.callsignPlaceholder;
-        
-        const connectBtn = document.querySelector('#login-overlay button');
-        if(connectBtn) connectBtn.innerHTML = t.connectBtn;
-        
-        // === HEADER ===
-        const stationLabel = document.querySelector('header .header-left strong');
-        if(stationLabel) stationLabel.textContent = t.station;
-        
-        const statusIndicator = document.getElementById('status-indicator');
-        if(statusIndicator) statusIndicator.textContent = t.online;
-        
-        const audioBtn = document.getElementById('audio-activate-btn');
-        if(audioBtn) audioBtn.innerHTML = t.activateAudioBtn;
-        
-        const installBtn = document.querySelector('button[onclick="shareIcon()"]');
-        if(installBtn) installBtn.innerHTML = t.installAppBtn;
-        
-        const mapBtn = document.getElementById('map-btn');
-        if(mapBtn && !mapBtn.textContent.includes('✓') && !mapBtn.textContent.includes('⏳')) {
-            mapBtn.innerHTML = t.mapKeyBtn;
-        }
-        
-        const settingsBtn = document.querySelector('button[onclick="openSettings()"]');
-        if(settingsBtn) settingsBtn.innerHTML = t.settingsBtn;
-        
-        // === SIDEBAR ===
-        const onlineTitle = document.querySelector('#sidebar > div:first-child');
-        if(onlineTitle) onlineTitle.textContent = t.onlineUsers;
-        
-        // === MORSE SECTION ===
-        const morseTitle = document.querySelector('#morse-section > div:first-child');
-        if(morseTitle) {
-            const decoderBtn = morseTitle.querySelector('button');
-            if(decoderBtn) {
-                const isOn = decoderBtn.innerHTML.includes('ON');
-                morseTitle.innerHTML = t.morseCode;
-                // Reinserisci il button
-                if(decoderBtn.parentNode === morseTitle) {
-                    decoderBtn.innerHTML = isOn ? t.decoderOn : t.decoderOff;
-                    morseTitle.appendChild(decoderBtn);
-                }
-            }
-        }
-        
-        // === TEXT CHAT ===
-        const textChatTitle = document.querySelector('#text-chat-section > div:first-child');
-        if(textChatTitle) textChatTitle.textContent = t.textChat;
-        
-        const textInput = document.getElementById('text-input');
-        if(textInput) textInput.placeholder = t.textInputPlaceholder;
-        
-        const textSendBtn = document.getElementById('text-send');
-        if(textSendBtn) textSendBtn.textContent = t.sendBtn;
-        
-        const morseKeyboardBtn = document.getElementById('morse-keyboard-toggle');
-        if(morseKeyboardBtn) {
-            const isOn = morseKeyboardEnabled;
-            morseKeyboardBtn.innerHTML = isOn ? t.morseKeyboardOn : t.morseKeyboardOff;
-        }
-        
-        // === SETTINGS MODAL ===
-        const settingsTitle = document.querySelector('#settings-modal h2');
-        if(settingsTitle) settingsTitle.textContent = t.settingsTitle;
-        
-        // Settings labels
-        const settingLabels = document.querySelectorAll('#settings-modal .setting-label');
-        if(settingLabels[0]) settingLabels[0].textContent = t.showHideText;
-        if(settingLabels[1]) settingLabels[1].textContent = t.qrmBackground;
-        if(settingLabels[2]) settingLabels[2].textContent = t.installIcon;
-        if(settingLabels[3]) settingLabels[3].textContent = t.language;
-        if(settingLabels[4]) settingLabels[4].textContent = t.contactUs;
-        if(settingLabels[5]) settingLabels[5].textContent = t.userManual;
-        if(settingLabels[6]) settingLabels[6].textContent = t.adminPanel;
-        if(settingLabels[7]) settingLabels[7].textContent = t.clearMorseChat;
-        if(settingLabels[8]) settingLabels[8].textContent = t.clearTextChat;
-        
-        // Settings buttons
-        const contactBtn = document.querySelector('button[onclick="sendEmail()"]');
-        if(contactBtn) contactBtn.innerHTML = t.sendEmailBtn;
-        
-        const manualBtn = document.querySelector('button[onclick="openManuale()"]');
-        if(manualBtn) manualBtn.innerHTML = t.openGuideBtn;
-        
-        const adminBtn = document.querySelector('#settings-modal button[onclick*="showAdminLogin"]');
-        if(adminBtn) adminBtn.innerHTML = t.adminAccessBtn;
-        
-        const clearMorseBtn = document.querySelector('button[onclick="clearChat()"]');
-        if(clearMorseBtn) clearMorseBtn.innerHTML = t.clearBtn;
-        
-        const clearTextBtn = document.querySelector('button[onclick="clearTextChat()"]');
-        if(clearTextBtn) clearTextBtn.innerHTML = t.clearBtn;
-        
-        const closeSettingsBtn = document.querySelector('#settings-modal .close-btn');
-        if(closeSettingsBtn) closeSettingsBtn.textContent = t.closeBtn;
-        
-        // Aggiorna HTML lang attribute
-        document.documentElement.lang = lang;
-        
-        console.log('🌐 Lingua cambiata:', lang);
-    }
-    
-    // Carica lingua salvata al caricamento
-    window.addEventListener('DOMContentLoaded', () => {
-        const saved = localStorage.getItem('morse-lang');
-        if(saved && translations[saved]) {
-            currentLang = saved;
-            const selector = document.getElementById('lang-selector');
-            if(selector) selector.value = saved;
-            changeLanguage(saved);
-        }
-    });
-
-    function startApp() {
-        callsign = document.getElementById('callsign').value.trim().toUpperCase();
-        
-        const t = translations[currentLang];
-        
-        if(!callsign) {
-            alert(t.enterCallsign);
-            return;
-        }
-        
-        if(callsign.length < 3) {
-            alert(t.callsignTooShort);
-            return;
-        }
-        
-        document.getElementById('my-id').innerText = callsign;
-        document.getElementById('login-overlay').style.display = 'none';
-        
-        initAudio();
-        
-        // CHROME: Mostra avviso OBBLIGATORIO per attivare audio
-        const isChrome = /Chrome/.test(navigator.userAgent) && /Google Inc/.test(navigator.vendor);
-        if(isChrome && audioCtx && audioCtx.state === 'suspended') {
-            setTimeout(() => {
-                const t = translations[currentLang];
-                alert(t.chromeAudioAlert);
-            }, 500);
-        }
-        
-        // CHROME FIX: Attiva audio al primo click/touch
-        document.body.addEventListener('touchstart', () => {
-            if(audioCtx && audioCtx.state === 'suspended') {
-                audioCtx.resume().then(() => {
-                    console.log('✅ Audio resumed on touch');
-                });
-            }
-        }, { once: true });
-        
-        document.body.addEventListener('click', () => {
-            if(audioCtx && audioCtx.state === 'suspended') {
-                audioCtx.resume().then(() => {
-                    console.log('✅ Audio resumed on click');
-                });
-            }
-        }, { once: true });
-
-        const userRef = db.ref('users/' + callsign);
-        userRef.set({ status: "online", lastSeen: Date.now() });
-        userRef.onDisconnect().remove();
-
-        db.ref('users').on('value', snap => {
-            const list = document.getElementById('user-list');
-            list.innerHTML = "";
-            snap.forEach(child => {
-                const isSelf = child.key === callsign;
-                const color = isSelf ? 'var(--amber)' : 'var(--green)';
-                const suffix = isSelf ? ' (TU)' : '';
-                list.innerHTML += `<span class="user-tag" style="color: ${color};">• ${child.key}${suffix}</span>`;
-            });
-        });
-
-        let initialLoad = true;
-        db.ref('chat').limitToLast(50).once('value', () => { initialLoad = false; });
-        
-        db.ref('chat').limitToLast(50).on('child_added', snap => {
-            const data = snap.val();
-            if(data && data.user && data.text) {
-                const isNewMessage = !lastMsgUser[data.user] || lastMsgUser[data.user] !== snap.key;
-                if(isNewMessage) {
-                    const isRemote = data.user !== callsign;
-                    const shouldPlayAudio = !initialLoad && isRemote;
-                    addMsgToUI(data.user, data.text, shouldPlayAudio);
-                    lastMsgUser[data.user] = snap.key;
-                }
-            }
-        });
-        
-        console.log('🔥 Inizializzazione listener TEXT CHAT Firebase...');
-        
-        db.ref('textChat').limitToLast(50).on('child_added', snap => {
-            console.log('═══════════════════════════════');
-            console.log('🔥 FIREBASE: child_added event (textChat)');
-            console.log('Snapshot key:', snap.key);
-            
-            const data = snap.val();
-            console.log('Raw data:', data);
-            
-            if(!data) {
-                console.log('⚠️ Data è null/undefined');
-                console.log('═══════════════════════════════');
-                return;
-            }
-            
-            if(!data.user) {
-                console.log('⚠️ data.user mancante:', data);
-                console.log('═══════════════════════════════');
-                return;
-            }
-            
-            if(!data.message) {
-                console.log('⚠️ data.message mancante:', data);
-                console.log('═══════════════════════════════');
-                return;
-            }
-            
-            console.log('✅ Dati validi, chiamata addTextMsgToUI...');
-            addTextMsgToUI(data.user, data.message, data.time);
-            console.log('═══════════════════════════════');
-        });
-
-        db.ref('admin/background').once('value').then(snap => {
-            const bgData = snap.val();
-            if(bgData) applyBackground(bgData);
-        });
-        
-        db.ref('admin/chatOpacity').once('value').then(snap => {
-            const opacity = snap.val();
-            if(opacity !== null) applyChatOpacity(opacity);
-        });
-
-        console.log('✅ Connesso:', callsign);
-        
-        // Debug layout mobile
-        const isMobile = window.innerWidth <= 768;
-        console.log('📱 Mobile device:', isMobile);
-        console.log('📐 Window size:', window.innerWidth, 'x', window.innerHeight);
-        
-        if(isMobile) {
-            setTimeout(() => {
-                const textChatSection = document.getElementById('text-chat-section');
-                if(textChatSection) {
-                    const style = getComputedStyle(textChatSection);
-                    console.log('💬 Text chat section:');
-                    console.log('  - Display:', style.display);
-                    console.log('  - Visibility:', style.visibility);
-                    console.log('  - Height:', textChatSection.offsetHeight + 'px');
-                    console.log('  - Top:', textChatSection.getBoundingClientRect().top);
-                } else {
-                    console.error('❌ text-chat-section NOT FOUND!');
-                }
-            }, 500);
-        }
-        
-        // CHROME AUDIO FIX: Verifica se AudioContext è suspended
-        setTimeout(() => {
-            if(audioCtx && audioCtx.state === 'suspended') {
-                console.warn('⚠️ CHROME: AudioContext suspended!');
-                console.warn('   Soluzione: Clicca "ATTIVA AUDIO" o premi il tasto Morse');
-                
-                // Mostra avviso se Chrome
-                const isChrome = /Chrome/.test(navigator.userAgent) && /Google Inc/.test(navigator.vendor);
-                if(isChrome) {
-                    console.log('🔍 Browser: Chrome rilevato');
-                    console.log('   Chrome richiede interazione utente per audio');
-                }
-            }
-        }, 1000);
-        
-        // Test permessi Firebase per textChat
-        testFirebasePermissions();
-        
-        // Messaggio di benvenuto nella text chat
-        setTimeout(() => {
-            const t = translations[currentLang];
-            const welcomeMsg = t.systemWelcome.replace('{callsign}', callsign);
-            addTextMsgToUI('SYSTEM', welcomeMsg, Date.now());
-        }, 1000);
-    }
-    
-    function testFirebasePermissions() {
-        console.log('🔍 Test permessi Firebase textChat...');
-        
-        db.ref('textChat').limitToLast(1).once('value')
-            .then(() => {
-                console.log('✅ Permessi LETTURA: OK');
-            })
-            .catch(err => {
-                console.error('❌ Permessi LETTURA: FALLITO', err);
-                if(err.code === 'PERMISSION_DENIED') {
-                    setTimeout(() => {
-                        alert('⚠️ ATTENZIONE: Text chat non configurata!\n\nPermessi Firebase mancanti.\nLeggi il file FIREBASE-RULES-SETUP.md per la configurazione.');
-                    }, 2000);
-                }
-            });
-    }
-
-    function play() {
-        if(!audioCtx) {
-            initAudio();
-        }
-        
-        if(audioCtx.state === 'suspended') {
-            audioCtx.resume();
-        }
-        
-        oscillator = audioCtx.createOscillator();
-        gainNode = audioCtx.createGain();
-        oscillator.type = 'sine';
-        oscillator.frequency.value = 700;
-        gainNode.gain.value = 0.15;  // Volume fisso semplice
-        oscillator.connect(gainNode);
-        gainNode.connect(audioCtx.destination);
-        oscillator.start();
-        
-        console.log('🔊 Beep trasmissione');
-    }
-
-    function stop() { 
-        if(oscillator) {
-            oscillator.stop(); 
-            oscillator = null;
         }
     }
 
-    function down(e) {
-        if(isMapping) {
-            mappedKey = (e.type === 'keydown') ? e.code : 'MOUSE';
-            isMapping = false;
-            const t = translations[currentLang];
-            document.getElementById('map-btn').innerText = t.mapKeyDone.replace('{key}', mappedKey);
-            return;
-        }
-        
-        // FILTRO EVENTI TASTIERA
-        if(e.type === 'keydown') {
-            const target = e.target;
-            const tagName = target.tagName.toLowerCase();
-            
-            // Ignora se siamo in input o textarea
-            if(tagName === 'input' || tagName === 'textarea') {
-                return;
-            }
-            
-            // Ignora se siamo su button e premi SPAZIO/INVIO
-            if(tagName === 'button' && (e.code === 'Space' || e.code === 'Enter')) {
-                return;
-            }
-            
-            // Ignora se keyboard Morse è disabilitato
-            if(!morseKeyboardEnabled) {
-                return;
-            }
-        }
-        
-        if(mappedKey && e.type === 'keydown' && e.code !== mappedKey) return;
-        if(isDown) return;
-        
-        isDown = true;
-        startTime = Date.now();
-        play();  // NO await
+    function showHelp() {
+        document.getElementById('help-modal').classList.add('show');
     }
 
-    function up(e) {
-        // Se keyboard Morse è disabilitata E l'evento viene da tastiera, ignora
-        if(e && e.type === 'keyup' && !morseKeyboardEnabled) {
-            return;
-        }
-        
-        if(!isDown) return;
-        isDown = false;
-        stop();
-        
-        const dur = Date.now() - startTime;
-        
-        // THRESHOLD OTTIMIZZATO PER TASTIERA:
-        // 150ms invece di 200ms per migliore precisione con tastiera PC
-        // Questo aiuta a distinguere meglio O (−−−) da M (−−) + T (−)
-        const DOT_THRESHOLD = 150;  // ms
-        
-        morseBuffer += (dur < DOT_THRESHOLD) ? "." : "-";
-        
-        // Mostra contenuto decoder + buffer corrente
-        updateDecoderDisplay(decoderContent + morseBuffer);
-        lastUp = Date.now();
+    function closeHelp() {
+        document.getElementById('help-modal').classList.remove('show');
     }
 
-    function mapExternalKey() {
-        isMapping = true;
-        const t = translations[currentLang];
-        document.getElementById('map-btn').innerText = t.mapKeyWaiting;
-    }
-    
-    function toggleMorseKeyboard() {
-        morseKeyboardEnabled = !morseKeyboardEnabled;
-        const btn = document.getElementById('morse-keyboard-toggle');
-        const decoder = document.getElementById('decoder-preview');
-        const t = translations[currentLang];
-        
-        if(morseKeyboardEnabled) {
-            btn.style.background = 'var(--green)';
-            btn.style.borderColor = 'var(--green)';
-            btn.style.color = '#000';
-            btn.innerHTML = t.morseKeyboardOn;
-            decoder.style.color = 'var(--green)';
-            decoder.innerText = '';
-            morseBuffer = ''; // Pulisci buffer
-        } else {
-            btn.style.background = '#666';
-            btn.style.borderColor = '#666';
-            btn.style.color = '#aaa';
-            btn.innerHTML = t.morseKeyboardOff;
-            decoder.style.color = '#666';
-            decoder.innerText = '⌨️ KEYBOARD OFF';
-        }
-        
-        console.log('⌨️ Morse Keyboard:', morseKeyboardEnabled ? 'ON' : 'OFF');
-    }
-
-    // ===== DECODER INTELLIGENTE CON WPM =====
-    let lastCharTime = 0;
-    let decoderContent = "";
-    
-    // Funzione helper per aggiornare decoder e scrollare alla fine
-    function updateDecoderDisplay(content) {
-        const decoder = document.getElementById('decoder-preview');
-        decoder.innerText = content;
-        // Auto-scroll alla fine (destra)
-        decoder.scrollLeft = decoder.scrollWidth;
-    }
-    let needsSpace = false;  // ← NUOVO: flag per tracciare quando serve spazio
-    let currentWPM = 10; // Default 10 WPM
-    let decoderTimings = {
-        charTimeout: 400,   // Tempo per confermare lettera
-        letterGap: 240,     // Pausa per spazio tra parole  
-        wordGap: 560,       // Pausa più lunga per reset
-        resetTime: 5000     // Tempo inattività per reset
-    };
-    
-    // ===== CALCOLA TIMING DA WPM (PARIS METHOD) =====
-    function calculateTimings(wpm) {
-        // Formula standard: PARIS method
-        // 1 WPM = 1 parola "PARIS" (50 unità) al minuto
-        // Quindi 1 unità = 1200ms / WPM
-        const unitTime = 1200 / wpm;
-        
-        return {
-            charTimeout: Math.round(unitTime * 5),   // 5 unità per confermare lettera
-            letterGap: Math.round(unitTime * 3),     // 3 unità tra lettere (per spazio parola)
-            wordGap: Math.round(unitTime * 7),       // 7 unità tra parole
-            resetTime: Math.max(5000, Math.round(unitTime * 15))  // 15 unità o min 5s
-        };
-    }
-    
-    // ===== AGGIORNA VELOCITÀ DECODER =====
-    function updateDecoderSpeed() {
-        currentWPM = parseInt(document.getElementById('wpm-selector').value);
-        decoderTimings = calculateTimings(currentWPM);
-        
-        // Info display - timing spazio proporzionale
-        const SILENCE_FOR_SPACE = (decoderTimings.charTimeout * 2) + 200;
-        
-        document.getElementById('wpm-info').innerHTML = 
-            `⏱️ Lettera: ${decoderTimings.charTimeout}ms | Spazio: ${SILENCE_FOR_SPACE}ms silenzio`;
-        
-        console.log(`⚡ WPM: ${currentWPM} → Lettera: ${decoderTimings.charTimeout}ms | Spazio: ${SILENCE_FOR_SPACE}ms`);
-    }
-    
-    // Inizializza timings default
-    updateDecoderSpeed();
-    
-    // ===== DECODER LOOP MIGLIORATO CON TIMING ADATTIVI =====
-    setInterval(() => {
-        const now = Date.now();
-        
-        // 1. DECODIFICA LETTERA - usa timing dinamico basato su WPM
-        if(morseBuffer !== "" && (now - lastUp > decoderTimings.charTimeout)) {
-            const char = MORSE[morseBuffer] || "?";
-            const toSend = MORSE[morseBuffer] ? char : morseBuffer;
-            
-            // Invia a Firebase
-            sendMessage(toSend);
-            
-            // Aggiungi al contenuto decoder locale
-            decoderContent += char;
-            lastCharTime = now;
-            needsSpace = true;  // ← ORA SERVE UNO SPAZIO!
-            
-            // Pulisci buffer
-            morseBuffer = "";
-            updateDecoderDisplay(decoderContent);
-            
-            console.log(`✅ Decodificato: "${char}" | needsSpace: true`);
-        }
-        
-        // 2. SPAZIO CON FLAG - timing proporzionale al WPM
-        // REGOLA: MASSIMO 1 SPAZIO! Non va avanti all'infinito
-        // Formula: 2x il tempo di conferma lettera + 200ms margine
-        const SILENCE_FOR_SPACE = (decoderTimings.charTimeout * 2) + 200;
-        
-        // Esempi timing:
-        // 10 WPM: 600*2+200 = 1400ms
-        // 15 WPM: 400*2+200 = 1000ms  
-        // 20 WPM: 300*2+200 = 800ms
-        // 25 WPM: 240*2+200 = 680ms
-        
-        if(needsSpace &&                              // Serve spazio
-           !decoderContent.endsWith(' ') &&           // NON ha già uno spazio!
-           (now - lastUp > SILENCE_FOR_SPACE)) {      // Silenzio proporzionale
-            
-            // INVIA SPAZIO A FIREBASE
-            sendMessage(' ');
-            
-            decoderContent += ' ';
-            updateDecoderDisplay(decoderContent);
-            needsSpace = false;  // ← FLAG RESET: spazio inserito!
-            console.log(`➕ SPAZIO UNICO inviato! Silenzio: ${now - lastUp}ms`);
-        }
-        
-        // 3. RESET DECODER - dopo pausa molto lunga (inattività)
-        if(decoderContent !== "" && (now - lastCharTime > decoderTimings.resetTime)) {
-            decoderContent = "";
-            updateDecoderDisplay("");
-            console.log(`🔄 Decoder resettato dopo ${decoderTimings.resetTime}ms di inattività`);
-        }
-    }, 50);  // Polling 50ms invece di 100ms per maggiore precisione su WPM alti
-
-    async function activateAudioManually() {
-        console.log('═══════════════════════════════');
-        console.log('🔊 ATTIVAZIONE AUDIO MANUALE');
+    async function activateAudio() {
+        const alert = document.querySelector('.audio-alert');
+        if (alert) alert.remove();
         
         try {
-            console.log('1. Inizializzazione audio...');
+            console.log('═══════════════════════════════');
+            console.log('🔊 ATTIVAZIONE AUDIO...');
+            console.log('   Browser:', navigator.userAgent.includes('Chrome') ? 'Chrome' : 'Other');
+            
             initAudio();
             
-            console.log('2. AudioContext state:', audioCtx ? audioCtx.state : 'null');
+            if (!audioCtx) {
+                throw new Error('AudioContext non disponibile');
+            }
             
-            if(audioCtx && audioCtx.state === 'suspended') {
-                console.log('3. Resume AudioContext...');
+            console.log('   audioCtx.state prima:', audioCtx.state);
+            
+            if (audioCtx.state === 'suspended') {
                 await audioCtx.resume();
-                console.log('4. Stato dopo resume:', audioCtx.state);
+                console.log('   audioCtx.state dopo resume:', audioCtx.state);
             }
             
-            console.log('5. Test beep 100ms...');
-            await playBeep(100);
-            console.log('6. Test beep OK!');
+            // Test audio
+            await playTone(100);
+            await new Promise(r => setTimeout(r, 200));
+            await playTone(100);
             
-            const btn = document.getElementById('audio-activate-btn');
-            if(btn) {
-                btn.classList.add('activated');
-                btn.innerHTML = '✅ AUDIO ATTIVO';
-                btn.style.background = '#666';
-                btn.style.borderColor = '#666';
-                btn.style.color = '#aaa';
-            }
+            audioActivated = true;
             
-            if(qrmEnabled) startQRM();
+            if (qrmEnabled) startQRM();
             
             console.log('✅ AUDIO COMPLETAMENTE ATTIVATO');
             console.log('   audioCtx.state:', audioCtx.state);
@@ -2294,13 +1561,14 @@
             
             alert('✅ Audio attivato con successo!\n\nOra puoi sentire i messaggi Morse in arrivo.');
             
-        } catch(err) {
+        } catch (err) {
             console.error('❌ ERRORE ATTIVAZIONE:', err);
             console.log('═══════════════════════════════');
             alert('❌ Errore attivazione audio:\n' + err.message + '\n\nProva a ricaricare la pagina.');
         }
     }
 
+    // ══════════ ADMIN PANEL ══════════
     function showAdminLogin() {
         document.getElementById('admin-modal').classList.add('show');
         document.getElementById('admin-pwd').value = '';
@@ -2313,7 +1581,7 @@
     
     function checkAdminPassword() {
         const pwd = document.getElementById('admin-pwd').value;
-        if(pwd === ADMIN_PASSWORD) {
+        if (pwd === ADMIN_PASSWORD) {
             closeAdminModal();
             openAdminPanel();
         } else {
@@ -2331,16 +1599,18 @@
     }
     
     function loadAdminData() {
-        db.ref('admin/background').once('value').then(snap => {
-            const bgData = snap.val();
-            if(bgData) {
+        // Carica dati in parallelo per ottimizzazione
+        Promise.all([
+            db.ref('admin/background').once('value'),
+            db.ref('admin/chatOpacity').once('value')
+        ]).then(([bgSnap, opacitySnap]) => {
+            const bgData = bgSnap.val();
+            if (bgData) {
                 document.getElementById('bg-preview').src = bgData;
                 document.getElementById('bg-preview-container').style.display = 'block';
             }
-        });
-        
-        db.ref('admin/chatOpacity').once('value').then(snap => {
-            const opacity = snap.val() || 70;
+            
+            const opacity = opacitySnap.val() || 70;
             document.getElementById('opacity-slider').value = opacity;
             document.getElementById('opacity-value').innerText = opacity;
             applyChatOpacity(opacity);
@@ -2351,10 +1621,15 @@
     
     function handleBackgroundUpload(event) {
         const file = event.target.files[0];
-        if(!file) return;
+        if (!file) return;
         
-        if(file.size > 5 * 1024 * 1024) {
-            alert('File troppo grande!');
+        if (file.size > 5 * 1024 * 1024) {
+            alert('⚠️ File troppo grande! Max 5MB');
+            return;
+        }
+        
+        if (!file.type.startsWith('image/')) {
+            alert('⚠️ Solo immagini sono permesse');
             return;
         }
         
@@ -2368,7 +1643,7 @@
                 let width = img.width, height = img.height;
                 const maxWidth = 1920, maxHeight = 1080;
                 
-                if(width > maxWidth || height > maxHeight) {
+                if (width > maxWidth || height > maxHeight) {
                     const ratio = Math.min(maxWidth / width, maxHeight / height);
                     width *= ratio;
                     height *= ratio;
@@ -2390,18 +1665,34 @@
         reader.readAsDataURL(file);
     }
     
+    function loadBackground() {
+        db.ref('admin/background').once('value').then(snap => {
+            const bgData = snap.val();
+            if (bgData) {
+                applyBackground(bgData);
+            }
+        });
+    }
+    
     function applyBackground(dataUrl) {
         document.body.style.backgroundImage = `url(${dataUrl})`;
         document.body.classList.add('has-background');
     }
     
     function removeBackground() {
-        if(confirm('Rimuovere sfondo?')) {
+        if (confirm('⚠️ Rimuovere lo sfondo corrente?')) {
             db.ref('admin/background').remove();
             document.body.style.backgroundImage = 'none';
             document.body.classList.remove('has-background');
             document.getElementById('bg-preview-container').style.display = 'none';
         }
+    }
+    
+    function loadChatOpacity() {
+        db.ref('admin/chatOpacity').once('value').then(snap => {
+            const opacity = snap.val() || 70;
+            applyChatOpacity(opacity);
+        });
     }
     
     function updateChatOpacity(value) {
@@ -2426,9 +1717,9 @@
         
         try {
             initAudio();
-            if(audioCtx.state === 'suspended') await audioCtx.resume();
+            if (audioCtx.state === 'suspended') await audioCtx.resume();
             
-            resultEl.innerText = '🎵 SOS...';
+            resultEl.innerText = '🎵 Playing SOS...';
             resultEl.style.color = 'var(--amber)';
             
             await playMorseChar('S');
@@ -2437,98 +1728,108 @@
             await new Promise(r => setTimeout(r, LETTER_GAP));
             await playMorseChar('S');
             
-            resultEl.innerText = '✅ OK!';
+            resultEl.innerText = '✅ Audio OK!';
             resultEl.style.color = 'var(--green)';
-        } catch(err) {
-            resultEl.innerText = '❌ Errore';
+        } catch (err) {
+            resultEl.innerText = '❌ Error: ' + err.message;
             resultEl.style.color = '#f00';
         }
     }
     
     function updateStatistics() {
-        db.ref('chat').once('value').then(snap => {
-            document.getElementById('stat-morse').innerText = snap.numChildren();
-        });
-        
-        db.ref('textChat').once('value').then(snap => {
-            document.getElementById('stat-text').innerText = snap.numChildren();
+        Promise.all([
+            db.ref('chat').once('value'),
+            db.ref('textChat').once('value'),
+            db.ref('users').once('value')
+        ]).then(([chatSnap, textSnap, usersSnap]) => {
+            document.getElementById('stat-morse').innerText = chatSnap.numChildren();
+            document.getElementById('stat-text').innerText = textSnap.numChildren();
+            document.getElementById('stat-online').innerText = usersSnap.numChildren();
             
             const messages = [];
-            snap.forEach(child => messages.push(child.val()));
+            textSnap.forEach(child => messages.push(child.val()));
             const uniqueUsers = [...new Set(messages.map(m => m.user))];
             document.getElementById('stat-users').innerText = uniqueUsers.length;
-        });
-        
-        db.ref('users').once('value').then(snap => {
-            document.getElementById('stat-online').innerText = snap.numChildren();
         });
     }
     
     function resetStats() {
-        if(confirm('RESET?')) {
+        if (confirm('🔄 Aggiornare le statistiche?')) {
             updateStatistics();
         }
     }
 
+    // ══════════ EVENT LISTENERS ══════════
     const keyEl = document.getElementById('key');
     keyEl.addEventListener('mousedown', down);
     window.addEventListener('mouseup', (e) => up(e));
+    
     keyEl.addEventListener('touchstart', (e) => { 
         e.preventDefault(); 
         e.stopPropagation();
         down(e); 
     }, { passive: false });
+    
     window.addEventListener('touchend', (e) => {
-        if(isDown) up(e);
+        if (isDown) up(e);
     }, { passive: false });
+    
     window.addEventListener('keydown', (e) => { 
-        if(!e.repeat) {
-            // Previeni scroll con Space
-            if(e.code === 'Space' && e.code === mappedKey) {
-                e.preventDefault();
-            }
-            down(e);
-        }
+        if (!e.repeat) down(e);
     });
+    
     window.addEventListener('keyup', (e) => up(e));
 
+    // Previeni scroll durante touch su key
     document.body.addEventListener('touchmove', (e) => {
-        if(e.target.id === 'key' || e.target.closest('#morse-pad')) {
+        if (e.target.id === 'key' || e.target.closest('#morse-pad')) {
             e.preventDefault();
         }
     }, { passive: false });
     
-    // Event listener per chat text input
+    // Text chat handlers
     document.addEventListener('DOMContentLoaded', () => {
         const textInput = document.getElementById('text-input');
-        if(textInput) {
+        if (textInput) {
             textInput.addEventListener('keypress', (e) => {
-                if(e.key === 'Enter') {
+                if (e.key === 'Enter') {
                     e.preventDefault();
                     sendTextMessage();
                 }
             });
             
-            // Disabilita Morse keyboard quando focus su input text
+            // Disabilita Morse keyboard quando focus su input
             textInput.addEventListener('focus', () => {
-                if(morseKeyboardEnabled) {
-                    const wasMorseOn = morseKeyboardEnabled;
+                if (morseKeyboardEnabled) {
                     toggleMorseKeyboard();
-                    textInput.dataset.wasMorseOn = wasMorseOn;
-                    console.log('💬 Focus su text input → Morse Keyboard OFF');
+                    console.log('💬 Focus su input → Morse Keyboard OFF');
                 }
             });
-            
-            // Riabilita Morse keyboard quando perdi focus (opzionale)
-            textInput.addEventListener('blur', () => {
-                // Non riabilitare automaticamente, l'utente usa il toggle
-                console.log('💬 Blur da text input');
+        }
+        
+        // Admin password field enter
+        const adminPwd = document.getElementById('admin-pwd');
+        if (adminPwd) {
+            adminPwd.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    checkAdminPassword();
+                }
             });
         }
     });
+    
+    // Cleanup on page unload
+    window.addEventListener('beforeunload', () => {
+        if (currentUser) {
+            db.ref('users/' + currentUser).remove();
+        }
+        stopQRM();
+        if (aiTimeout) clearTimeout(aiTimeout);
+        if (audioCtx) audioCtx.close();
+    });
 
-    console.log('🔧 MORSE-LINK LIVE + TEXT CHAT');
-
+    console.log('🔧 MORSE-LINK LIVE - VERSIONE OTTIMIZZATA CARICATA');
 </script>
 </body>
 </html>
