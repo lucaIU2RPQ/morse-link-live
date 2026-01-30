@@ -885,14 +885,14 @@
             <div style="display: flex; align-items: center; gap: 8px;">
                 <label style="font-size: 0.8rem; color: var(--green); font-weight: bold; white-space: nowrap;">⚡ Velocità TX:</label>
                 <select id="wpm-selector" onchange="updateDecoderSpeed()" style="padding: 5px 8px; background: rgba(0, 0, 0, 0.5); border: 1px solid var(--green); border-radius: 3px; color: var(--green); font-family: 'Courier New', monospace; font-size: 0.75rem; cursor: pointer;">
-                    <option value="8">8 WPM (Molto Lento)</option>
-                    <option value="10">10 WPM (Lento)</option>
+                    <option value="8">8 WPM</option>
+                    <option value="10" selected>10 WPM</option>
                     <option value="12">12 WPM</option>
-                    <option value="15" selected>15 WPM (Medio)</option>
+                    <option value="15">15 WPM</option>
                     <option value="18">18 WPM</option>
                     <option value="20">20 WPM</option>
-                    <option value="25">25 WPM (Veloce)</option>
-                    <option value="30">30 WPM (Molto Veloce)</option>
+                    <option value="25">25 WPM</option>
+                    <option value="30">30 WPM</option>
                 </select>
             </div>
             <span id="wpm-info" style="font-size: 0.7rem; color: #888; white-space: nowrap;">⏱️ Lettera: 400ms | Spazio: 560ms</span>
@@ -2161,7 +2161,7 @@
         decoder.scrollLeft = decoder.scrollWidth;
     }
     let needsSpace = false;  // ← NUOVO: flag per tracciare quando serve spazio
-    let currentWPM = 15; // Default medio
+    let currentWPM = 10; // Default 10 WPM
     let decoderTimings = {
         charTimeout: 400,   // Tempo per confermare lettera
         letterGap: 240,     // Pausa per spazio tra parole  
