@@ -10,6 +10,10 @@
     <meta name="format-detection" content="telephone=no">
     <title>VIRTUAL QSO | Radio in Vetta</title>
     
+    <!-- Firebase SDK per background condiviso -->
+    <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-database-compat.js"></script>
+    
     <style>
         :root { 
             --amber: #ffb000; 
@@ -606,6 +610,19 @@
             <div class="modal-title">⚙️ ADMIN PANEL</div>
             
             <div class="sidebar-label">🖼️ SFONDO</div>
+            
+            <!-- Upload file personalizzato -->
+            <div style="margin-bottom: 15px;">
+                <input type="file" id="bg-upload" accept="image/*" onchange="handleBackgroundUpload(event)" style="display: none;">
+                <button onclick="document.getElementById('bg-upload').click()" style="width: 100%; margin-bottom: 10px;">
+                    📤 CARICA TUA IMMAGINE
+                </button>
+                <div id="bg-preview-container" style="display: none; margin-bottom: 10px;">
+                    <img id="bg-preview" style="width: 100%; border-radius: 4px; border: 2px solid var(--green);">
+                </div>
+            </div>
+            
+            <!-- Sfondi predefiniti -->
             <div class="bg-grid" id="bg-grid"></div>
             <button onclick="removeBackground()" style="width: 100%; margin-top: 10px;">❌ Rimuovi Sfondo</button>
             
@@ -617,6 +634,20 @@
     </div>
 
     <script>
+        // Firebase Configuration (stesso di MORSE-LINK)
+        const firebaseConfig = {
+            apiKey: "AIzaSyBFKsas6B4zqF-EXAMPLE",
+            authDomain: "morse-link-live.firebaseapp.com",
+            databaseURL: "https://morse-link-live-default-rtdb.europe-west1.firebasedatabase.app",
+            projectId: "morse-link-live",
+            storageBucket: "morse-link-live.firebasestorage.app",
+            messagingSenderId: "123456789",
+            appId: "1:123456789:web:EXAMPLE"
+        };
+        
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.database();
+        
         const ADMIN_PASSWORD = 'radio10101';
         const BACKGROUNDS = [
             'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=800',
@@ -1184,27 +1215,103 @@
             const grid = document.getElementById('bg-grid');
             grid.innerHTML = '';
             
+            // Carica background da Firebase
+            db.ref('admin/background-virtualqso').once('value').then(snap => {
+                const bgData = snap.val();
+                if(bgData) {
+                    document.getElementById('bg-preview').src = bgData;
+                    document.getElementById('bg-preview-container').style.display = 'block';
+                    applyBackground(bgData);
+                }
+            });
+            
+            // Sfondi predefiniti
             BACKGROUNDS.forEach((url, i) => {
                 const thumb = document.createElement('div');
                 thumb.className = 'bg-thumb';
                 thumb.style.backgroundImage = `url(${url})`;
-                thumb.onclick = () => setBackground(url);
+                thumb.onclick = () => setBackground(url, true);
                 grid.appendChild(thumb);
             });
             
             updateStatistics();
         }
-
-        function setBackground(url) {
-            document.body.style.backgroundImage = `url(${url})`;
+        
+        function handleBackgroundUpload(event) {
+            const file = event.target.files[0];
+            if(!file) return;
+            
+            if(!file.type.startsWith('image/')) {
+                alert('❌ Seleziona un file immagine!');
+                return;
+            }
+            
+            if(file.size > 5 * 1024 * 1024) {
+                alert('❌ File troppo grande! Max 5MB');
+                return;
+            }
+            
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const img = new Image();
+                img.onload = function() {
+                    // Ottimizza immagine
+                    const canvas = document.createElement('canvas');
+                    const ctx = canvas.getContext('2d');
+                    
+                    let width = img.width, height = img.height;
+                    const maxWidth = 1920, maxHeight = 1080;
+                    
+                    if(width > maxWidth || height > maxHeight) {
+                        const ratio = Math.min(maxWidth / width, maxHeight / height);
+                        width *= ratio;
+                        height *= ratio;
+                    }
+                    
+                    canvas.width = width;
+                    canvas.height = height;
+                    ctx.drawImage(img, 0, 0, width, height);
+                    
+                    // Converti a JPEG con qualità 70%
+                    const optimizedData = canvas.toDataURL('image/jpeg', 0.7);
+                    
+                    // Salva su Firebase (visibile a tutti!)
+                    db.ref('admin/background-virtualqso').set(optimizedData).then(() => {
+                        document.getElementById('bg-preview').src = optimizedData;
+                        document.getElementById('bg-preview-container').style.display = 'block';
+                        applyBackground(optimizedData);
+                        alert('✅ Sfondo caricato e condiviso!');
+                    }).catch(err => {
+                        alert('❌ Errore: ' + err.message);
+                    });
+                };
+                img.src = e.target.result;
+            };
+            reader.readAsDataURL(file);
+        }
+        
+        function applyBackground(dataUrl) {
+            document.body.style.backgroundImage = `url(${dataUrl})`;
             document.body.classList.add('has-background');
-            localStorage.setItem('vqso-bg', url);
+        }
+
+        function setBackground(url, isPredefined = false) {
+            if(isPredefined) {
+                // Sfondo predefinito - salva URL
+                db.ref('admin/background-virtualqso').set(url);
+            }
+            applyBackground(url);
         }
 
         function removeBackground() {
-            document.body.style.backgroundImage = '';
-            document.body.classList.remove('has-background');
-            localStorage.removeItem('vqso-bg');
+            if(confirm('Rimuovere sfondo per tutti?')) {
+                db.ref('admin/background-virtualqso').remove().then(() => {
+                    document.body.style.backgroundImage = '';
+                    document.body.classList.remove('has-background');
+                    document.getElementById('bg-preview-container').style.display = 'none';
+                    alert('✅ Sfondo rimosso!');
+                });
+            }
         }
 
         function updateStatistics() {
@@ -1232,8 +1339,11 @@
         }
 
         document.addEventListener('DOMContentLoaded', () => {
-            const savedBg = localStorage.getItem('vqso-bg');
-            if(savedBg) setBackground(savedBg);
+            // Carica background da Firebase (condiviso!)
+            db.ref('admin/background-virtualqso').once('value').then(snap => {
+                const bgData = snap.val();
+                if(bgData) applyBackground(bgData);
+            });
             
             ['type'].forEach(group => {
                 document.querySelectorAll(`#${group}-group .radio-option`).forEach(opt => {
