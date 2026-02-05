@@ -2,1441 +2,493 @@
 <html lang="it">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="apple-mobile-web-app-title" content="Virtual QSO">
-    <meta name="mobile-web-app-capable" content="yes">
-    <meta name="format-detection" content="telephone=no">
-    <title>VIRTUAL QSO | Radio in Vetta</title>
-    
-    <!-- Firebase SDK per background condiviso -->
-    <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-database-compat.js"></script>
-    
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VIRTUAL QSO - Radio in Vetta</title>
     <style>
-        :root { 
-            --amber: #ffb000; 
-            --bg-black: #0a0a0a; 
-            --panel: #1e1e1e; 
-            --green: #0f0;
+        :root {
+            --amber: #ffb000;
+            --green: #00ff00;
+            --bg-black: #0a0a0a;
+            --panel: #1e1e1e;
         }
         
-        * { box-sizing: border-box; margin: 0; padding: 0; }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
         
-        body { 
-            background: var(--bg-black); 
-            color: var(--amber); 
-            font-family: 'Courier New', monospace; 
-            margin: 0; 
-            display: flex; 
-            flex-direction: column; 
-            height: 100vh;
+        body {
+            background: var(--bg-black);
+            color: var(--amber);
+            font-family: 'Courier New', monospace;
             overflow: hidden;
-            background-repeat: no-repeat;
-            background-size: cover;
-            background-position: center;
-            background-attachment: fixed;
-            /* iOS ottimizzazioni */
-            -webkit-overflow-scrolling: touch;
-            -webkit-user-select: none;
-            user-select: none;
-            -webkit-touch-callout: none;
-            /* Previeni pull-to-refresh */
-            overscroll-behavior-y: contain;
         }
         
-        body.has-background::before {
-            content: '';
-            position: fixed;
-            inset: 0;
-            background: rgba(10, 10, 10, 0.7);
-            z-index: 0;
-        }
-        
-        header, #main { position: relative; z-index: 1; }
-        
-        @media (max-width: 768px) {
-            body { height: auto; min-height: 100vh; overflow-y: auto; }
-        }
-        
-        header { 
-            background: var(--panel); 
-            padding: 10px; 
-            border-bottom: 2px solid var(--amber); 
-            display: flex; 
+        #header {
+            background: var(--panel);
+            padding: 15px;
+            border-bottom: 2px solid var(--amber);
+            display: flex;
             justify-content: space-between;
             align-items: center;
-            flex-wrap: wrap;
-            gap: 8px;
-            flex-shrink: 0;
         }
         
-        body.has-background header {
-            background: rgba(30, 30, 30, 0.95);
-            backdrop-filter: blur(10px);
+        #vqso-container {
+            display: grid;
+            grid-template-columns: 250px 1fr 250px;
+            height: calc(100vh - 60px);
+            gap: 0;
         }
         
-        .header-left {
+        .panel {
+            background: var(--panel);
+            border-right: 1px solid #333;
+            padding: 15px;
+            overflow-y: auto;
+        }
+        
+        .panel:last-child {
+            border-right: none;
+        }
+        
+        #center-panel {
+            background: #000;
             display: flex;
             flex-direction: column;
-            gap: 2px;
+            padding: 20px;
         }
         
-        .header-buttons { display: flex; gap: 6px; flex-wrap: wrap; }
+        #setup-screen, #qso-screen {
+            display: none;
+        }
         
-        button {
-            padding: 6px 12px;
-            background: transparent;
+        #setup-screen.active, #qso-screen.active {
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+        }
+        
+        .level-btn, .mode-btn {
+            background: #111;
             color: var(--amber);
-            border: 2px solid var(--amber);
-            border-radius: 4px;
+            border: 2px solid #333;
+            padding: 15px;
+            margin: 10px 0;
             cursor: pointer;
-            font-family: 'Courier New', monospace;
-            font-size: 0.75rem;
+            font-family: inherit;
+            font-size: 1em;
             transition: all 0.3s;
         }
         
-        button:hover { background: var(--amber); color: #000; }
-        .btn-green { background: var(--green); border-color: var(--green); color: #000; font-weight: bold; }
-        
-        #main { 
-            display: grid; 
-            grid-template-columns: 180px 1fr; 
-            flex: 1; 
-            overflow: hidden;
-            min-height: 0;
+        .level-btn:hover, .mode-btn:hover {
+            border-color: var(--amber);
+            background: #222;
         }
         
-        @media (max-width: 768px) {
-            #main { display: block; overflow: visible; flex: none; }
+        .level-btn.selected, .mode-btn.selected {
+            border-color: var(--green);
+            background: #1a3a1a;
+            color: var(--green);
         }
         
-        #sidebar { 
-            border-right: 1px solid #333; 
-            padding: 8px; 
-            overflow-y: auto;
-            background: var(--panel);
-        }
-        
-        @media (max-width: 768px) {
-            #sidebar { display: none; }
-        }
-        
-        .sidebar-label {
-            font-size: 0.65rem;
-            color: #888;
-            text-transform: uppercase;
-            margin: 10px 0 6px;
-            font-weight: bold;
-        }
-        
-        .radio-group { display: flex; flex-direction: column; gap: 4px; }
-        
-        .radio-option {
-            padding: 6px 8px;
-            background: rgba(0, 0, 0, 0.5);
-            border: 1px solid #333;
-            border-radius: 3px;
-            cursor: pointer;
-            font-size: 0.75rem;
-            transition: all 0.2s;
-            display: flex;
-            align-items: center;
-        }
-        
-        .radio-option:hover { border-color: var(--amber); }
-        .radio-option.selected { border-color: var(--green); background: rgba(0, 255, 0, 0.05); }
-        .radio-option input { margin-right: 6px; }
-        
-        .slider-container {
-            margin: 10px 0;
-        }
-        
-        input[type="range"] {
-            width: 100%;
-            height: 6px;
-            border-radius: 3px;
-            background: #333;
-            outline: none;
-            -webkit-appearance: none;
-        }
-        
-        input[type="range"]::-webkit-slider-thumb {
-            -webkit-appearance: none;
-            appearance: none;
-            width: 16px;
-            height: 16px;
-            border-radius: 50%;
-            background: var(--green);
-            cursor: pointer;
-        }
-        
-        input[type="range"]::-moz-range-thumb {
-            width: 16px;
-            height: 16px;
-            border-radius: 50%;
-            background: var(--green);
-            cursor: pointer;
+        #start-qso-btn {
+            background: linear-gradient(135deg, var(--amber), var(--green));
+            color: #000;
             border: none;
-        }
-        
-        .slider-value {
-            text-align: center;
-            font-size: 1rem;
-            color: var(--green);
-            font-weight: bold;
-            margin-top: 4px;
-        }
-        
-        #content { display: flex; flex-direction: column; padding: 10px; overflow: hidden; min-height: 0; }
-        
-        @media (max-width: 768px) {
-            #content { padding: 8px; }
-        }
-        
-        #setup-mobile {
-            display: none;
-        }
-        
-        @media (max-width: 768px) {
-            #setup-mobile {
-                display: block;
-                margin-bottom: 10px;
-            }
-            
-            #setup-mobile .radio-group {
-                display: flex;
-                flex-direction: row;
-                gap: 6px;
-                flex-wrap: wrap;
-            }
-            
-            #setup-mobile .radio-option {
-                flex: 1;
-                min-width: 70px;
-                justify-content: center;
-            }
-            
-            #setup-mobile button {
-                width: 100%;
-                margin-top: 10px;
-                padding: 10px;
-                font-size: 0.9rem;
-            }
-        }
-        
-        #setup-info {
-            text-align: center;
             padding: 20px;
-            color: #888;
-        }
-        
-        #qso-panel {
-            display: none;
-            flex-direction: column;
-            flex: 1;
-            overflow: hidden;
-            min-height: 0;
-        }
-        
-        .qso-status {
-            font-size: 0.75rem;
-            margin-bottom: 8px;
-            color: #888;
-            display: flex;
-            flex-wrap: wrap;
-            gap: 6px;
-            align-items: center;
-        }
-        
-        .qso-status span {
-            padding: 4px 8px;
-            background: rgba(0, 0, 0, 0.5);
-            border-radius: 3px;
-        }
-        
-        .qso-status .active {
-            color: var(--green);
-            animation: pulse 1s infinite;
-        }
-        
-        @keyframes pulse {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0.5; }
-        }
-        
-        #messages {
-            background: rgba(0, 0, 0, 0.8);
-            border: 2px solid var(--amber);
-            border-radius: 4px;
-            padding: 10px;
-            flex: 1;
-            overflow-y: auto;
-            margin-bottom: 8px;
-            min-height: 150px;
-        }
-        
-        @media (max-width: 768px) {
-            #messages {
-                min-height: 120px;
-                max-height: 200px;
-            }
-        }
-        
-        .msg {
-            margin-bottom: 8px;
-            border-left: 2px solid;
-            padding-left: 6px;
-            font-size: 0.85rem;
-            animation: fadeIn 0.3s;
-        }
-        
-        @keyframes fadeIn {
-            from { opacity: 0; }
-            to { opacity: 1; }
-        }
-        
-        .msg.bot { 
-            color: var(--amber); 
-            border-left-color: var(--amber); 
-        }
-        
-        .msg.user { 
-            color: var(--green); 
-            border-left-color: var(--green); 
-            text-align: right; 
-        }
-        
-        .msg-user {
-            font-size: 0.7rem;
-            opacity: 0.6;
-            margin-bottom: 2px;
-        }
-        
-        #decoder-section {
-            background: rgba(0, 255, 0, 0.05);
-            border: 2px solid var(--green);
-            border-radius: 4px;
-            padding: 8px;
-            margin-bottom: 8px;
-            min-height: 50px;
-            max-height: 50px;
-            overflow: hidden;
-            position: relative;
-        }
-        
-        #decoder-preview { 
-            font-size: 1.3rem; 
-            color: var(--green);
+            margin-top: 20px;
+            cursor: pointer;
             font-weight: bold;
-            overflow-x: auto;
-            overflow-y: hidden;
-            white-space: nowrap;
-            min-height: 28px;
-            max-height: 28px;
-            /* Scroll automatico alla fine */
-            scroll-behavior: smooth;
-            /* Nasconde scrollbar ma mantiene funzionalità */
-            scrollbar-width: none;
-            -ms-overflow-style: none;
+            font-size: 1.2em;
         }
         
-        #decoder-preview::-webkit-scrollbar {
-            display: none;
-        }
-        
-        #morse-pattern {
-            font-size: 0.85rem;
-            color: var(--green);
-            opacity: 0.6;
-            margin-top: 4px;
-        }
-        
-        #morse-pad {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            padding: 20px;
-            /* Previeni scroll su touch */
-            touch-action: none;
-            -webkit-user-select: none;
-            user-select: none;
-        }
-        
-        #key { 
-            width: 120px; 
-            height: 120px; 
-            border: 4px solid var(--amber); 
-            border-radius: 50%; 
-            cursor: pointer; 
-            /* iOS touch ottimizzato */
-            touch-action: none;
-            -webkit-touch-callout: none;
-            -webkit-tap-highlight-color: transparent;
-            -webkit-user-select: none;
-            user-select: none;
-            /* Nessuna transizione per feedback immediato */
-            transition: none;
-            /* Forza hardware acceleration */
-            transform: translateZ(0);
-            -webkit-transform: translateZ(0);
-            will-change: transform, background;
-            /* Migliore rendering */
-            backface-visibility: hidden;
-            -webkit-backface-visibility: hidden;
-        }
-        
-        #key:active, #key.active { 
-            background: var(--amber); 
-            transform: scale(0.97) translateZ(0);
-            -webkit-transform: scale(0.97) translateZ(0);
-        }
-        
-        #key.disabled {
+        #start-qso-btn:disabled {
             opacity: 0.3;
             cursor: not-allowed;
-            border-color: #666;
+        }
+        
+        #messages-area {
+            flex: 1;
+            overflow-y: auto;
+            padding: 10px;
+            background: #0a0a0a;
+            border: 1px solid #333;
+            margin-bottom: 15px;
+        }
+        
+        .qso-msg {
+            margin: 10px 0;
+            padding: 10px;
+            border-left: 3px solid var(--amber);
+        }
+        
+        .qso-msg.bot {
+            border-left-color: var(--green);
+        }
+        
+        .qso-msg .callsign {
+            color: var(--green);
+            font-weight: bold;
+        }
+        
+        .qso-msg .text {
+            color: var(--amber);
+            margin-top: 5px;
+        }
+        
+        #input-area {
+            display: flex;
+            gap: 10px;
+        }
+        
+        #vqso-input {
+            flex: 1;
+            background: #000;
+            border: 1px solid var(--amber);
+            color: var(--amber);
+            padding: 15px;
+            font-family: inherit;
+            font-size: 1em;
+        }
+        
+        #send-btn {
+            background: var(--amber);
+            color: #000;
+            border: none;
+            padding: 15px 30px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+        
+        #send-btn:disabled {
+            opacity: 0.3;
+            cursor: not-allowed;
+        }
+        
+        .info-section {
+            margin-bottom: 20px;
+        }
+        
+        .info-section h3 {
+            color: var(--green);
+            margin-bottom: 10px;
+            border-bottom: 1px solid #333;
+            padding-bottom: 5px;
+        }
+        
+        .info-section p {
+            color: #888;
+            font-size: 0.9em;
+            line-height: 1.5;
         }
         
         @media (max-width: 768px) {
-            #key { width: 90px; height: 90px; }
+            #vqso-container {
+                grid-template-columns: 1fr;
+            }
+            .panel { display: none; }
         }
-        
-        /* Modal */
-        .modal {
-            display: none;
-            position: fixed;
-            inset: 0;
-            background: rgba(0, 0, 0, 0.9);
-            z-index: 1000;
-            justify-content: center;
-            align-items: center;
-            padding: 20px;
-        }
-        
-        .modal.show { display: flex; }
-        
-        .modal-content {
-            background: var(--panel);
-            border: 2px solid var(--amber);
-            border-radius: 8px;
-            padding: 20px;
-            max-width: 500px;
-            width: 100%;
-            max-height: 80vh;
-            overflow-y: auto;
-        }
-        
-        .modal-title {
-            font-size: 1.3rem;
-            color: var(--amber);
-            margin-bottom: 15px;
-            text-align: center;
-        }
-        
-        .input-box {
-            width: 100%;
-            padding: 10px;
-            background: rgba(0, 0, 0, 0.5);
-            border: 1px solid var(--amber);
-            border-radius: 4px;
-            color: var(--amber);
-            font-family: 'Courier New', monospace;
-            margin: 10px 0;
-        }
-        
-        .bg-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
-            gap: 10px;
-            margin: 15px 0;
-        }
-        
-        .bg-thumb {
-            aspect-ratio: 16/9;
-            border: 2px solid #333;
-            border-radius: 4px;
-            cursor: pointer;
-            background-size: cover;
-            background-position: center;
-            transition: all 0.3s;
-        }
-        
-        .bg-thumb:hover, .bg-thumb.active {
-            border-color: var(--green);
-            transform: scale(1.05);
-        }
-        
-        .stat-row {
-            display: flex;
-            justify-content: space-between;
-            padding: 8px;
-            border-bottom: 1px solid #333;
-            font-size: 0.85rem;
-        }
-        
-        .stat-row:last-child { border-bottom: none; }
-        .stat-label { color: #888; }
-        .stat-value { color: var(--green); font-weight: bold; }
     </style>
 </head>
 <body>
-    <header>
-        <div class="header-left">
-            <strong style="font-size: 1.1rem; color: var(--amber); text-shadow: 0 0 10px var(--amber);">📻 VIRTUAL QSO</strong>
-            <div style="font-size: 0.7rem; color: #888;">AI Morse Training by IU2RPQ</div>
+
+<div id="header">
+    <div>📻 VIRTUAL QSO: <span id="status">STANDBY</span></div>
+    <button onclick="window.location.href='index.html'" style="background:#333; color:var(--amber); border:none; padding:10px 20px; cursor:pointer;">← Torna a MORSE-LINK</button>
+</div>
+
+<div id="vqso-container">
+    <!-- LEFT PANEL: Configuration -->
+    <div class="panel">
+        <h3>⚙️ CONFIGURAZIONE</h3>
+        <div id="config-display">
+            <p><strong>Livello:</strong> <span id="level-display">-</span></p>
+            <p><strong>Modalità:</strong> <span id="mode-display">-</span></p>
+            <p><strong>Bot:</strong> <span id="bot-display">-</span></p>
+            <p><strong>Il tuo call:</strong> <span id="user-call-display">-</span></p>
         </div>
-        <div class="header-buttons">
-            <button onclick="window.location.href='https://morse.radioinvetta.it/'" style="background: #9c27b0; border-color: #9c27b0; color: #fff;">
-                🌍 MORSE-LINK LIVE
-            </button>
-            <button onclick="toggleDecoder()" id="decoder-toggle" class="btn-green">👁️ ON</button>
-            <button onclick="activateAudio()" id="audio-btn" class="btn-green">🔊</button>
-            <button onclick="mapExternalKey()" id="map-btn">⌨️ MAPPA</button>
-            <button onclick="showAdminLogin()">🔐</button>
-            <button onclick="resetQSO()" id="reset-btn" style="display: none;">🔄</button>
+    </div>
+    
+    <!-- CENTER PANEL: Main Area -->
+    <div id="center-panel">
+        <!-- Setup Screen -->
+        <div id="setup-screen" class="active">
+            <h2 style="color: var(--green); margin-bottom: 20px;">CONFIGURA IL TUO QSO VIRTUALE</h2>
+            
+            <h3 style="margin-top: 20px;">Scegli il livello:</h3>
+            <button class="level-btn" data-level="beginner">○ PRINCIPIANTE</button>
+            <button class="level-btn" data-level="intermediate">○ INTERMEDIO</button>
+            <button class="level-btn" data-level="expert">○ ESPERTO</button>
+            
+            <h3 style="margin-top: 30px;">Scegli la modalità:</h3>
+            <button class="mode-btn" data-mode="ragchew">Ragchew (conversazione amichevole)</button>
+            <button class="mode-btn" data-mode="contest">Contest (rapido e codificato)</button>
+            <button class="mode-btn" data-mode="dx">DX (collegamenti lontani)</button>
+            <button class="mode-btn" data-mode="sota">SOTA (Summits On The Air)</button>
+            <button class="mode-btn" data-mode="emergency">Emergency (comunicazioni di emergenza)</button>
+            
+            <button id="start-qso-btn" disabled>🚀 INIZIA QSO</button>
         </div>
-    </header>
-
-    <div id="main">
-        <div id="sidebar">
-            <div class="sidebar-label">⚙️ VELOCITÀ (WPM)</div>
-            <div class="slider-container">
-                <input type="range" id="wpm-slider" min="10" max="30" value="15" oninput="updateWPM(this.value)">
-                <div class="slider-value" id="wpm-value">15 WPM</div>
-            </div>
-
-            <div class="sidebar-label">📡 MODALITÀ</div>
-            <div class="radio-group" id="type-group">
-                <div class="radio-option selected" data-value="ragchew">
-                    <input type="radio" name="type" value="ragchew" checked>
-                    <label>Conversazione</label>
-                </div>
-                <div class="radio-option" data-value="contest">
-                    <input type="radio" name="type" value="contest">
-                    <label>Contest</label>
-                </div>
-                <div class="radio-option" data-value="dx">
-                    <input type="radio" name="type" value="dx">
-                    <label>DX</label>
-                </div>
-                <div class="radio-option" data-value="sota">
-                    <input type="radio" name="type" value="sota">
-                    <label>SOTA</label>
-                </div>
-            </div>
-
-            <button onclick="startQSO()" style="margin-top: 15px; width: 100%;">🚀 START</button>
-        </div>
-
-        <div id="content">
-            <div id="setup-mobile">
-                <div class="sidebar-label">⚙️ VELOCITÀ</div>
-                <div class="slider-container">
-                    <input type="range" id="wpm-slider-mobile" min="10" max="30" value="15" oninput="updateWPM(this.value)">
-                    <div class="slider-value" id="wpm-value-mobile">15 WPM</div>
-                </div>
-
-                <div class="sidebar-label">📡 MODALITÀ</div>
-                <div class="radio-group" id="type-group-mobile">
-                    <div class="radio-option selected" data-value="ragchew">
-                        <input type="radio" name="type-m" value="ragchew" checked>
-                        Chat
-                    </div>
-                    <div class="radio-option" data-value="contest">
-                        <input type="radio" name="type-m" value="contest">
-                        Contest
-                    </div>
-                    <div class="radio-option" data-value="dx">
-                        <input type="radio" name="type-m" value="dx">
-                        DX
-                    </div>
-                    <div class="radio-option" data-value="sota">
-                        <input type="radio" name="type-m" value="sota">
-                        SOTA
-                    </div>
-                </div>
-
-                <button onclick="startQSO()">🚀 INIZIA QSO</button>
-            </div>
-
-            <div id="setup-info">
-                <h3 style="color: var(--amber);">Benvenuto!</h3>
-                <p style="margin-top: 10px; font-size: 0.85rem;">
-                    Regola velocità e modalità,<br>poi clicca START
-                </p>
-            </div>
-
-            <div id="qso-panel">
-                <div class="qso-status">
-                    <span id="qso-info"></span>
-                    <span class="active" id="bot-status" style="display: none;">🤖 TX...</span>
-                    <span id="key-mapped" style="display: none; color: var(--green);"></span>
-                </div>
-
-                <div id="messages"></div>
-
-                <div id="decoder-section">
-                    <div id="decoder-preview"></div>
-                    <div id="morse-pattern"></div>
-                </div>
-
-                <div id="morse-pad">
-                    <div id="key"></div>
-                </div>
+        
+        <!-- QSO Screen -->
+        <div id="qso-screen">
+            <div id="messages-area"></div>
+            <div id="input-area">
+                <input type="text" id="vqso-input" placeholder="Scrivi il tuo messaggio in Morse code abbreviato...">
+                <button id="send-btn">TRASMETTI</button>
             </div>
         </div>
     </div>
-
-    <!-- Admin Login Modal -->
-    <div id="admin-modal" class="modal">
-        <div class="modal-content">
-            <div class="modal-title">🔐 ADMIN LOGIN</div>
-            <input type="password" id="admin-pwd" class="input-box" placeholder="Password">
-            <div style="color: red; display: none; margin: 10px 0; text-align: center;" id="admin-error">
-                ❌ Password errata
-            </div>
-            <div style="display: flex; gap: 10px;">
-                <button onclick="closeAdminModal()" style="flex: 1;">Annulla</button>
-                <button onclick="checkAdminPassword()" class="btn-green" style="flex: 1;">Accedi</button>
-            </div>
+    
+    <!-- RIGHT PANEL: Info -->
+    <div class="panel">
+        <h3>💬 INFO QSO</h3>
+        
+        <div class="info-section">
+            <h3>Come funziona</h3>
+            <p>1. Scegli livello e modalità<br>
+               2. Inizia il QSO<br>
+               3. Il bot chiamerà CQ<br>
+               4. Rispondi usando le abbreviazioni morse standard</p>
+        </div>
+        
+        <div class="info-section">
+            <h3>Abbreviazioni comuni</h3>
+            <p>CQ = chiamata generale<br>
+               DE = "da" (precede il tuo call)<br>
+               K = "passo a te"<br>
+               UR = "your" (tuo/a)<br>
+               TNX = "thanks"<br>
+               73 = "saluti"<br>
+               SK = "fine comunicazione"</p>
+        </div>
+        
+        <div class="info-section">
+            <h3>Esempio QSO</h3>
+            <p style="color: var(--green);">Bot: CQ CQ IW3XDP<br>
+               <span style="color: var(--amber);">Tu: IW3XDP DE IU2RPQ IU2RPQ K</span><br>
+               <span style="color: var(--green);">Bot: IU2RPQ DE IW3XDP TNX CALL UR RST 599...</span></p>
         </div>
     </div>
+</div>
 
-    <!-- Admin Panel Modal -->
-    <div id="admin-panel" class="modal">
-        <div class="modal-content">
-            <div class="modal-title">⚙️ ADMIN PANEL</div>
-            
-            <div class="sidebar-label">🖼️ SFONDO</div>
-            
-            <!-- Upload file personalizzato -->
-            <div style="margin-bottom: 15px;">
-                <input type="file" id="bg-upload" accept="image/*" onchange="handleBackgroundUpload(event)" style="display: none;">
-                <button onclick="document.getElementById('bg-upload').click()" style="width: 100%; margin-bottom: 10px;">
-                    📤 CARICA TUA IMMAGINE
-                </button>
-                <div id="bg-preview-container" style="display: none; margin-bottom: 10px;">
-                    <img id="bg-preview" style="width: 100%; border-radius: 4px; border: 2px solid var(--green);">
-                </div>
-            </div>
-            
-            <!-- Sfondi predefiniti -->
-            <div class="bg-grid" id="bg-grid"></div>
-            <button onclick="removeBackground()" style="width: 100%; margin-top: 10px;">❌ Rimuovi Sfondo</button>
-            
-            <div class="sidebar-label" style="margin-top: 20px;">📊 STATISTICHE</div>
-            <div id="stats-container"></div>
-            
-            <button onclick="closeAdminPanel()" style="width: 100%; margin-top: 20px;">Chiudi</button>
-        </div>
-    </div>
+<script>
+// =============================================
+// VIRTUAL QSO - CONFIGURAZIONE
+// =============================================
+const vqsoConfig = {
+    level: null,
+    mode: null,
+    botCallsign: null,
+    userCallsign: null,
+    history: [],
+    qsoActive: false
+};
 
-    <script>
-        // Firebase Configuration (stesso di MORSE-LINK)
-        const firebaseConfig = {
-            apiKey: "AIzaSyBFKsas6B4zqF-EXAMPLE",
-            authDomain: "morse-link-live.firebaseapp.com",
-            databaseURL: "https://morse-link-live-default-rtdb.europe-west1.firebasedatabase.app",
-            projectId: "morse-link-live",
-            storageBucket: "morse-link-live.firebasestorage.app",
-            messagingSenderId: "123456789",
-            appId: "1:123456789:web:EXAMPLE"
-        };
-        
-        firebase.initializeApp(firebaseConfig);
-        const db = firebase.database();
-        
-        const ADMIN_PASSWORD = 'radio10101';
-        const BACKGROUNDS = [
-            'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=800',
-            'https://images.unsplash.com/photo-1519681393784-d120267933ba?w=800',
-            'https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?w=800',
-            'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=800',
-            'https://images.unsplash.com/photo-1454496522488-7a8e488e8606?w=800'
-        ];
-        
-        const MORSE = {
-            'A': '.-', 'B': '-...', 'C': '-.-.', 'D': '-..', 'E': '.', 'F': '..-.',
-            'G': '--.', 'H': '....', 'I': '..', 'J': '.---', 'K': '-.-', 'L': '.-..',
-            'M': '--', 'N': '-.', 'O': '---', 'P': '.--.', 'Q': '--.-', 'R': '.-.',
-            'S': '...', 'T': '-', 'U': '..-', 'V': '...-', 'W': '.--', 'X': '-..-',
-            'Y': '-.--', 'Z': '--..', '0': '-----', '1': '.----', '2': '..---',
-            '3': '...--', '4': '....-', '5': '.....', '6': '-....', '7': '--...',
-            '8': '---..', '9': '----.'
-        };
-        const CHAR_TO_MORSE = Object.fromEntries(Object.entries(MORSE).map(([k, v]) => [v, k]));
+// Genera callsign casuale per il bot
+function generateBotCallsign() {
+    const prefixes = ['IW', 'IZ', 'IK', 'I'];
+    const numbers = ['0', '1', '2', '3', '4', '5'];
+    const suffixes = ['AAA', 'BBB', 'CCC', 'DDD', 'XYZ', 'QRP', 'DX', 'VHF'];
+    
+    const prefix = prefixes[Math.floor(Math.random() * prefixes.length)];
+    const number = numbers[Math.floor(Math.random() * numbers.length)];
+    const suffix = suffixes[Math.floor(Math.random() * suffixes.length)];
+    
+    return prefix + number + suffix;
+}
 
-        let level = 15, qsoType = 'ragchew';
-        let botCallsign = '', botName = '', botQTH = '';
-        let history = [], botTransmitting = false, decoderEnabled = true;
-        let startTime = 0, sessionDuration = 0, messagesSent = 0, messagesReceived = 0;
-        
-        let morseBuffer = '', decoderContent = '';
-        let lastUp = Date.now(), lastCharTime = Date.now();
-        let needsSpace = false, decoderLoopInterval = null;
-        let currentWPM = 15, decoderTimings = { charTimeout: 400 };
-        
-        let isDown = false, startT = 0;
-        let oscillator, gainNode, audioCtx;
-        let mappedKey = null, isMapping = false;
-
-        function initAudio() {
-            if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+// =============================================
+// ESTRAZIONE CALLSIGN DOPO "DE" - VERSIONE ROBUSTA
+// =============================================
+function extractCallsignAfterDE(message) {
+    // Converti in maiuscolo e normalizza
+    let msg = message.toUpperCase().trim();
+    
+    // Rimuovi spazi multipli
+    msg = msg.replace(/\s+/g, ' ');
+    
+    // STRATEGIA 1: DE con spazi (corretto)
+    // Esempio: "IW3XDP DE IU2RPQ K"
+    let dePattern = /\bDE\s+([A-Z]{1,2}[0-9][A-Z]{2,4})\b/;
+    let match = msg.match(dePattern);
+    if (match && match[1]) {
+        console.log('✓ Callsign trovato dopo DE (spazio):', match[1]);
+        return match[1];
+    }
+    
+    // STRATEGIA 2: DE attaccato al callsign seguente
+    // Esempio: "IW3XDPDEIU2RPQ" o "IW3XDP DEIU2RPQ"
+    dePattern = /DE([A-Z]{1,2}[0-9][A-Z]{2,4})\b/;
+    match = msg.match(dePattern);
+    if (match && match[1]) {
+        console.log('✓ Callsign trovato dopo DE (attaccato):', match[1]);
+        return match[1];
+    }
+    
+    // STRATEGIA 3: DE con errori di battitura (d e, dee, dde, etc)
+    // Cerca varianti comuni: D E, DEE, DDE, ED, etc.
+    const deVariants = /\b(D\s*E|DEE|DDE|ED)\s*([A-Z]{1,2}[0-9][A-Z]{2,4})\b/;
+    match = msg.match(deVariants);
+    if (match && match[2]) {
+        console.log('✓ Callsign trovato dopo DE (variante):', match[2]);
+        return match[2];
+    }
+    
+    // STRATEGIA 4: Cerca il secondo callsign nel messaggio
+    // Logica: primo callsign = destinatario, secondo = mittente
+    // Esempio: "IW3XDP IU2RPQ K" → prende IU2RPQ
+    const allCallsigns = msg.match(/\b([A-Z]{1,2}[0-9][A-Z]{2,4})\b/g);
+    if (allCallsigns && allCallsigns.length >= 2) {
+        // Verifica che il secondo sia diverso dal primo
+        if (allCallsigns[1] !== allCallsigns[0]) {
+            console.log('✓ Callsign trovato come secondo nel messaggio:', allCallsigns[1]);
+            return allCallsigns[1];
         }
+    }
+    
+    // STRATEGIA 5: Se c'è un solo callsign, probabilmente è quello dell'utente
+    // (caso in cui il bot sia già noto)
+    if (allCallsigns && allCallsigns.length === 1) {
+        console.log('✓ Callsign trovato (unico nel messaggio):', allCallsigns[0]);
+        return allCallsigns[0];
+    }
+    
+    console.log('✗ Nessun callsign identificato');
+    return null;
+}
 
-        function play() {
-            if(!audioCtx) initAudio();
-            if(audioCtx.state === 'suspended') audioCtx.resume();
-            
-            oscillator = audioCtx.createOscillator();
-            gainNode = audioCtx.createGain();
-            oscillator.type = 'sine';
-            oscillator.frequency.value = 700;
-            gainNode.gain.value = 0.15;
-            oscillator.connect(gainNode);
-            gainNode.connect(audioCtx.destination);
-            oscillator.start();
-        }
-
-        function stop() { 
-            if(oscillator) {
-                oscillator.stop(); 
-                oscillator = null;
-            }
-        }
-
-        function playBeep(duration) {
-            if(!audioCtx) return Promise.resolve();
-            
-            return new Promise((resolve) => {
-                try {
-                    const osc = audioCtx.createOscillator();
-                    const gain = audioCtx.createGain();
-                    
-                    osc.frequency.value = 700;
-                    osc.type = 'sine';
-                    gain.gain.value = 0.15;
-                    
-                    osc.connect(gain);
-                    gain.connect(audioCtx.destination);
-                    
-                    osc.start(audioCtx.currentTime);
-                    osc.stop(audioCtx.currentTime + (duration / 1000));
-                    
-                    setTimeout(() => resolve(), duration);
-                } catch(err) {
-                    resolve();
-                }
-            });
-        }
-
-        async function activateAudio() {
-            try {
-                initAudio();
-                if(audioCtx && audioCtx.state === 'suspended') await audioCtx.resume();
-                await playBeep(100);
-                
-                document.getElementById('audio-btn').innerHTML = '✅';
-                document.getElementById('audio-btn').style.background = '#666';
-                
-                alert('✅ Audio OK');
-            } catch(err) {
-                alert('❌ ' + err.message);
-            }
-        }
-
-        function updateWPM(value) {
-            currentWPM = parseInt(value);
-            level = currentWPM;
-            decoderTimings = calculateTimings(currentWPM);
-            
-            document.getElementById('wpm-value').innerText = value + ' WPM';
-            document.getElementById('wpm-value-mobile').innerText = value + ' WPM';
-            document.getElementById('wpm-slider').value = value;
-            document.getElementById('wpm-slider-mobile').value = value;
-        }
-
-        function toggleDecoder() {
-            decoderEnabled = !decoderEnabled;
-            const dec = document.getElementById('decoder-section');
-            const msg = document.getElementById('messages');
-            const btn = document.getElementById('decoder-toggle');
-            
-            if(decoderEnabled) {
-                dec.style.display = 'block';
-                msg.style.display = 'block';
-                btn.innerHTML = '👁️ ON';
-                btn.style.background = 'var(--green)';
-            } else {
-                dec.style.display = 'none';
-                msg.style.display = 'none';
-                btn.innerHTML = '👁️ OFF';
-                btn.style.background = '#666';
-            }
-        }
-
-        function mapExternalKey() {
-            isMapping = true;
-            document.getElementById('map-btn').innerText = '⏳ PREMI...';
-        }
-
-        function down(e) {
-            // BLOCCA se bot sta trasmettendo
-            if(botTransmitting) return;
-            
-            if(isMapping) {
-                mappedKey = (e && e.type === 'keydown') ? e.code : 'MOUSE';
-                isMapping = false;
-                document.getElementById('map-btn').innerText = '⌨️ ' + mappedKey;
-                document.getElementById('key-mapped').style.display = 'inline-block';
-                document.getElementById('key-mapped').innerText = '🎮 ' + mappedKey;
-                return;
-            }
-            
-            if(e && e.type === 'keydown') {
-                const tag = e.target.tagName.toLowerCase();
-                if(tag === 'input' || tag === 'textarea' || tag === 'button') return;
-            }
-            
-            if(mappedKey && e && e.type === 'keydown' && e.code !== mappedKey) return;
-            if(isDown) return;
-            
-            isDown = true;
-            startT = Date.now();
-            document.getElementById('key').classList.add('active');
-            play();
-        }
-
-        function up(e) {
-            // BLOCCA se bot sta trasmettendo
-            if(botTransmitting) return;
-            
-            if(!isDown) return;
-            isDown = false;
-            stop();
-            document.getElementById('key').classList.remove('active');
-            
-            const dur = Date.now() - startT;
-            
-            // THRESHOLD AUMENTATO per miglior riconoscimento
-            // 150ms → 200ms (più tempo per distinguere punto/linea)
-            const DOT_THRESHOLD = 200;
-            morseBuffer += (dur < DOT_THRESHOLD) ? "." : "-";
-            
-            if(decoderEnabled) {
-                document.getElementById('morse-pattern').innerText = morseBuffer;
-            }
-            lastUp = Date.now();
-            
-            if(!decoderLoopInterval) startDecoderLoop();
-        }
-
-        function calculateTimings(wpm) {
-            const unitTime = 1200 / wpm;
-            // AUMENTATO: 5 → 7 unità per conferma lettera
-            // Dà più tempo all'utente
-            return { 
-                charTimeout: Math.round(unitTime * 7),  // Era 5, ora 7
-                spaceTimeout: Math.round(unitTime * 14) + 300  // Spazio più lungo
-            };
-        }
-
-        function startDecoderLoop() {
-            if(decoderLoopInterval) return;
-            
-            decoderLoopInterval = setInterval(() => {
-                const now = Date.now();
-                
-                // NON decodificare se bot sta trasmettendo
-                if(botTransmitting) return;
-                
-                if(morseBuffer !== "" && (now - lastUp > decoderTimings.charTimeout)) {
-                    const char = CHAR_TO_MORSE[morseBuffer] || "?";
-                    decoderContent += char;
-                    lastCharTime = now;
-                    needsSpace = true;
-                    morseBuffer = "";
-                    
-                    if(decoderEnabled) {
-                        updateDecoder(decoderContent);
-                        document.getElementById('morse-pattern').innerText = '';
-                    }
-                }
-                
-                // SPAZIO con timing aumentato
-                const SILENCE_FOR_SPACE = decoderTimings.spaceTimeout || ((decoderTimings.charTimeout * 2) + 200);
-                if(needsSpace && !decoderContent.endsWith(' ') && (now - lastUp > SILENCE_FOR_SPACE)) {
-                    decoderContent += ' ';
-                    if(decoderEnabled) {
-                        updateDecoder(decoderContent);
-                    }
-                    needsSpace = false;
-                }
-                
-                // NON inviare auto se bot sta trasmettendo
-                // AUMENTATO: 3000ms → 4000ms per dare più tempo
-                if(decoderContent.trim() !== "" && (now - lastCharTime > 4000) && !botTransmitting) {
-                    sendUserMessage(decoderContent.trim());
-                    decoderContent = "";
-                    if(decoderEnabled) {
-                        updateDecoder('');
-                    }
-                }
-            }, 50);
-        }
-
-        function stopDecoderLoop() {
-            if(decoderLoopInterval) {
-                clearInterval(decoderLoopInterval);
-                decoderLoopInterval = null;
-            }
-        }
-
-        function addMessage(type, callsign, text) {
-            if(!decoderEnabled) return;
-            
-            const msg = document.createElement('div');
-            msg.className = `msg ${type}`;
-            
-            const user = document.createElement('div');
-            user.className = 'msg-user';
-            user.innerText = type === 'bot' ? `${callsign} →` : `${callsign} ←`;
-            
-            const content = document.createElement('div');
-            content.innerText = text;
-            
-            msg.appendChild(user);
-            msg.appendChild(content);
-            
-            document.getElementById('messages').appendChild(msg);
-            msg.scrollIntoView({ behavior: 'smooth' });
-            
-            if(type === 'bot') messagesReceived++;
-            else messagesSent++;
-        }
-
-        let userCallsign = null;  // Bot non conosce user all'inizio
-
-        function updateDecoder(text) {
-            const decoder = document.getElementById('decoder-preview');
-            decoder.innerText = text;
-            // Auto-scroll alla fine
-            decoder.scrollLeft = decoder.scrollWidth;
-        }
-
-        function extractCallsign(text) {
-            // Cerca pattern nominativo radioamatoriale
-            // Esempi: IU2RPQ, IK3ABC, N7XYZ, G4ABC, etc.
-            const callsignPattern = /\b([A-Z]{1,2}\d[A-Z]{1,4}|[A-Z]\d{1,2}[A-Z]{1,4})\b/g;
-            const matches = text.match(callsignPattern);
-            
-            // Primo nominativo trovato che non sia del bot
-            if(matches) {
-                for(let call of matches) {
-                    if(call !== botCallsign) {
-                        return call;
-                    }
-                }
-            }
-            return null;
-        }
-
-        function sendUserMessage(text) {
-            // Previeni invii multipli
-            if(botTransmitting) return;
-            
-            // PRIMA VOLTA: estrai nominativo
-            if(!userCallsign) {
-                const extracted = extractCallsign(text);
-                if(extracted) {
-                    userCallsign = extracted;
-                    // Log rimosso per produzione
-                }
-            }
-            
-            addMessage('user', userCallsign || '???', text);
-            history.push({ role: 'user', text });
-            
-            // Pulisci decoder
-            decoderContent = '';
-            morseBuffer = '';
-            
-            setTimeout(() => botRespond(), 2000);
-        }
-
-        function generateBotInfo() {
-            const prefixes = ['IK', 'I', 'IZ', 'IW', 'IU'];
-            const numbers = ['0', '1', '2', '3', '4', '5', '6', '7'];
-            const suffixes = ['ABC', 'XYZ', 'QRP', 'DX', 'CW', 'OPS', 'MNO', 'RST'];
-            
-            botCallsign = prefixes[Math.floor(Math.random() * prefixes.length)] +
-                         numbers[Math.floor(Math.random() * numbers.length)] +
-                         suffixes[Math.floor(Math.random() * suffixes.length)];
-            
-            const names = ['MARIO', 'GIUSEPPE', 'FRANCO', 'CARLO', 'LUIGI', 'ANTONIO', 'PAOLO', 'LUCA', 'MARCO', 'ANDREA'];
-            const cities = ['ROMA', 'MILANO', 'TORINO', 'GENOVA', 'BOLOGNA', 'FIRENZE', 'VENEZIA', 'NAPOLI', 'PALERMO', 'BARI'];
-            
-            botName = names[Math.floor(Math.random() * names.length)];
-            botQTH = cities[Math.floor(Math.random() * cities.length)];
-        }
-        
-        // ✨ FUNZIONE NUOVA: Genera variabilità AD OGNI risposta
-        function getRandomQSOVariables() {
-            const weather = ['SUNNY', 'CLOUDY', 'RAINY', 'CLEAR', 'WINDY', 'FOGGY', 'SNOWY'];
-            const rigs = ['IC7300', 'FT991', 'TS590', 'FT817', 'KX3', 'IC705', 'FTDX10', 'TS890'];
-            const antennas = ['DIPOLE', 'VERTICAL', 'YAGI', 'LOOP', 'WIRE', 'GP', 'QUAD', 'INVERTED V'];
-            const powers = ['5W', '10W', '25W', '50W', '100W', 'QRP'];
-            const greetings = ['GM', 'GA', 'GE', 'GN'];
-            const rst = ['599', '589', '579', '569', '559', '549'];
-            
-            return {
-                weather: weather[Math.floor(Math.random() * weather.length)],
-                rig: rigs[Math.floor(Math.random() * rigs.length)],
-                antenna: antennas[Math.floor(Math.random() * antennas.length)],
-                power: powers[Math.floor(Math.random() * powers.length)],
-                greeting: greetings[Math.floor(Math.random() * greetings.length)],
-                rst: rst[Math.floor(Math.random() * rst.length)],
-                serial: String(Math.floor(Math.random() * 999) + 1).padStart(3, '0')
-            };
-        }
-
-        async function botSendMessage(text) {
-            // Pulisci decoder e buffer prima di trasmettere
-            decoderContent = '';
-            morseBuffer = '';
-            if(decoderEnabled) {
-                updateDecoder('');
-                document.getElementById('morse-pattern').innerText = '';
-            }
-            
-            botTransmitting = true;
-            document.getElementById('bot-status').style.display = 'inline-block';
-            
-            // Disabilita tasto visualmente
-            document.getElementById('key').classList.add('disabled');
-            
-            if(audioCtx && audioCtx.state === 'suspended') await audioCtx.resume();
-            
-            await playBotMorseWithDecoder(text, level);
-            
-            addMessage('bot', botCallsign, text);
-            
-            document.getElementById('bot-status').style.display = 'none';
-            
-            // Riabilita tasto
-            document.getElementById('key').classList.remove('disabled');
-            
-            botTransmitting = false;
-            
-            // Reset timing dopo bot TX
-            lastUp = Date.now();
-            lastCharTime = Date.now();
-        }
-
-        async function playBotMorseWithDecoder(text, wpm) {
-            const dotDur = 1200 / wpm;
-            const dashDur = dotDur * 3;
-            const symGap = dotDur;
-            const letGap = dotDur * 3;
-            const wordGap = dotDur * 7;
-            
-            let botDecoder = '';
-            
-            for (let char of text) {
-                if (char === ' ') {
-                    botDecoder += ' ';
-                    if(decoderEnabled) {
-                        updateDecoder(botDecoder);
-                    }
-                    await sleep(wordGap);
-                    continue;
-                }
-                
-                const morse = MORSE[char.toUpperCase()];
-                if (!morse) {
-                    await sleep(letGap);
-                    continue;
-                }
-                
-                botDecoder += char;
-                if(decoderEnabled) {
-                    updateDecoder(botDecoder);
-                }
-                
-                for (let symbol of morse) {
-                    await playBeep(symbol === '.' ? dotDur : dashDur);
-                    await sleep(symGap);
-                }
-                
-                await sleep(letGap);
-            }
-            
-            await sleep(500);
-            if(decoderEnabled) {
-                updateDecoder('');
-            }
-        }
-
-        function sleep(ms) {
-            return new Promise(resolve => setTimeout(resolve, ms));
-        }
-
-        function botRespond() {
-            const call = userCallsign || 'OM';
-            
-            // 🎲 GENERA VARIABILI RANDOM AD OGNI RISPOSTA!
-            const v = getRandomQSOVariables();
-            
-            const responses = {
-                ragchew: [
-                    `${call} DE ${botCallsign} ${v.greeting} OM TNX CALL UR RST ${v.rst} NAME ${botName} QTH ${botQTH} HW K`,
-                    `FB ${userCallsign || 'OM'} WX ${v.weather} RIG ${v.rig} ANT ${v.antenna} PWR ${v.power} UR INFO K`,
-                    `TNX QSO ${userCallsign || 'OM'} 73 GL ${botCallsign} SK`
-                ],
-                contest: [
-                    `${call} ${botCallsign} ${v.rst} ${v.serial} K`,
-                    `TU ${v.rst} ${v.serial} K`,
-                    `TU 73`
-                ],
-                dx: [
-                    `${call} ${botCallsign} ${v.rst.slice(0,2)} K`,
-                    `TU ${botCallsign}`,
-                    `QRZ`
-                ],
-                sota: [
-                    `${call} DE ${botCallsign} P TNX CALL UR ${v.rst} QTH ${botQTH} WX ${v.weather} K`,
-                    `FB TNX QSO 73 ${botCallsign} P SK`
-                ]
-            };
-            
-            const resp = responses[qsoType] || responses.ragchew;
-            const idx = Math.min(history.length - 1, resp.length - 1);
-            botSendMessage(resp[idx]);
-        }
-
-        function startQSO() {
-            const typeInput = document.querySelector('input[name="type"]:checked') || 
-                             document.querySelector('input[name="type-m"]:checked');
-            
-            qsoType = typeInput.value;
-            
-            generateBotInfo();
-            
-            const types = { ragchew: 'Conversazione', contest: 'Contest', dx: 'DX', sota: 'SOTA' };
-            document.getElementById('qso-info').innerText = `${currentWPM} WPM | ${types[qsoType]}`;
-            
-            document.getElementById('setup-info').style.display = 'none';
-            document.getElementById('setup-mobile').style.display = 'none';
-            document.getElementById('qso-panel').style.display = 'flex';
-            document.getElementById('reset-btn').style.display = 'inline-block';
-            
-            initAudio();
-            startDecoderLoop();
-            startTime = Date.now();
-            
-            setTimeout(() => {
-                // 🎲 VARIABILITÀ nel CQ iniziale
-                const cqRepeat = Math.floor(Math.random() * 3) + 2; // 2-4 ripetizioni
-                const callRepeat = Math.floor(Math.random() * 2) + 1; // 1-2 ripetizioni
-                
-                let cq;
-                if(qsoType === 'contest') {
-                    cq = `CQ TEST ${botCallsign} K`;
-                } else if(qsoType === 'dx') {
-                    const cqs = Array(cqRepeat).fill('CQ DX').join(' ');
-                    cq = `${cqs} DE ${botCallsign} K`;
-                } else if(qsoType === 'sota') {
-                    cq = `CQ SOTA CQ SOTA DE ${botCallsign} ${botCallsign} P K`;
-                } else {
-                    const cqs = Array(cqRepeat).fill('CQ').join(' ');
-                    const calls = Array(callRepeat).fill(botCallsign).join(' ');
-                    cq = `${cqs} DE ${calls} K`;
-                }
-                
-                botSendMessage(cq);
-            }, 2000);
-        }
-
-        function resetQSO() {
-            stopDecoderLoop();
-            
-            document.getElementById('setup-info').style.display = 'block';
-            document.getElementById('setup-mobile').style.display = 'block';
-            document.getElementById('qso-panel').style.display = 'none';
-            document.getElementById('messages').innerHTML = '';
-            document.getElementById('reset-btn').style.display = 'none';
-            
-            document.getElementById('audio-btn').innerHTML = '🔊';
-            document.getElementById('audio-btn').style.background = 'var(--green)';
-            
-            history = [];
-            morseBuffer = '';
-            decoderContent = '';
-            userCallsign = null;  // Reset nominativo
-            updateDecoder('');
-            document.getElementById('morse-pattern').innerText = '';
-            
-            sessionDuration = Math.floor((Date.now() - startTime) / 1000);
-        }
-
-        // Admin
-        function showAdminLogin() {
-            document.getElementById('admin-modal').classList.add('show');
-            document.getElementById('admin-pwd').value = '';
-            document.getElementById('admin-error').style.display = 'none';
-        }
-
-        function closeAdminModal() {
-            document.getElementById('admin-modal').classList.remove('show');
-        }
-
-        function checkAdminPassword() {
-            const pwd = document.getElementById('admin-pwd').value;
-            if(pwd === ADMIN_PASSWORD) {
-                closeAdminModal();
-                openAdminPanel();
-            } else {
-                document.getElementById('admin-error').style.display = 'block';
-            }
-        }
-
-        function openAdminPanel() {
-            document.getElementById('admin-panel').classList.add('show');
-            loadAdminData();
-        }
-
-        function closeAdminPanel() {
-            document.getElementById('admin-panel').classList.remove('show');
-        }
-
-        function loadAdminData() {
-            const grid = document.getElementById('bg-grid');
-            grid.innerHTML = '';
-            
-            // Carica background da Firebase
-            db.ref('admin/background-virtualqso').once('value').then(snap => {
-                const bgData = snap.val();
-                if(bgData) {
-                    document.getElementById('bg-preview').src = bgData;
-                    document.getElementById('bg-preview-container').style.display = 'block';
-                    applyBackground(bgData);
-                }
-            });
-            
-            // Sfondi predefiniti
-            BACKGROUNDS.forEach((url, i) => {
-                const thumb = document.createElement('div');
-                thumb.className = 'bg-thumb';
-                thumb.style.backgroundImage = `url(${url})`;
-                thumb.onclick = () => setBackground(url, true);
-                grid.appendChild(thumb);
-            });
-            
-            updateStatistics();
-        }
-        
-        function handleBackgroundUpload(event) {
-            const file = event.target.files[0];
-            if(!file) return;
-            
-            if(!file.type.startsWith('image/')) {
-                alert('❌ Seleziona un file immagine!');
-                return;
-            }
-            
-            if(file.size > 5 * 1024 * 1024) {
-                alert('❌ File troppo grande! Max 5MB');
-                return;
-            }
-            
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                const img = new Image();
-                img.onload = function() {
-                    // Ottimizza immagine
-                    const canvas = document.createElement('canvas');
-                    const ctx = canvas.getContext('2d');
-                    
-                    let width = img.width, height = img.height;
-                    const maxWidth = 1920, maxHeight = 1080;
-                    
-                    if(width > maxWidth || height > maxHeight) {
-                        const ratio = Math.min(maxWidth / width, maxHeight / height);
-                        width *= ratio;
-                        height *= ratio;
-                    }
-                    
-                    canvas.width = width;
-                    canvas.height = height;
-                    ctx.drawImage(img, 0, 0, width, height);
-                    
-                    // Converti a JPEG con qualità 70%
-                    const optimizedData = canvas.toDataURL('image/jpeg', 0.7);
-                    
-                    // Salva su Firebase (visibile a tutti!)
-                    db.ref('admin/background-virtualqso').set(optimizedData).then(() => {
-                        document.getElementById('bg-preview').src = optimizedData;
-                        document.getElementById('bg-preview-container').style.display = 'block';
-                        applyBackground(optimizedData);
-                        alert('✅ Sfondo caricato e condiviso!');
-                    }).catch(err => {
-                        alert('❌ Errore: ' + err.message);
-                    });
-                };
-                img.src = e.target.result;
-            };
-            reader.readAsDataURL(file);
-        }
-        
-        function applyBackground(dataUrl) {
-            document.body.style.backgroundImage = `url(${dataUrl})`;
-            document.body.classList.add('has-background');
-        }
-
-        function setBackground(url, isPredefined = false) {
-            if(isPredefined) {
-                // Sfondo predefinito - salva URL
-                db.ref('admin/background-virtualqso').set(url);
-            }
-            applyBackground(url);
-        }
-
-        function removeBackground() {
-            if(confirm('Rimuovere sfondo per tutti?')) {
-                db.ref('admin/background-virtualqso').remove().then(() => {
-                    document.body.style.backgroundImage = '';
-                    document.body.classList.remove('has-background');
-                    document.getElementById('bg-preview-container').style.display = 'none';
-                    alert('✅ Sfondo rimosso!');
-                });
-            }
-        }
-
-        function updateStatistics() {
-            const stats = document.getElementById('stats-container');
-            const duration = sessionDuration || Math.floor((Date.now() - startTime) / 1000);
-            
-            stats.innerHTML = `
-                <div class="stat-row">
-                    <span class="stat-label">Durata sessione:</span>
-                    <span class="stat-value">${Math.floor(duration / 60)}m ${duration % 60}s</span>
-                </div>
-                <div class="stat-row">
-                    <span class="stat-label">Messaggi inviati:</span>
-                    <span class="stat-value">${messagesSent}</span>
-                </div>
-                <div class="stat-row">
-                    <span class="stat-label">Messaggi ricevuti:</span>
-                    <span class="stat-value">${messagesReceived}</span>
-                </div>
-                <div class="stat-row">
-                    <span class="stat-label">QSO completati:</span>
-                    <span class="stat-value">${history.length}</span>
-                </div>
-            `;
-        }
-
-        document.addEventListener('DOMContentLoaded', () => {
-            // Carica background da Firebase (condiviso!)
-            db.ref('admin/background-virtualqso').once('value').then(snap => {
-                const bgData = snap.val();
-                if(bgData) applyBackground(bgData);
-            });
-            
-            ['type'].forEach(group => {
-                document.querySelectorAll(`#${group}-group .radio-option`).forEach(opt => {
-                    opt.addEventListener('click', function() {
-                        document.querySelectorAll(`#${group}-group .radio-option`)
-                            .forEach(o => o.classList.remove('selected'));
-                        this.classList.add('selected');
-                        this.querySelector('input').checked = true;
-                    });
-                });
-                
-                document.querySelectorAll(`#${group}-group-mobile .radio-option`).forEach(opt => {
-                    opt.addEventListener('click', function() {
-                        document.querySelectorAll(`#${group}-group-mobile .radio-option`)
-                            .forEach(o => o.classList.remove('selected'));
-                        this.classList.add('selected');
-                        this.querySelector('input').checked = true;
-                    });
-                });
-            });
-            
-            const key = document.getElementById('key');
-            key.addEventListener('mousedown', down);
-            window.addEventListener('mouseup', up);
-            
-            // ===== TOUCH EVENTS OTTIMIZZATI PER IPHONE =====
-            let touchActive = false;
-            
-            key.addEventListener('touchstart', (e) => {
-                e.preventDefault();
-                e.stopPropagation();
-                
-                // Previeni multi-touch
-                if(touchActive) return;
-                touchActive = true;
-                
-                // Feedback visivo IMMEDIATO
-                key.classList.add('active');
-                
-                // Vibrazione tattile se disponibile
-                if(navigator.vibrate) {
-                    navigator.vibrate(10);
-                }
-                
-                down(e);
-            }, { passive: false, capture: true });
-            
-            key.addEventListener('touchend', (e) => {
-                e.preventDefault();
-                e.stopPropagation();
-                
-                if(!touchActive) return;
-                touchActive = false;
-                
-                // Rimuovi feedback
-                key.classList.remove('active');
-                
-                up(e);
-            }, { passive: false, capture: true });
-            
-            key.addEventListener('touchcancel', (e) => {
-                e.preventDefault();
-                if(!touchActive) return;
-                touchActive = false;
-                key.classList.remove('active');
-                up(e);
-            }, { passive: false });
-            
-            // Previeni scroll su area tasto
-            const pad = document.getElementById('morse-pad');
-            pad.addEventListener('touchmove', (e) => {
-                e.preventDefault();
-            }, { passive: false });
-            
-            // Previeni doppio tap zoom
-            let lastTouchEnd = 0;
-            document.addEventListener('touchend', (e) => {
-                const now = Date.now();
-                if(now - lastTouchEnd <= 300) {
-                    e.preventDefault();
-                }
-                lastTouchEnd = now;
-            }, { passive: false });
-            
-            window.addEventListener('keydown', e => {
-                if (e.code === 'Space' && !e.repeat) { e.preventDefault(); down(e); }
-                else down(e);
-            });
-            window.addEventListener('keyup', e => {
-                if (e.code === 'Space') { e.preventDefault(); up(e); }
-                else up(e);
-            });
+// =============================================
+// SETUP SCREEN
+// =============================================
+document.querySelectorAll('.level-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+        document.querySelectorAll('.level-btn').forEach(b => {
+            b.classList.remove('selected');
+            b.textContent = b.textContent.replace('●', '○');
         });
-    </script>
+        btn.classList.add('selected');
+        btn.textContent = btn.textContent.replace('○', '●');
+        vqsoConfig.level = btn.dataset.level;
+        checkCanStart();
+    });
+});
+
+document.querySelectorAll('.mode-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+        document.querySelectorAll('.mode-btn').forEach(b => b.classList.remove('selected'));
+        btn.classList.add('selected');
+        vqsoConfig.mode = btn.dataset.mode;
+        checkCanStart();
+    });
+});
+
+function checkCanStart() {
+    const startBtn = document.getElementById('start-qso-btn');
+    if (vqsoConfig.level && vqsoConfig.mode) {
+        startBtn.disabled = false;
+    }
+}
+
+document.getElementById('start-qso-btn').addEventListener('click', startQSO);
+
+function startQSO() {
+    // Genera callsign bot
+    vqsoConfig.botCallsign = generateBotCallsign();
+    
+    // Aggiorna display configurazione
+    document.getElementById('level-display').textContent = vqsoConfig.level.toUpperCase();
+    document.getElementById('mode-display').textContent = vqsoConfig.mode.toUpperCase();
+    document.getElementById('bot-display').textContent = vqsoConfig.botCallsign;
+    
+    // Cambia schermata
+    document.getElementById('setup-screen').classList.remove('active');
+    document.getElementById('qso-screen').classList.add('active');
+    document.getElementById('status').textContent = 'QSO ATTIVO';
+    
+    // Bot inizia con CQ
+    setTimeout(() => {
+        addMessage('bot', vqsoConfig.botCallsign, `CQ CQ CQ DE ${vqsoConfig.botCallsign} ${vqsoConfig.botCallsign} K`);
+    }, 1000);
+    
+    vqsoConfig.qsoActive = true;
+}
+
+// =============================================
+// MESSAGGI
+// =============================================
+function addMessage(type, callsign, text) {
+    const messagesArea = document.getElementById('messages-area');
+    const msgDiv = document.createElement('div');
+    msgDiv.className = `qso-msg ${type}`;
+    msgDiv.innerHTML = `
+        <div class="callsign">${callsign}:</div>
+        <div class="text">${text}</div>
+    `;
+    messagesArea.appendChild(msgDiv);
+    messagesArea.scrollTop = messagesArea.scrollHeight;
+}
+
+// =============================================
+// INVIO MESSAGGIO UTENTE
+// =============================================
+document.getElementById('send-btn').addEventListener('click', sendMessage);
+document.getElementById('vqso-input').addEventListener('keypress', (e) => {
+    if (e.key === 'Enter') sendMessage();
+});
+
+function sendMessage() {
+    const input = document.getElementById('vqso-input');
+    const message = input.value.trim();
+    
+    if (!message) return;
+    
+    // NUOVA LOGICA: Estrai callsign dopo DE
+    if (!vqsoConfig.userCallsign) {
+        const extractedCall = extractCallsignAfterDE(message);
+        if (extractedCall) {
+            vqsoConfig.userCallsign = extractedCall;
+            document.getElementById('user-call-display').textContent = extractedCall;
+        }
+    }
+    
+    // Mostra messaggio utente
+    const displayCall = vqsoConfig.userCallsign || 'USER';
+    addMessage('user', displayCall, message);
+    
+    // Salva nella history
+    vqsoConfig.history.push({
+        sender: 'user',
+        message: message,
+        callsign: vqsoConfig.userCallsign
+    });
+    
+    input.value = '';
+    
+    // Simula risposta bot (versione DEMO - sostituisci con chiamata API)
+    setTimeout(() => {
+        generateBotResponse(message);
+    }, 1500);
+}
+
+// =============================================
+// RISPOSTA BOT (DEMO)
+// =============================================
+function generateBotResponse(userMessage) {
+    const responses = {
+        0: `${vqsoConfig.userCallsign || 'OM'} DE ${vqsoConfig.botCallsign} TNX FER CALL = UR RST 599 599 = NAME HR IS MARIO = QTH TORINO = HW CPY? K`,
+        1: `FB ${vqsoConfig.userCallsign || 'OM'} = WX SUNNY HR = RIG ICOM IC7300 = ANT DIPOLE = UR WX? K`,
+        2: `NICE QSO ${vqsoConfig.userCallsign || 'OM'} = TNX INFO = 73 ES CUL = ${vqsoConfig.botCallsign} SK`
+    };
+    
+    const responseIndex = Math.min(vqsoConfig.history.length - 1, 2);
+    const response = responses[responseIndex] || responses[2];
+    
+    addMessage('bot', vqsoConfig.botCallsign, response);
+}
+
+// =============================================
+// INIT
+// =============================================
+console.log('Virtual QSO ready - versione con riconoscimento callsign dopo DE');
+</script>
+
 </body>
 </html>
